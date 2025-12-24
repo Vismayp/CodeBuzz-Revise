@@ -1,10 +1,57 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  BookOpen,
+  Box,
+  Code,
+  Cpu,
+  Zap,
+  Server,
+  FileJson,
+  Brain,
+  Network,
+  Database,
+  Globe,
+  Layout,
+  Terminal,
+} from "lucide-react";
 import { subjects } from "../data/subjects";
 
-const Home = () => {
+const iconMap = {
+  BookOpen,
+  Box,
+  Code,
+  Cpu,
+  Zap,
+  Server,
+  FileJson,
+  Brain,
+  Network,
+  Database,
+  Globe,
+  Layout,
+  Terminal,
+};
+
+const SubjectPage = () => {
   const navigate = useNavigate();
+  const { subjectId } = useParams();
+  const subject = subjects.find((s) => s.id === subjectId);
+
+  if (!subject) {
+    return (
+      <div style={{ padding: "4rem", textAlign: "center" }}>
+        <h1>Subject not found</h1>
+        <button className="btn" onClick={() => navigate("/")}>
+          Go Home
+        </button>
+      </div>
+    );
+  }
+
+  const { topics, title, description } = subject;
 
   return (
     <div style={{ padding: "4rem 0" }}>
@@ -31,7 +78,7 @@ const Home = () => {
               fontSize: "0.9rem",
             }}
           >
-            🚀 Ultimate Revision Guide
+            📚 Subject Guide
           </span>
         </div>
 
@@ -45,12 +92,12 @@ const Home = () => {
         >
           <span
             style={{
-              background: "linear-gradient(to bottom right, #fff, #94a3b8)",
+              background: `linear-gradient(to bottom right, #fff, #94a3b8)`,
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}
           >
-            Select Your Path
+            {title}
           </span>
         </h1>
 
@@ -62,76 +109,104 @@ const Home = () => {
             maxWidth: "600px",
           }}
         >
-          Choose a subject to start your revision journey.
+          {description}
         </p>
+
+        <div
+          style={{
+            display: "flex",
+            gap: "1rem",
+            justifyContent: "center",
+            marginBottom: "4rem",
+          }}
+        >
+          <button
+            className="btn"
+            style={{ fontSize: "1.1rem", padding: "0.8rem 2rem" }}
+            onClick={() =>
+              navigate(
+                `/${subjectId}/topic/${topics[0].id}/${topics[0].sections[0].id}`
+              )
+            }
+          >
+            Start Reading <ArrowRight size={20} />
+          </button>
+        </div>
       </motion.div>
 
       <div style={{ marginBottom: "5rem" }}>
+        <h2
+          style={{
+            textAlign: "center",
+            marginBottom: "2rem",
+            color: "var(--text-primary)",
+          }}
+        >
+          Topics Covered
+        </h2>
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-            gap: "2rem",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "1.5rem",
             maxWidth: "1000px",
             margin: "0 auto",
           }}
         >
-          {subjects.map((subject, index) => {
-            const Icon = subject.icon;
+          {topics.map((topic, index) => {
+            const Icon = iconMap[topic.icon] || Box;
             return (
               <motion.div
-                key={subject.id}
+                key={topic.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ y: -5, borderColor: "var(--accent)" }}
-                onClick={() => navigate(`/${subject.id}`)}
+                onClick={() =>
+                  navigate(
+                    `/${subjectId}/topic/${topic.id}/${topic.sections[0].id}`
+                  )
+                }
                 style={{
                   background: "var(--bg-secondary)",
                   border: "1px solid var(--border)",
                   borderRadius: "16px",
-                  padding: "2rem",
+                  padding: "1.5rem",
                   cursor: "pointer",
                   transition: "all 0.2s ease",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  textAlign: "center",
                 }}
               >
                 <div
                   style={{
-                    width: "64px",
-                    height: "64px",
-                    borderRadius: "16px",
-                    background: `linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary))`,
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "12px",
+                    background: "var(--accent-glow)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    marginBottom: "1.5rem",
+                    marginBottom: "1.2rem",
                     color: "var(--accent)",
-                    border: "1px solid var(--border)",
                   }}
                 >
-                  <Icon size={32} />
+                  <Icon size={24} />
                 </div>
                 <h3
                   style={{
                     marginBottom: "0.5rem",
                     color: "var(--text-primary)",
-                    fontSize: "1.5rem",
                   }}
                 >
-                  {subject.title}
+                  {topic.title}
                 </h3>
                 <p
                   style={{
                     color: "var(--text-secondary)",
-                    fontSize: "1rem",
+                    fontSize: "0.9rem",
                     lineHeight: "1.5",
                   }}
                 >
-                  {subject.description}
+                  {topic.description}
                 </p>
               </motion.div>
             );
@@ -142,4 +217,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default SubjectPage;

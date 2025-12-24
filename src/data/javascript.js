@@ -122,6 +122,47 @@ Stack Operations:
 */`,
       },
       {
+        id: "memory-management",
+        title: "Memory Management & GC",
+        content: `
+JavaScript automatically allocates memory when objects are created and frees it when they are no longer used (**Garbage Collection**).
+
+### Memory Life Cycle:
+1. **Allocation**: Memory is allocated by the engine.
+2. **Usage**: Reading and writing to the allocated memory.
+3. **Release**: Memory is released when no longer needed.
+
+### Garbage Collection (Mark-and-Sweep):
+The main algorithm used by modern engines.
+1. **Mark**: The GC starts from "roots" (global object) and marks all objects that are reachable.
+2. **Sweep**: It then "sweeps" through memory and removes any objects that were not marked.
+
+### Memory Leaks:
+Common causes:
+- **Accidental Globals**: Variables declared without \`let\`/\`const\`.
+- **Forgotten Timers**: \`setInterval\` not cleared.
+- **Closures**: Holding onto large objects in parent scope.
+- **Out of DOM references**: Keeping references to deleted DOM nodes.
+        `,
+        diagram: `
+graph TD
+    Root[Root: Global Object] --> A[Object A]
+    Root --> B[Object B]
+    A --> C[Object C]
+    D[Object D: Unreachable]
+    
+    subgraph GC [Garbage Collector]
+        M[Mark Reachable]
+        S[Sweep Unmarked]
+    end
+    
+    M -.-> A
+    M -.-> B
+    M -.-> C
+    S -.-> D
+        `,
+      },
+      {
         id: "modern-js",
         title: "Modern JS (ES6+)",
         content: `
@@ -672,11 +713,59 @@ graph TD
       {
         id: "nodejs-advanced",
         title: "7. Advanced Concepts",
-        content:
-          "Scaling and optimizing Node.js applications.\n\n### Child Processes\nNode.js runs on a single thread. `child_process` module allows spawning new processes to handle CPU-intensive tasks (like video processing) without blocking the main loop.\n\n### Worker Threads\nUnlike child processes, Worker Threads share memory. Useful for CPU-heavy JavaScript operations.\n\n### Clustering\nA module that allows you to create child processes (workers) that share the same server port. It enables a Node app to utilize all cores of a CPU.\n\n### Security\n* **Helmet**: Secure HTTP headers.\n* **Rate Limiting**: Prevent brute-force attacks.\n* **Input Validation**: Prevent Injection attacks.",
-        code: "const cluster = require('cluster');\nconst http = require('http');\nconst numCPUs = require('os').cpus().length;\n\nif (cluster.isMaster) {\n  console.log(`Master ${process.pid} is running`);\n\n  // Fork workers for each CPU core\n  for (let i = 0; i < numCPUs; i++) {\n    cluster.fork();\n  }\n\n  cluster.on('exit', (worker) => {\n    console.log(`Worker ${worker.process.pid} died`);\n  });\n} else {\n  // Workers can share any TCP connection\n  http.createServer((req, res) => {\n    res.writeHead(200);\n    res.end('Hello World\\n');\n  }).listen(8000);\n\n  console.log(`Worker ${process.pid} started`);\n}",
-        diagram:
-          'graph TD\n    Traffic[Incoming Network Traffic] --> Master[Master Process]\n    \n    subgraph Workers [Worker Processes]\n        W1["Worker 1<br/>V8 + Event Loop"]\n        W2["Worker 2<br/>V8 + Event Loop"]\n        W3["Worker 3<br/>V8 + Event Loop"]\n    end\n    \n    Master -->|Distributes| W1\n    Master -->|Distributes| W2\n    Master -->|Distributes| W3',
+        content: `
+Scaling and optimizing Node.js applications.
+
+### Child Processes vs Worker Threads
+- **Child Processes**: Separate memory space, communication via IPC. Good for running external commands or heavy tasks that don't need shared memory.
+- **Worker Threads**: Shared memory (using \`SharedArrayBuffer\`). Good for CPU-intensive JS tasks where data needs to be shared efficiently.
+
+### Libuv Thread Pool
+By default, Libuv uses a thread pool of **4 threads** (can be changed via \`UV_THREADPOOL_SIZE\`) to handle operations that are not natively asynchronous in the OS, such as:
+- File system operations (\`fs\`)
+- DNS lookups (\`dns.lookup\`)
+- Crypto operations (\`crypto.pbkdf2\`, etc.)
+- Compression (\`zlib\`)
+
+### Clustering
+Utilizes all CPU cores by spawning multiple instances of the Node.js process. The master process distributes incoming connections to workers using a Round-Robin algorithm.
+        `,
+        code: `const { Worker, isMainThread, parentPort } = require('worker_threads');
+
+if (isMainThread) {
+  // This code runs in the main thread
+  const worker = new Worker(__filename);
+  worker.on('message', (msg) => console.log('From Worker:', msg));
+  worker.postMessage('Start working!');
+} else {
+  // This code runs in the worker thread
+  parentPort.on('message', (msg) => {
+    console.log('From Main:', msg);
+    parentPort.postMessage('Done!');
+  });
+}`,
+        diagram: `
+graph TD
+    subgraph MainThread [Main Thread]
+        EL[Event Loop]
+        V8[V8 Engine]
+    end
+    
+    subgraph LibuvPool [Libuv Thread Pool]
+        T1[Thread 1]
+        T2[Thread 2]
+        T3[Thread 3]
+        T4[Thread 4]
+    end
+    
+    subgraph Workers [Worker Threads]
+        W1[Worker 1]
+        W2[Worker 2]
+    end
+    
+    EL -->|Offload FS/Crypto| LibuvPool
+    EL -->|CPU Intensive JS| Workers
+        `,
       },
       {
         id: "nodejs-errors",
@@ -700,6 +789,188 @@ graph TD
         content:
           "Managing configuration and validating incoming data are essential for robust applications.\n\n### Environment Variables\nUse `dotenv` to load variables from a `.env` file into `process.env`. This keeps secrets (API keys, DB URIs) out of your source code.\n\n### Data Validation\nUse libraries like **Joi** or **Zod** to define schemas for incoming request data. This ensures your application only processes valid data and provides clear error messages to the client.",
         code: "// --- .env ---\n// PORT=3000\n// DATABASE_URL=mongodb://localhost/myapp\n\n// --- config.js ---\nrequire('dotenv').config();\nconst port = process.env.PORT || 3000;\n\n// --- Validation (Joi) ---\nconst Joi = require('joi');\nconst schema = Joi.object({\n  username: Joi.string().min(3).required(),\n  email: Joi.string().email().required()\n});\n\n// Middleware usage\nconst validateUser = (req, res, next) => {\n  const { error } = schema.validate(req.body);\n  if (error) return res.status(400).send(error.details[0].message);\n  next();\n};",
+      },
+    ],
+  },
+  {
+    id: "devops",
+    title: "DevOps & Deployment",
+    description:
+      "Essential tools and practices for deploying and scaling modern applications.",
+    icon: "Server",
+    sections: [
+      {
+        id: "nginx-guide",
+        title: "Nginx: The Swiss Army Knife of Web Servers",
+        content: `
+Nginx (pronounced "engine-x") is a high-performance web server, reverse proxy, and load balancer. It is known for its stability, rich feature set, simple configuration, and low resource consumption.
+
+### Key Roles:
+1. **Web Server**: Serving static content (HTML, CSS, JS, Images) extremely fast.
+2. **Reverse Proxy**: Sitting in front of your application server (like Node.js) to handle requests, SSL termination, and caching.
+3. **Load Balancer**: Distributing incoming traffic across multiple backend servers.
+
+### Configuration Structure:
+Nginx uses a hierarchical configuration system based on **contexts**:
+- **Main**: Global settings (worker processes, user).
+- **HTTP**: Settings for all HTTP/HTTPS traffic.
+- **Server**: Defines a virtual host (domain/IP).
+- **Location**: Defines how to handle specific URI patterns.
+        `,
+        code: `# --- Basic Reverse Proxy Configuration ---
+server {
+    listen 80;
+    server_name example.com;
+
+    # Serve static files
+    location /static/ {
+        root /var/www/app;
+    }
+
+    # Proxy requests to Node.js app
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+
+# --- Load Balancing ---
+upstream myapp {
+    server 10.0.0.1:3000;
+    server 10.0.0.2:3000;
+}
+
+server {
+    listen 80;
+    location / {
+        proxy_pass http://myapp;
+    }
+}`,
+        diagram: `
+graph LR
+    Client((Client)) -->|HTTP/HTTPS| Nginx[Nginx Reverse Proxy]
+    subgraph Backend [Backend Servers]
+        S1[Node.js App 1]
+        S2[Node.js App 2]
+    end
+    Nginx -->|Load Balance| S1
+    Nginx -->|Load Balance| S2
+        `,
+      },
+      {
+        id: "docker-basics",
+        title: "Docker & Containerization",
+        content: `
+Docker allows you to package an application with all of its dependencies into a standardized unit called a **container**.
+
+### Why Docker?
+- **Consistency**: "It works on my machine" is no longer an issue.
+- **Isolation**: Each container runs in its own environment.
+- **Portability**: Run the same container on any system that has Docker.
+
+### Key Concepts:
+- **Image**: A read-only template with instructions for creating a Docker container.
+- **Container**: A runnable instance of an image.
+- **Dockerfile**: A text document that contains all the commands a user could call on the command line to assemble an image.
+- **Docker Compose**: A tool for defining and running multi-container Docker applications.
+        `,
+        code: `# --- Dockerfile for Node.js ---
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+
+# --- docker-compose.yml ---
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+  db:
+    image: mongo
+    ports:
+      - "27017:27017"`,
+        diagram: `
+graph TD
+    DF[Dockerfile] -->|Build| Img[Docker Image]
+    Img -->|Run| C1[Container 1]
+    Img -->|Run| C2[Container 2]
+    Img -->|Run| C3[Container 3]
+        `,
+      },
+      {
+        id: "cicd-pipelines",
+        title: "CI/CD & Automation",
+        content: `
+**Continuous Integration (CI)** and **Continuous Deployment (CD)** automate the process of software delivery.
+
+### CI (Continuous Integration):
+Developers frequently merge their code changes into a central repository, after which automated builds and tests are run.
+- **Goal**: Find and fix bugs quicker, improve software quality.
+
+### CD (Continuous Deployment/Delivery):
+Automates the release of the validated code to a repository (Delivery) or directly to production (Deployment).
+- **Goal**: Release new features to users as quickly as possible.
+
+### Popular Tools:
+- GitHub Actions
+- Jenkins
+- GitLab CI
+- CircleCI
+        `,
+        code: `# --- GitHub Actions Workflow (.github/workflows/main.yml) ---
+name: Node.js CI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    - run: npm install
+    - run: npm test
+    - name: Deploy to Server
+      if: success()
+      run: |
+        echo "Deploying to production..."
+        # Add deployment commands here`,
+      },
+      {
+        id: "system-design-basics",
+        title: "System Design Fundamentals",
+        content: `
+System design is the process of defining the architecture, components, and interfaces for a system to satisfy specified requirements.
+
+### Key Concepts:
+1. **Scalability**:
+   - **Vertical**: Adding more power (CPU, RAM) to an existing server.
+   - **Horizontal**: Adding more servers to the pool.
+2. **Availability**: Ensuring the system is operational and accessible.
+3. **Consistency**: Ensuring all nodes see the same data at the same time.
+4. **Load Balancing**: Distributing traffic to prevent any single server from becoming a bottleneck.
+5. **Caching**: Storing frequently accessed data in memory (e.g., Redis) to reduce latency.
+        `,
+        diagram: `
+graph TD
+    LB[Load Balancer] --> S1[Server 1]
+    LB --> S2[Server 2]
+    S1 --> DB[(Database)]
+    S2 --> DB
+    S1 --> Cache[(Redis Cache)]
+    S2 --> Cache
+        `,
       },
     ],
   },
@@ -924,6 +1195,31 @@ export const interviewQuestions = [
     answer:
       "process.nextTick() fires immediately after the current operation, before the event loop continues. setImmediate() fires in the next iteration of the event loop.",
   },
+  {
+    id: 37,
+    question: "What is a Reverse Proxy?",
+    answer:
+      "A server that sits in front of web servers and forwards client requests to those web servers. It is used for load balancing, security, and performance.",
+  },
+  {
+    id: 38,
+    question:
+      "What is the difference between a Container and a Virtual Machine?",
+    answer:
+      "VMs virtualize the hardware and include a full OS. Containers virtualize the OS kernel and share it with other containers, making them much lighter and faster.",
+  },
+  {
+    id: 39,
+    question: "What is Horizontal vs Vertical Scaling?",
+    answer:
+      "Vertical scaling means adding more resources (CPU/RAM) to a single server. Horizontal scaling means adding more servers to your infrastructure.",
+  },
+  {
+    id: 40,
+    question: "What is the purpose of a Load Balancer?",
+    answer:
+      "To distribute incoming network traffic across a group of backend servers to ensure no single server bears too much load, increasing reliability and availability.",
+  },
 ];
 
 export const todos = [
@@ -931,4 +1227,6 @@ export const todos = [
   "Design Patterns (Singleton, Observer)",
   "Webpack & Bundling concepts",
   "React-specific core concepts (Virtual DOM)",
+  "GraphQL vs REST comparison",
+  "Microservices Architecture basics",
 ];

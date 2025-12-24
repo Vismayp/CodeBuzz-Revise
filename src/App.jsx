@@ -1,9 +1,10 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './components/Layout';
-import Home from './pages/Home';
-import TopicPage from './pages/TopicPage';
-import InterviewPage from './pages/InterviewPage';
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Layout from "./components/Layout";
+import Home from "./pages/Home";
+import SubjectPage from "./pages/SubjectPage";
+import TopicPage from "./pages/TopicPage";
+import InterviewPage from "./pages/InterviewPage";
 
 function App() {
   return (
@@ -12,7 +13,11 @@ function App() {
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="interview" element={<InterviewPage />} />
-          <Route path="topic/:topicId/:sectionId" element={<TopicPage />} />
+          <Route path=":subjectId" element={<SubjectPage />} />
+          <Route
+            path=":subjectId/topic/:topicId/:sectionId"
+            element={<TopicPage />}
+          />
           <Route path="*" element={<Navigate to="/" />} />
         </Route>
       </Routes>

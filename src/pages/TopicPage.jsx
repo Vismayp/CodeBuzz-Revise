@@ -1,17 +1,18 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { topics } from "../data/topics";
+import { subjects } from "../data/subjects";
 import CodeBlock from "../components/CodeBlock";
 import MermaidDiagram from "../components/MermaidDiagram";
 import { motion } from "framer-motion";
 
 const TopicPage = () => {
-  const { topicId, sectionId } = useParams();
+  const { subjectId, topicId, sectionId } = useParams();
 
-  const topic = topics.find((t) => t.id === topicId);
+  const subject = subjects.find((s) => s.id === subjectId);
+  const topic = subject?.topics.find((t) => t.id === topicId);
   const section = topic?.sections.find((s) => s.id === sectionId);
 
-  if (!topic || !section)
+  if (!subject || !topic || !section)
     return (
       <div style={{ padding: "2rem" }}>Select a topic from the sidebar.</div>
     );
