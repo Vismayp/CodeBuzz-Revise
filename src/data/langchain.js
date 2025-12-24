@@ -333,4 +333,178 @@ graph.invoke(inputs, config=config)`,
       },
     ],
   },
+  {
+    id: "langgraph-tutorial",
+    title: "LangGraph Tutorial",
+    description: "From zero to building agentic workflows.",
+    icon: "Network",
+    sections: [
+      {
+        id: "lg-syntax-breakdown",
+        title: "Python Syntax for LangGraph",
+        content: `
+LangGraph code often uses specific Python patterns:
+
+1. **Imports**: \`from langgraph.graph import StateGraph\`
+   - \`langgraph\` is the package.
+   - \`graph\` is the module (\`graph.py\`).
+   - \`StateGraph\` is the class inside that file.
+
+2. **TypedDict**: Used to define the **shape** of the state.
+   - It's just a dictionary at runtime.
+   - No methods, no \`__init__\`, just data.
+
+3. **F-Strings**: \`f"Hello {name}"\`
+   - Used to inject variables into strings for prompts.
+
+4. **Method Chaining**: \`graph.add_node(...).add_edge(...)\`
+        `,
+        code: `from typing import TypedDict
+from langgraph.graph import StateGraph
+
+# 1. Define State (Shape only)
+class State(TypedDict):
+    question: str
+    answer: str
+
+# 2. Define Node (Function)
+def my_node(state: State) -> State:
+    # Returns a DICT matching the State shape
+    return {"question": state["question"], "answer": "fixed answer"}
+
+# 3. Build Graph
+builder = StateGraph(State)
+builder.add_node("node1", my_node)
+builder.set_entry_point("node1")`,
+      },
+      {
+        id: "lg-why-typeddict",
+        title: "Why TypedDict?",
+        content: `
+LangGraph uses \`TypedDict\` instead of normal classes for state because:
+- **Serializable**: Dictionaries are easy to convert to JSON.
+- **Simple**: No complex object behavior to manage.
+- **Inspectable**: Easy to log and view the entire state at any step.
+- **Functional**: Nodes are pure functions that take a dict and return a dict.
+
+| Feature | \`class\` | \`TypedDict\` |
+| --- | --- | --- |
+| Creates objects | ✅ Yes | ❌ No |
+| Has methods | ✅ Yes | ❌ No |
+| Stores behavior | ✅ Yes | ❌ No |
+| LangGraph State | ❌ No | ✅ Yes |
+        `,
+      },
+      {
+        id: "lg-concepts",
+        title: "Key Concepts",
+        content: `
+1.  **Nodes**: A function (LLM call, tool, API, Python logic).
+2.  **Edges**: Connect nodes → control flow.
+3.  **State**: Stores global or per-thread state.
+    *   \`StateGraph\`: Simple state machine.
+    *   \`MessageGraph\`: Ideal for conversational agents.
+4.  **Checkpoints**: Saves intermediate states → can resume anywhere.
+        `,
+      },
+      {
+        id: "lg-simple-graph",
+        title: "Simple Graph",
+        content: "A graph with two nodes: `get_name` and `greet`.",
+        code: `from langgraph.graph import StateGraph
+from langchain_openai import ChatOpenAI
+
+# 1. Define the state structure
+class State(dict):
+    name: str
+    output: str
+
+llm = ChatOpenAI(model="gpt-4o-mini")
+
+# 2. Define nodes
+def get_name(state):
+    name = "Vismay"
+    return {"name": name}
+
+def greet(state):
+    name = state["name"]
+    msg = llm.invoke(f"Write a short greeting to {name}")
+    return {"output": msg.content}
+
+# 3. Build graph
+graph = StateGraph(State)
+graph.add_node("get_name", get_name)
+graph.add_node("greet", greet)
+
+graph.add_edge("get_name", "greet")
+graph.set_entry_point("get_name")
+
+# 4. Compile & Run
+app = graph.compile()
+result = app.invoke({})
+print(result["output"])`,
+      },
+      {
+        id: "lg-agent-tools",
+        title: "Agent with Tools",
+        content:
+          "A small 'Research Agent' with `decide`, `search`, and `summarize` nodes.",
+        code: `def decide(state):
+    q = state["question"]
+    decision = llm.invoke(f"Decide a search query for: {q}")
+    return {"search_query": decision.content}
+
+def search(state):
+    query = state["search_query"]
+    return {"search_result": f"Results for {query}..."}
+
+def summarize(state):
+    summary = llm.invoke(f"Summarize: {state['search_result']}")
+    return {"answer": summary.content}
+
+graph = StateGraph(State)
+graph.add_node("decide", decide)
+graph.add_node("search", search)
+graph.add_node("summarize", summarize)
+
+graph.add_edge("decide", "search")
+graph.add_edge("search", "summarize")
+graph.set_entry_point("decide")`,
+      },
+      {
+        id: "lg-loops",
+        title: "Building Loops",
+        content:
+          "LangGraph allows loops easily. Example: LLM → tool → LLM until 'done'.",
+        code: `graph.add_edge("agent", "tool")
+graph.add_edge("tool", "agent")`,
+      },
+      {
+        id: "lg-multi-agent",
+        title: "Multi-Agent Workflow",
+        content:
+          "You can have two agents talk: Researcher -> Writer -> Final Answer.",
+        code: `def researcher(state): ...
+def writer(state): ...
+
+graph.add_node("researcher", researcher)
+graph.add_node("writer", writer)
+
+graph.add_edge("researcher", "writer")`,
+      },
+      {
+        id: "lg-streaming",
+        title: "Streaming",
+        content: "Stream the output of the graph step-by-step.",
+        code: `for step in app.stream({"question": "Explain LangGraph"}):
+    print(step)`,
+      },
+      {
+        id: "lg-visualizing",
+        title: "Visualizing",
+        content: "Visualize the graph structure.",
+        code: `app.get_graph().draw_ascii()`,
+      },
+    ],
+  },
 ];

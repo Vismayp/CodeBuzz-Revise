@@ -316,6 +316,100 @@ async def main():
     ],
   },
   {
+    id: "advanced-concepts",
+    title: "Advanced Concepts",
+    description: "Comprehensions, Decorators, and Generators.",
+    icon: "Zap",
+    sections: [
+      {
+        id: "comprehensions",
+        title: "Comprehensions",
+        content: "Concise way to create lists, dictionaries, and sets.",
+        code: `# List Comprehension
+squares = [x**2 for x in range(10)]
+
+# Dictionary Comprehension
+square_dict = {x: x**2 for x in range(5)}
+
+# Set Comprehension
+unique_chars = {c for c in "hello world"}`,
+      },
+      {
+        id: "decorators",
+        title: "Decorators",
+        content: "Functions that modify the behavior of other functions.",
+        code: `def my_decorator(func):
+    def wrapper():
+        print("Before call")
+        func()
+        print("After call")
+    return wrapper
+
+@my_decorator
+def say_hello():
+    print("Hello!")
+
+# say_hello()
+# Output:
+# Before call
+# Hello!
+# After call`,
+      },
+      {
+        id: "generators",
+        title: "Generators",
+        content:
+          "Functions that return an iterator using the `yield` keyword. They are memory efficient.",
+        code: `def count_up_to(n):
+    count = 1
+    while count <= n:
+        yield count
+        count += 1
+
+counter = count_up_to(5)
+for num in counter:
+    print(num)`,
+      },
+    ],
+  },
+  {
+    id: "memory-execution",
+    title: "Memory & Execution",
+    description: "How Python runs and manages memory.",
+    icon: "Cpu",
+    sections: [
+      {
+        id: "mutable-immutable",
+        title: "Mutable vs Immutable",
+        content: `
+- **Mutable**: Can be changed after creation (list, dict, set).
+- **Immutable**: Cannot be changed (int, float, str, tuple, bool).
+        `,
+        code: `# Immutable
+s = "hello"
+# s[0] = "H" # Raises TypeError
+
+# Mutable
+l = [1, 2, 3]
+l[0] = 10 # Works fine`,
+      },
+      {
+        id: "execution-model",
+        title: "Execution Model",
+        content: `
+1. **Source Code** (.py)
+2. **Bytecode** (.pyc) - Compiled by Python interpreter.
+3. **Python Virtual Machine (PVM)** - Executes the bytecode.
+        `,
+        diagram: `graph LR
+    A[Source Code .py] --> B[Compiler]
+    B --> C[Bytecode .pyc]
+    C --> D[PVM]
+    D --> E[Machine Code]`,
+      },
+    ],
+  },
+  {
     id: "internals",
     title: "Python Internals",
     description: "How Python works under the hood: GIL, Memory Management.",
@@ -354,6 +448,129 @@ l2.append(l1)
     Ref1[Ref: a] --> Obj
     Ref2[Ref: b] --> Obj
     Count[Ref Count: 2] -.-> Obj`,
+      },
+    ],
+  },
+  {
+    id: "imports-packages",
+    title: "Imports & Packages",
+    description: "Understanding how Python organizes and imports code.",
+    icon: "FileCode",
+    sections: [
+      {
+        id: "import-syntax",
+        title: "Import Syntax",
+        content: `
+**from _ import _** is Python's way of bringing specific things into your file.
+
+1. **Avoid long names**: \`from math import sqrt\` instead of \`math.sqrt()\`.
+2. **Import only what you need**: Loads specific classes/functions.
+3. **Cleaner code**: Makes it obvious what is being used.
+
+**Variations:**
+- \`import math\`: Import whole module (use \`math.sqrt()\`).
+- \`from math import sqrt\`: Import specific function (use \`sqrt()\`).
+- \`from math import *\`: Import everything (**NOT recommended** - pollutes namespace).
+        `,
+        code: `# Standard import
+import os
+
+# Specific import
+from datetime import datetime
+
+# Multiple imports
+from typing import List, Dict, Optional
+
+# Alias import
+import pandas as pd`,
+      },
+      {
+        id: "packages-modules",
+        title: "Packages & Modules",
+        content: `
+- **Module**: A single \`.py\` file.
+- **Package**: A folder containing \`.py\` files and an \`__init__.py\` file.
+
+**__init__.py**:
+Used to mark a directory as a Python package. It can also be used to **re-export** classes from sub-modules to the top level, making imports shorter.
+        `,
+        code: `# Directory Structure:
+# my_package/
+#   __init__.py
+#   models.py
+
+# Inside __init__.py:
+# from .models import MyModel
+
+# User can then do:
+from my_package import MyModel`,
+      },
+    ],
+  },
+  {
+    id: "oop-classes",
+    title: "Classes & Objects",
+    description:
+      "Understanding Classes, Objects, Attributes, Methods, and TypedDict.",
+    icon: "Box",
+    sections: [
+      {
+        id: "classes-objects",
+        title: "Classes & Objects",
+        content: `
+**Class**: A blueprint.
+**Object**: A thing created from that blueprint.
+**Attributes**: Variables inside a class.
+**Methods**: Functions inside a class.
+
+**Real-life analogy:**
+| Real World | Python |
+| --- | --- |
+| Blueprint of a Car | Class |
+| A specific car (red BMW) | Object |
+| Properties (color, model) | Attributes |
+| Behaviors (drive, stop) | Methods |
+        `,
+        code: `class Car:
+    def __init__(self, brand, color):
+        self.brand = brand
+        self.color = color
+
+    def drive(self):
+        return f"{self.brand} is driving!"
+
+# Creating objects
+car1 = Car("BMW", "Red")
+print(car1.drive()) # BMW is driving!`,
+        diagram: `graph TD
+    Class[Class: Blueprint] --> Object[Object: Instance]
+    Object --> Attributes[Attributes: Data]
+    Object --> Methods[Methods: Behavior]
+    Methods --> Self[self: The specific object]`,
+      },
+      {
+        id: "class-vs-typeddict",
+        title: "Class vs TypedDict",
+        content: `
+**Class**: Creates objects with behavior (methods) and data. Used for OOP.
+**TypedDict**: Describes the **shape** of a dictionary (for type checking only). Does NOT create objects or have methods.
+
+**TypedDict** is often used in LangGraph to define the state structure.
+        `,
+        code: `from typing import TypedDict
+
+# TypedDict - Just a shape definition
+class State(TypedDict):
+    name: str
+    output: str
+
+# Valid dictionary matching the shape
+state: State = {"name": "Vismay", "output": "Hello!"}
+
+# Normal Class - Creates objects
+class Car:
+    def __init__(self, brand):
+        self.brand = brand`,
       },
     ],
   },
