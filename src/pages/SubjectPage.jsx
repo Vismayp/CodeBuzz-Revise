@@ -16,6 +16,9 @@ import {
   Globe,
   Layout,
   Terminal,
+  Lock,
+  Key,
+  Shield,
 } from "lucide-react";
 import { subjects } from "../data/subjects";
 
@@ -33,6 +36,9 @@ const iconMap = {
   Globe,
   Layout,
   Terminal,
+  Lock,
+  Key,
+  Shield,
 };
 
 const SubjectPage = () => {

@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, Link, useParams } from "react-router-dom";
 import { subjects } from "../data/subjects";
 import {
   BookOpen,
@@ -17,6 +17,11 @@ import {
   Globe,
   Layout,
   Terminal,
+  Lock,
+  Key,
+  Shield,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 
 const iconMap = {
@@ -33,19 +38,21 @@ const iconMap = {
   Globe,
   Layout,
   Terminal,
+  Lock,
+  Key,
+  Shield,
 };
 
 const Sidebar = ({ isOpen = false, onClose }) => {
   const { subjectId } = useParams();
-  const subject = subjects.find((s) => s.id === subjectId);
 
-  if (!subject) {
-    return (
-      <aside
-        className={`sidebar ${isOpen ? "open" : ""}`}
-        aria-label="Sidebar navigation"
-      >
-        <div className="sidebar-header">
+  return (
+    <aside
+      className={`sidebar ${isOpen ? "open" : ""}`}
+      aria-label="Sidebar navigation"
+    >
+      <div className="sidebar-header">
+        <Link to="/" style={{ textDecoration: "none" }}>
           <h1
             style={{
               fontSize: "1.5rem",
@@ -55,52 +62,9 @@ const Sidebar = ({ isOpen = false, onClose }) => {
               WebkitTextFillColor: "transparent",
             }}
           >
-            Revision Guide
+            CodeBuzz
           </h1>
-          <button
-            type="button"
-            className="sidebar-close"
-            onClick={onClose}
-            aria-label="Close navigation"
-          >
-            <X size={18} />
-          </button>
-        </div>
-        <div style={{ padding: "1rem" }}>
-          <p style={{ color: "var(--text-secondary)" }}>
-            Select a subject from the home page to see topics.
-          </p>
-          <NavLink to="/" className="nav-item">
-            Go Home
-          </NavLink>
-        </div>
-      </aside>
-    );
-  }
-
-  const { topics, title } = subject;
-
-  return (
-    <aside
-      className={`sidebar ${isOpen ? "open" : ""}`}
-      aria-label="Sidebar navigation"
-    >
-      <div className="sidebar-header">
-        <h1
-          style={{
-            fontSize: "1.2rem",
-            margin: 0,
-            background: "linear-gradient(to right, #fff, #a1a1aa)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-          title={title}
-        >
-          {title}
-        </h1>
+        </Link>
         <button
           type="button"
           className="sidebar-close"
@@ -110,64 +74,106 @@ const Sidebar = ({ isOpen = false, onClose }) => {
           <X size={18} />
         </button>
       </div>
+
       <nav style={{ flex: 1, overflowY: "auto", padding: "1rem 0" }}>
-        <NavLink to="/" className="nav-item" style={{ marginBottom: "1rem" }}>
-          ← Back to Subjects
-        </NavLink>
-        {topics.map((topic) => {
-          const Icon = iconMap[topic.icon] || Box;
+        {subjects.map((subj) => {
+          const isActiveSubject = subj.id === subjectId;
+          const SubjIcon = iconMap[subj.icon] || Box;
+
           return (
-            <div key={topic.id} style={{ marginBottom: "1.5rem" }}>
-              <div
+            <div key={subj.id} style={{ marginBottom: "0.5rem" }}>
+              {/* Subject Header / Link */}
+              <NavLink
+                to={`/${subj.id}`}
+                className={({ isActive }) =>
+                  `nav-item ${isActive ? "active" : ""}`
+                }
                 style={{
-                  padding: "0 1rem 0.5rem",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  color: "var(--text-primary)",
+                  justifyContent: "space-between",
                   fontWeight: 600,
+                  color: isActiveSubject ? "var(--accent)" : "var(--text-primary)",
                 }}
               >
-                <Icon
-                  size={18}
-                  className="text-accent"
-                  style={{ color: "var(--accent)" }}
-                />
-                {topic.title}
-              </div>
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                {topic.sections.map((section) => (
-                  <NavLink
-                    key={section.id}
-                    to={`/${subjectId}/topic/${topic.id}/${section.id}`}
-                    className={({ isActive }) =>
-                      `nav-item ${isActive ? "active" : ""}`
-                    }
-                    style={{ paddingLeft: "2.5rem" }}
-                  >
-                    {section.title}
-                  </NavLink>
-                ))}
-              </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <SubjIcon size={20} />
+                  <span>{subj.title}</span>
+                </div>
+                {isActiveSubject ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </NavLink>
+
+              {/* Topics List (Only if active) */}
+              {isActiveSubject && (
+                <div style={{ 
+                  marginLeft: "1rem", 
+                  borderLeft: "1px solid var(--border)",
+                  marginBottom: "1rem",
+                  paddingLeft: "0.5rem"
+                }}>
+                  {subj.topics.map((topic) => {
+                    const TopicIcon = iconMap[topic.icon] || Box;
+                    return (
+                      <div key={topic.id} style={{ marginTop: "1rem" }}>
+                        <div
+                          style={{
+                            padding: "0.25rem 0.5rem",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            color: "var(--text-secondary)",
+                            fontSize: "0.85rem",
+                            textTransform: "uppercase",
+                            letterSpacing: "0.05em",
+                            fontWeight: 600,
+                          }}
+                        >
+                          <TopicIcon size={14} />
+                          {topic.title}
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", marginTop: "0.25rem" }}>
+                          {topic.sections.map((section) => (
+                            <NavLink
+                              key={section.id}
+                              to={`/${subj.id}/topic/${topic.id}/${section.id}`}
+                              className={({ isActive }) =>
+                                `nav-item ${isActive ? "active" : ""}`
+                              }
+                              style={{ 
+                                padding: "0.4rem 0.5rem 0.4rem 2rem", 
+                                fontSize: "0.95rem",
+                                borderLeft: "none"
+                              }}
+                            >
+                              {section.title}
+                            </NavLink>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}
 
-        {subjectId === "javascript" && (
-          <div
-            style={{ borderTop: "1px solid var(--border)", paddingTop: "1rem" }}
+        {/* Global Links */}
+        <div
+          style={{
+            borderTop: "1px solid var(--border)",
+            margin: "1rem 1rem 0",
+            paddingTop: "1rem",
+          }}
+        >
+          <NavLink
+            to="/interview"
+            className={({ isActive }) =>
+              `nav-item ${isActive ? "active" : ""}`
+            }
           >
-            <NavLink
-              to="/interview"
-              className={({ isActive }) =>
-                `nav-item ${isActive ? "active" : ""}`
-              }
-            >
-              <HelpCircle size={18} style={{ color: "var(--accent)" }} />
-              Interview Q&A
-            </NavLink>
-          </div>
-        )}
+            <HelpCircle size={18} style={{ color: "var(--accent)" }} />
+            Interview Q&A
+          </NavLink>
+        </div>
       </nav>
     </aside>
   );

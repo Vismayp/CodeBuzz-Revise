@@ -4,6 +4,8 @@ import { subjects } from "../data/subjects";
 import CodeBlock from "../components/CodeBlock";
 import MermaidDiagram from "../components/MermaidDiagram";
 import { motion } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const TopicPage = () => {
   const { subjectId, topicId, sectionId } = useParams();
@@ -16,86 +18,6 @@ const TopicPage = () => {
     return (
       <div style={{ padding: "2rem" }}>Select a topic from the sidebar.</div>
     );
-
-  const parseContent = (text) => {
-    return text.split("\n").map((line, i) => {
-      // Headers
-      if (line.startsWith("### "))
-        return <h3 key={i}>{line.replace("### ", "")}</h3>;
-      if (line.startsWith("#### "))
-        return (
-          <h4
-            key={i}
-            style={{ marginTop: "1rem", color: "var(--text-primary)" }}
-          >
-            {line.replace("#### ", "")}
-          </h4>
-        );
-
-      // List items
-      const trimmed = line.trim();
-      if (trimmed.match(/^\d+\. /)) {
-        // Ordered list
-        const number = trimmed.match(/^(\d+)\. /)[1];
-        return (
-          <div
-            key={i}
-            style={{
-              marginLeft: "1.5rem",
-              marginBottom: "0.5rem",
-              color: "var(--text-secondary)",
-            }}
-          >
-            {number}.{" "}
-            <span
-              dangerouslySetInnerHTML={createMarkup(
-                trimmed.replace(/^\d+\. /, "")
-              )}
-            />
-          </div>
-        );
-      } else if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
-        // Unordered list
-        return (
-          <div
-            key={i}
-            style={{
-              marginLeft: "1.5rem",
-              marginBottom: "0.5rem",
-              color: "var(--text-secondary)",
-            }}
-          >
-            •{" "}
-            <span
-              dangerouslySetInnerHTML={createMarkup(
-                trimmed.replace(/^[-*] /, "")
-              )}
-            />
-          </div>
-        );
-      }
-
-      // Empty lines
-      if (line.trim() === "")
-        return <div key={i} style={{ height: "0.8rem" }} />;
-
-      // Paragraphs
-      return <p key={i} dangerouslySetInnerHTML={createMarkup(line)} />;
-    });
-  };
-
-  const createMarkup = (text) => {
-    const html = text
-      .replace(
-        /\*\*(.*?)\*\*/g,
-        '<strong style="color: var(--text-primary)">$1</strong>'
-      )
-      .replace(
-        /`(.*?)`/g,
-        '<code style="background:var(--bg-hover); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: var(--font-mono); font-size: 0.9em; color: var(--accent)">$1</code>'
-      );
-    return { __html: html };
-  };
 
   return (
     <motion.div
@@ -134,7 +56,67 @@ const TopicPage = () => {
 
       {/* Main Description */}
       <div className="card" style={{ lineHeight: "1.7" }}>
-        {parseContent(section.content)}
+        <ReactMarkdown 
+          remarkPlugins={[remarkGfm]}
+          components={{
+            table: ({node, ...props}) => (
+              <div style={{ overflowX: "auto", margin: "1.5rem 0" }}>
+                <table style={{ 
+                  width: "100%", 
+                  borderCollapse: "collapse", 
+                  fontSize: "0.95rem",
+                  color: "var(--text-secondary)"
+                }} {...props} />
+              </div>
+            ),
+            thead: ({node, ...props}) => (
+              <thead style={{ background: "var(--bg-hover)" }} {...props} />
+            ),
+            th: ({node, ...props}) => (
+              <th style={{ 
+                padding: "0.75rem 1rem", 
+                border: "1px solid var(--border)", 
+                textAlign: "left",
+                color: "var(--text-primary)",
+                fontWeight: 600
+              }} {...props} />
+            ),
+            td: ({node, ...props}) => (
+              <td style={{ 
+                padding: "0.75rem 1rem", 
+                border: "1px solid var(--border)" 
+              }} {...props} />
+            ),
+            ul: ({node, ...props}) => (
+              <ul style={{ paddingLeft: "1.5rem", marginBottom: "1rem" }} {...props} />
+            ),
+            ol: ({node, ...props}) => (
+              <ol style={{ paddingLeft: "1.5rem", marginBottom: "1rem" }} {...props} />
+            ),
+            li: ({node, ...props}) => (
+              <li style={{ marginBottom: "0.25rem" }} {...props} />
+            ),
+            code({node, inline, className, children, ...props}) {
+              const match = /language-(\w+)/.exec(className || '')
+              return !inline && match ? (
+                <CodeBlock code={String(children).replace(/\n$/, '')} language={match[1]} />
+              ) : (
+                <code className={className} style={{
+                    background: "var(--bg-hover)",
+                    padding: "0.2rem 0.4rem",
+                    borderRadius: "4px",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: "0.9em",
+                    color: "var(--accent)"
+                }} {...props}>
+                  {children}
+                </code>
+              )
+            }
+          }}
+        >
+          {section.content}
+        </ReactMarkdown>
       </div>
 
       {/* Visual Diagram */}

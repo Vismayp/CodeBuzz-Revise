@@ -238,31 +238,104 @@ class ChatGPTParser:
 
         :root {
             --bg-color: #ffffff;
+            --container-bg: #ffffff;
             --text-color: #1a1a1a;
+            --heading-color: #111827;
             --user-label-color: #2563eb;
             --llm-label-color: #059669;
             --border-color: #e5e7eb;
             --code-bg: #f8fafc;
-            --quote-bg: #f1f5f9;
+            --code-header-bg: #e2e8f0;
+            --code-text: #475569;
+            --quote-bg: #f8fafc;
+            --quote-border: #e2e8f0;
+            --quote-text: #334155;
+            --timestamp-color: #9ca3af;
             --max-width: 850px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #0f172a;
+                --container-bg: #1e293b;
+                --text-color: #f1f5f9;
+                --heading-color: #f8fafc;
+                --user-label-color: #60a5fa;
+                --llm-label-color: #34d399;
+                --border-color: #334155;
+                --code-bg: #0f172a;
+                --code-header-bg: #1e293b;
+                --code-text: #94a3b8;
+                --quote-bg: #1e293b;
+                --quote-border: #334155;
+                --quote-text: #cbd5e1;
+                --timestamp-color: #64748b;
+            }
+        }
+
+        body.dark-mode {
+            --bg-color: #0f172a;
+            --container-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --heading-color: #f8fafc;
+            --user-label-color: #60a5fa;
+            --llm-label-color: #34d399;
+            --border-color: #334155;
+            --code-bg: #0f172a;
+            --code-header-bg: #1e293b;
+            --code-text: #94a3b8;
+            --quote-bg: #1e293b;
+            --quote-border: #334155;
+            --quote-text: #cbd5e1;
+            --timestamp-color: #64748b;
         }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             line-height: 1.6;
             color: var(--text-color);
-            background-color: #f3f4f6;
+            background-color: var(--bg-color);
             margin: 0;
             padding: 40px 20px;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container {
             max-width: var(--max-width);
             margin: 0 auto;
-            background: var(--bg-color);
+            background: var(--container-bg);
             padding: 60px;
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .btn {
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--border-color);
         }
 
         header {
@@ -271,9 +344,9 @@ class ChatGPTParser:
             padding-bottom: 20px;
         }
 
-        h1 { font-size: 2.25rem; font-weight: 700; margin: 0 0 1.5rem 0; color: #111827; }
-        h2 { font-size: 1.5rem; font-weight: 600; margin: 2.5rem 0 1.25rem 0; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
-        h3 { font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 0.75rem 0; }
+        h1 { font-size: 2.25rem; font-weight: 700; margin: 0 0 1.5rem 0; color: var(--heading-color); }
+        h2 { font-size: 1.5rem; font-weight: 600; margin: 2.5rem 0 1.25rem 0; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; color: var(--heading-color); }
+        h3 { font-size: 1.25rem; font-weight: 600; margin: 1.5rem 0 0.75rem 0; color: var(--heading-color); }
 
         .message {
             margin-bottom: 48px;
@@ -308,11 +381,11 @@ class ChatGPTParser:
         }
 
         .code-header {
-            background: #e2e8f0;
+            background: var(--code-header-bg);
             padding: 4px 12px;
             font-size: 0.75rem;
             font-family: 'JetBrains Mono', monospace;
-            color: #475569;
+            color: var(--code-text);
             text-transform: uppercase;
         }
 
@@ -325,9 +398,10 @@ class ChatGPTParser:
         code {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.9rem;
-            background: #f1f5f9;
+            background: var(--code-bg);
             padding: 2px 4px;
             border-radius: 4px;
+            color: var(--text-color);
         }
 
         pre code {
@@ -340,13 +414,13 @@ class ChatGPTParser:
         }
 
         .quote-item {
-            background: #f8fafc;
+            background: var(--quote-bg);
             padding: 12px 20px;
             margin-bottom: 8px;
             border-radius: 6px;
-            border-left: 4px solid #e2e8f0;
+            border-left: 4px solid var(--quote-border);
             font-style: italic;
-            color: #334155;
+            color: var(--quote-text);
             font-size: 0.95rem;
             line-height: 1.5;
         }
@@ -367,20 +441,20 @@ class ChatGPTParser:
 
         .image-caption {
             font-size: 0.8rem;
-            color: #64748b;
+            color: var(--timestamp-color);
             margin-top: 8px;
         }
 
         .image-placeholder {
-            background: #f8fafc;
-            border: 2px dashed #cbd5e1;
+            background: var(--code-bg);
+            border: 2px dashed var(--border-color);
             padding: 24px;
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 16px;
-            color: #475569;
+            color: var(--code-text);
             margin: 1.5rem 0;
             font-size: 0.9rem;
         }
@@ -396,12 +470,12 @@ class ChatGPTParser:
         }
 
         .image-placeholder .placeholder-text strong {
-            color: #1e293b;
+            color: var(--heading-color);
             font-size: 0.95rem;
         }
 
         .image-placeholder .placeholder-text small {
-            color: #64748b;
+            color: var(--timestamp-color);
             font-size: 0.85rem;
         }
 
@@ -413,8 +487,8 @@ class ChatGPTParser:
         }
 
         .gallery-item {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -436,11 +510,11 @@ class ChatGPTParser:
         .gallery-item .image-caption {
             padding: 12px;
             font-size: 0.85rem;
-            background: #f9fafb;
+            background: var(--code-bg);
         }
 
         .gallery-item .image-caption a {
-            color: #2563eb;
+            color: var(--user-label-color);
             text-decoration: none;
             word-break: break-word;
         }
@@ -461,7 +535,7 @@ class ChatGPTParser:
             text-align: left;
         }
 
-        th { background: #f8fafc; font-weight: 600; }
+        th { background: var(--code-bg); font-weight: 600; color: var(--heading-color); }
 
         hr {
             border: 0;
@@ -474,9 +548,16 @@ class ChatGPTParser:
 
         .timestamp {
             font-size: 0.75rem;
-            color: #9ca3af;
+            color: var(--timestamp-color);
             margin-top: 8px;
             display: block;
+        }
+
+        @media print {
+            .controls { display: none; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; width: 100%; max-width: none; padding: 0; }
+            .message { page-break-inside: avoid; }
         }
 
         @media (max-width: 640px) {
@@ -494,6 +575,14 @@ class ChatGPTParser:
     <style>{css}</style>
 </head>
 <body>
+    <div class="controls">
+        <button class="btn" onclick="toggleTheme()" title="Toggle Dark Mode">
+            <span id="theme-icon">🌙</span>
+        </button>
+        <button class="btn" onclick="window.print()" title="Export as PDF">
+            <span>📄</span> Export PDF
+        </button>
+    </div>
     <div class="container">
         <header>
             <h1>{title}</h1>
@@ -519,6 +608,28 @@ class ChatGPTParser:
         html += """
         </main>
     </div>
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                icon.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                icon.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Load saved theme
+        if (localStorage.getItem('theme') === 'dark' || 
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.body.classList.add('dark-mode');
+            document.getElementById('theme-icon').textContent = '☀️';
+        }
+    </script>
 </body>
 </html>
 """

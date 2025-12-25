@@ -173,19 +173,47 @@ ES6 (ECMAScript 2015) introduced significant features that changed how we write 
 2. **Arrow Functions**: Concise syntax and lexical \`this\`.
 3. **Template Literals**: String interpolation with backticks.
 4. **Destructuring**: Extracting values from arrays/objects.
-5. **Spread & Rest**: \`...\` operator for expanding or gathering elements.
-6. **Classes**: Syntactic sugar over prototypal inheritance.
+5. **Classes**: Syntactic sugar over prototypal inheritance.
+
+### Spread & Rest Operators (\`...\`)
+The \`...\` syntax can be used in two different ways depending on context:
+
+#### 1. Spread Operator (Expand)
+Expands an iterable (like an array) into individual elements.
+
+**Use Cases**:
+- **Merging Arrays**: \`[...arr1, ...arr2]\`
+- **Cloning Arrays/Objects**: \`const copy = [...arr]\` (Shallow copy)
+- **Passing Arguments**: \`Math.max(...numbers)\`
+
+#### 2. Rest Operator (Gather)
+Collects multiple elements and "condenses" them into a single array element. It must be the **last** element.
+
+**Use Cases**:
+- **Function Arguments**: \`function sum(...args) { }\`
+- **Destructuring**: \`const [first, ...rest] = [1, 2, 3]\`
         `,
-        code: `// Destructuring
-const user = { name: "John", age: 30 };
-const { name, age } = user;
+        code: `// --- SPREAD ---
+const parts = ['shoulders', 'knees'];
+const lyrics = ['head', ...parts, 'and', 'toes'];
+console.log(lyrics); 
+// ["head", "shoulders", "knees", "and", "toes"]
 
-// Spread
-const arr1 = [1, 2];
-const arr2 = [...arr1, 3, 4]; // [1, 2, 3, 4]
+const obj1 = { foo: 'bar', x: 42 };
+const obj2 = { foo: 'baz', y: 13 };
+const merged = { ...obj1, ...obj2 };
+console.log(merged); 
+// { foo: "baz", x: 42, y: 13 } (Last key wins)
 
-// Arrow Function
-const add = (a, b) => a + b;`,
+// --- REST ---
+function sum(...numbers) {
+  return numbers.reduce((total, n) => total + n, 0);
+}
+console.log(sum(1, 2, 3)); // 6
+
+const [first, ...others] = [1, 2, 3, 4];
+console.log(first); // 1
+console.log(others); // [2, 3, 4]`,
       },
     ],
   },
