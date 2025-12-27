@@ -209,8 +209,55 @@ sum_all = reduce(lambda x, y: x + y, nums)`,
     icon: "Box",
     sections: [
       {
+        id: "classes-objects",
+        title: "Classes & Objects",
+        content: `
+Think of a **Class** as a **blueprint**, and an **Object** as a **thing created from that blueprint**.
+
+### Real-life analogy:
+| Real World | Python |
+|-----------|--------|
+| Blueprint of a Car | Class |
+| A specific car (red BMW) | Object |
+| Properties (color, model) | Attributes |
+| Behaviors (drive, stop) | Methods |
+        `,
+        code: `class Car:
+    def __init__(self, brand, color):
+        self.brand = brand  # Attribute
+        self.color = color
+
+    def drive(self):
+        return f"{self.brand} is driving!"
+
+# Creating Objects
+car1 = Car("BMW", "Red")
+car2 = Car("Tesla", "White")
+
+print(car1.drive()) # BMW is driving!`,
+      },
+      {
+        id: "class-vs-instance",
+        title: "Class vs Instance Attributes",
+        content: `
+- **Instance Attribute**: Belongs to each object separately (defined in \`__init__\`).
+- **Class Attribute**: Shared by all objects of the class.
+        `,
+        code: `class Dog:
+    species = "Canine"  # Class attribute
+
+    def __init__(self, name):
+        self.name = name  # Instance attribute
+
+dog1 = Dog("Buddy")
+dog2 = Dog("Max")
+
+print(dog1.species) # Canine
+print(dog2.species) # Canine`,
+      },
+      {
         id: "classes-inheritance",
-        title: "Classes & Inheritance",
+        title: "Inheritance",
         content: "Defining blueprints for objects and inheriting behavior.",
         code: `class Animal:
     def __init__(self, name):
@@ -483,6 +530,14 @@ from typing import List, Dict, Optional
 
 # Alias import
 import pandas as pd`,
+        diagram: `flowchart LR
+    A[Your file: app.py] -->|from datetime import datetime| B[datetime module]
+    A -->|import os| C[os module]
+    A -->|import pandas as pd| D[pandas package]
+    style A fill:#ccf,stroke:#333,stroke-width:2px
+    style B fill:#efe,stroke:#333
+    style C fill:#efe,stroke:#333
+    style D fill:#efe,stroke:#333`,
       },
       {
         id: "packages-modules",
@@ -504,6 +559,62 @@ Used to mark a directory as a Python package. It can also be used to **re-export
 
 # User can then do:
 from my_package import MyModel`,
+        diagram: `flowchart TB
+    P[my_package/ (package folder)] --> I[__init__.py]
+    P --> M[models.py]
+    I -->|from .models import MyModel| X[Re-export: MyModel]
+    U[Your code] -->|from my_package import MyModel| X
+    style P fill:#efe,stroke:#333
+    style U fill:#ccf,stroke:#333,stroke-width:2px`,
+      },
+      {
+        id: "direct-import-from-package",
+        title: "How `from package import Class` Works",
+        content: `
+When you write:
+
+\`from some_package import SomeClass\`
+
+Python:
+1. Finds the installed package \`some_package\`
+2. Loads \`some_package/__init__.py\`
+3. Imports \`SomeClass\` **if it is defined or re-exported** there
+
+This is why many libraries expose a *clean public API* at the package root, even if the real class lives in a sub-module.
+        `,
+        code: `# Example package layout:
+# some_package/
+#   __init__.py
+#   chat_models.py
+
+# chat_models.py
+class SomeClass:
+    ...
+
+# __init__.py (re-export)
+from .chat_models import SomeClass
+
+# Your code can now do:
+from some_package import SomeClass
+
+# Alternative (longer import path):
+from some_package.chat_models import SomeClass`,
+      },
+      {
+        id: "how-python-finds-imports",
+        title: "How Python Finds What to Import",
+        content: `
+Python resolves imports by searching directories in **\`sys.path\`** (your script folder, installed site-packages, etc.).
+
+If a name can't be found on that search path, you get **\`ModuleNotFoundError\`**.
+        `,
+        code: `import sys
+
+for p in sys.path:
+    print(p)
+
+# Tip: the folder containing your running script
+# is usually at/near the top of sys.path`,
       },
     ],
   },
@@ -555,6 +666,12 @@ print(car1.drive()) # BMW is driving!`,
 **Class**: Creates objects with behavior (methods) and data. Used for OOP.
 **TypedDict**: Describes the **shape** of a dictionary (for type checking only). Does NOT create objects or have methods.
 
+### One-line difference
+- **class** → runtime objects + behavior
+- **TypedDict** → type hints for dict keys (editor/type-checker help)
+
+At runtime, a \`TypedDict\` value is still just a normal \`dict\`.
+
 **TypedDict** is often used in LangGraph to define the state structure.
         `,
         code: `from typing import TypedDict
@@ -571,6 +688,15 @@ state: State = {"name": "Vismay", "output": "Hello!"}
 class Car:
     def __init__(self, brand):
         self.brand = brand`,
+        diagram: `flowchart LR
+    A[Class] -->|creates| B[Object instances]
+    C[TypedDict] -->|describes| D[dict shape]
+    B --> E[Methods + attributes]
+    D --> F[Keys + value types]
+    style A fill:#efe,stroke:#333
+    style C fill:#efe,stroke:#333
+    style B fill:#ccf,stroke:#333,stroke-width:2px
+    style D fill:#ccf,stroke:#333,stroke-width:2px`,
       },
     ],
   },

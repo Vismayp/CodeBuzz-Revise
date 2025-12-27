@@ -164,7 +164,7 @@ RAG involves retrieving relevant documents and passing them to the LLM as contex
 5.  **Retrieve**: Find relevant chunks.
 6.  **Generate**: LLM answers using context.
         `,
-        mermaid: `graph LR
+  diagram: `graph LR
     A[Documents] --> B[Splitter]
     B --> C[Embeddings]
     C --> D[(Vector Store)]
@@ -227,7 +227,7 @@ An agent uses an LLM to reason about which actions to take and in what order. An
 
 **ReAct (Reason + Act)** is a popular prompting technique for agents.
         `,
-        mermaid: `sequenceDiagram
+  diagram: `sequenceDiagram
     participant User
     participant Agent
     participant Tool
@@ -296,7 +296,7 @@ graph = graph_builder.compile()`,
         content: `
 Conditional edges allow dynamic routing based on the state.
         `,
-        mermaid: `graph TD
+        diagram: `graph TD
     Start --> Agent
     Agent --> Check{Should Continue?}
     Check -- Yes --> Tools
@@ -476,7 +476,22 @@ graph.set_entry_point("decide")`,
         title: "Building Loops",
         content:
           "LangGraph allows loops easily. Example: LLM → tool → LLM until 'done'.",
-        code: `graph.add_edge("agent", "tool")
+        code: `from langgraph.graph import MessageGraph
+
+def agent_node(messages):
+    msg = agent.invoke(messages)
+    return messages + [msg]
+
+def tool_node(messages):
+    last = messages[-1].content
+    return messages + [{"role": "tool", "content": f"Tool result for {last}"}]
+
+graph = MessageGraph()
+graph.add_node("agent", agent_node)
+graph.add_node("tool", tool_node)
+
+# The Loop
+graph.add_edge("agent", "tool")
 graph.add_edge("tool", "agent")`,
       },
       {
