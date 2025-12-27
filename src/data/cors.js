@@ -134,4 +134,55 @@ app.use(cors({
       },
     ],
   },
+  {
+    id: "waf-fundamentals",
+    title: "Web Application Firewall (WAF)",
+    description: "Protecting web applications from common attacks.",
+    icon: "Shield",
+    sections: [
+      {
+        id: "what-is-waf",
+        title: "What is a WAF?",
+        content: `
+A **Web Application Firewall (WAF)** is a security solution that filters, monitors, and blocks HTTP traffic to and from a web application. 
+
+Unlike a traditional firewall that acts as a safety barrier between servers, a WAF is focused on **Layer 7 (Application Layer)** traffic.
+
+### Key Functions:
+1. **Protection against OWASP Top 10**: Blocks SQL Injection, Cross-Site Scripting (XSS), and other common vulnerabilities.
+2. **Bot Mitigation**: Identifies and blocks malicious bots while allowing search engine crawlers.
+3. **DDoS Protection**: Helps mitigate application-layer DDoS attacks.
+4. **Virtual Patching**: Quickly blocks new vulnerabilities before the application code is updated.
+        `,
+        diagram: `
+graph LR
+    U[Users/Internet] -- "HTTP Traffic" --> W[WAF]
+    W -- "Filtered Traffic" --> S[Web Server]
+    W -- "Blocked Attack" --> X[Log/Drop]
+    style W fill:#f96,stroke:#333,stroke-width:4px
+        `,
+      },
+      {
+        id: "waf-vs-firewall",
+        title: "WAF vs. Network Firewall",
+        content: `
+| Feature | Network Firewall | WAF |
+|---------|------------------|-----|
+| **OSI Layer** | Layer 3 & 4 (Network/Transport) | Layer 7 (Application) |
+| **Focus** | IP addresses, Ports, Protocols | HTTP/HTTPS traffic, Payloads |
+| **Protection** | Unauthorized access to network | SQLi, XSS, Session Hijacking |
+| **Example** | Blocking Port 22 (SSH) | Blocking \`OR 1=1\` in a URL |
+        `,
+      },
+      {
+        id: "waf-deployment",
+        title: "Deployment Models",
+        content: `
+1. **Cloud-based**: (e.g., AWS WAF, Cloudflare, Akamai). Easy to deploy, managed by the provider.
+2. **On-premises**: Hardware or software installed locally. Full control but higher maintenance.
+3. **Host-based**: Integrated into the application server (e.g., ModSecurity for Apache/Nginx).
+        `,
+      },
+    ],
+  },
 ];

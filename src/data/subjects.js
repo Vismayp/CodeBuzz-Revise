@@ -86,9 +86,9 @@ export const subjects = [
   },
   {
     id: "cors",
-    title: "Browser Security (CORS)",
+    title: "Web Security (CORS & WAF)",
     description:
-      "Master Cross-Origin Resource Sharing and web security fundamentals.",
+      "Master Cross-Origin Resource Sharing, Web Application Firewalls, and web security fundamentals.",
     icon: ShieldCheck,
     color: "from-cyan-500 to-blue-600",
     topics: corsTopics,
