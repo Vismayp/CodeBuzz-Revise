@@ -432,24 +432,24 @@ doSomething("hello"); // TS knows this returns a number`,
       {
         id: "keyof-typeof",
         title: "Keyof & Typeof Operators",
-        content: \`
-**\`keyof\`**: Extracts the keys of an object type as a union of string literals.
-**\`typeof\`**: Captures the type of an existing variable or object.
-        \`,
-        code: \`type User = { id: number; name: string; };
+        content: `
+**keyof**: Extracts the keys of an object type as a union of string literals.
+**typeof**: Captures the type of an existing variable or object.
+        `,
+        code: `type User = { id: number; name: string; };
 type UserKeys = keyof User; // "id" | "name"
 
 const config = { port: 3000, host: "localhost" };
-type Config = typeof config; // { port: number; host: string; }\`,
+type Config = typeof config; // { port: number; host: string; }`,
       },
       {
         id: "mapped-types",
         title: "Mapped Types",
-        content: \`
+        content: `
 **Mapped Types** allow you to create new types by iterating over keys of an existing type.
-Syntax: \`{ [P in K]: T }\`
-        \`,
-        code: \`type Options = {
+Syntax: { [P in K]: T }
+        `,
+        code: `type Options = {
   darkMode: boolean;
   saveData: boolean;
 };
@@ -460,70 +460,71 @@ type ReadonlyBools<T> = {
 };
 
 type Config = ReadonlyBools<Options>;
-// { readonly darkMode: boolean; readonly saveData: boolean; }\`,
+// { readonly darkMode: boolean; readonly saveData: boolean; }`,
       },
       {
         id: "conditional-types",
         title: "Conditional Types",
-        content: \`
+        content: `
 **Conditional Types** select one of two types based on a condition.
-Syntax: \`T extends U ? X : Y\`
-        \`,
-        code: \`type IsString<T> = T extends string ? "Yes" : "No";
+Syntax: T extends U ? X : Y
+        `,
+        code: `type IsString<T> = T extends string ? "Yes" : "No";
 
 type A = IsString<string>; // "Yes"
 type B = IsString<number>; // "No"
 
 // Extract type from Promise
 type Unpack<T> = T extends Promise<infer U> ? U : T;
-type Result = Unpack<Promise<string>>; // string\`,
+type Result = Unpack<Promise<string>>; // string`,
       },
       {
         id: "template-literal-types",
         title: "Template Literal Types",
-        content: \`
+        content: `
 Build types using string literal syntax. Useful for defining patterns.
-        \`,
-        code: \`type Color = "red" | "blue";
+        `,
+        code: `type Color = "red" | "blue";
 type Quantity = "one" | "two";
 
-type Item = \\\`\\\${Quantity}-\\\${Color}\\\`;
-// "one-red" | "one-blue" | "two-red" | "two-blue"\`,
+type Item = \`\${Quantity}-\${Color}\`;
+// "one-red" | "one-blue" | "two-red" | "two-blue"`,
       },
     ],
   },
   {
     id: "ts-decorators",
     title: "Decorators",
-    description: "Meta-programming with Class, Method, and Property decorators.",
+    description:
+      "Meta-programming with Class, Method, and Property decorators.",
     icon: "Stamp",
     sections: [
       {
         id: "decorators-intro",
         title: "Decorators Overview",
-        content: \`
+        content: `
 Decorators provide a way to add annotations and a meta-programming syntax for class declarations and members.
-*Requires \`experimentalDecorators: true\` in \`tsconfig.json\`.*
-        \`,
-        code: \`function Logger(target: Function) {
+*Requires experimentalDecorators: true in tsconfig.json.*
+        `,
+        code: `function Logger(target: Function) {
   console.log("Class loaded:", target.name);
 }
 
 @Logger
 class User {
-  constructor() {}\
-}\`,
+  constructor() {}
+}`,
       },
       {
         id: "method-decorators",
         title: "Method Decorators",
-        content: \`
+        content: `
 Applied to the Property Descriptor for the method. Can be used to observe, modify, or replace a method definition.
-        \`,
-        code: \`function Log(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        `,
+        code: `function Log(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
   const original = descriptor.value;
   descriptor.value = function (...args: any[]) {
-    console.log(\\\`Calling \\\${propertyKey} with\\\`, args);
+    console.log(\`Calling \${propertyKey} with\`, args);
     return original.apply(this, args);
   };
 }
@@ -533,7 +534,7 @@ class Calculator {
   add(a: number, b: number) {
     return a + b;
   }
-}\`,
+}`,
       },
     ],
   },
@@ -546,12 +547,12 @@ class Calculator {
       {
         id: "modules-vs-namespaces",
         title: "Modules vs Namespaces",
-        content: \`
-**Modules (ESM)**: The modern standard. File-based scope. Use \`import\` and \`export\`.
+        content: `
+**Modules (ESM)**: The modern standard. File-based scope. Use import and export.
 **Namespaces**: TypeScript-specific internal modules. Used to group code globally.
-**Recommendation**: Always use **Modules** for modern application development. Use Namespaces only for legacy code or complex type definitions (\`.d.ts\`).
-        \`,
-        code: \`// Module (Recommended)
+**Recommendation**: Always use **Modules** for modern application development. Use Namespaces only for legacy code or complex type definitions (.d.ts).
+        `,
+        code: `// Module (Recommended)
 // math.ts
 export function add(x: number, y: number) { return x + y; }
 // app.ts
@@ -562,7 +563,7 @@ namespace MathUtils {
     export function subtract(x: number, y: number) { return x - y; }
 }
 /// <reference path="MathUtils.ts" />
-MathUtils.subtract(10, 5);\`,
+MathUtils.subtract(10, 5);`,
       },
     ],
   },
@@ -575,14 +576,14 @@ MathUtils.subtract(10, 5);\`,
       {
         id: "tsconfig-deep-dive",
         title: "tsconfig.json Deep Dive",
-        content: \`
-The \`tsconfig.json\` file controls how TypeScript compiles your code.
+        content: `
+The tsconfig.json file controls how TypeScript compiles your code.
 *   **target**: JS version to output (e.g., "ES6", "ES2020").
 *   **module**: Module system (e.g., "CommonJS", "ESNext").
 *   **strict**: Enables all strict type-checking options.
 *   **outDir**: Where to place compiled files.
-        \`,
-        code: \`{
+        `,
+        code: `{
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
@@ -593,7 +594,7 @@ The \`tsconfig.json\` file controls how TypeScript compiles your code.
       "@components/*": ["components/*"]
     }
   }
-}\`,
+}`,
       },
     ],
   },
@@ -606,10 +607,10 @@ The \`tsconfig.json\` file controls how TypeScript compiles your code.
       {
         id: "satisfies-operator",
         title: "The 'satisfies' Operator",
-        content: \`
+        content: `
 Validates that an expression matches a type, **without** widening the type of the expression.
-        \`,
-        code: \`type Colors = "red" | "green" | "blue";
+        `,
+        code: `type Colors = "red" | "green" | "blue";
 type RGB = [number, number, number];
 
 const palette = {
@@ -620,25 +621,25 @@ const palette = {
 
 // TS knows 'red' is an array, and 'green' is a string!
 palette.red.map(x => x * 2); // OK
-palette.green.toUpperCase(); // OK\`,
+palette.green.toUpperCase(); // OK`,
       },
       {
         id: "const-assertions",
         title: "Const Assertions",
-        content: \`
-**\`as const\`**: Tells TS that the expression is immutable.
+        content: `
+**as const**: Tells TS that the expression is immutable.
 1.  Primitives become literal types.
-2.  Arrays become \`readonly\` tuples.
-3.  Objects get \`readonly\` properties.
-        \`,
-        code: \`const config = {
+2.  Arrays become readonly tuples.
+3.  Objects get readonly properties.
+        `,
+        code: `const config = {
     endpoint: "https://api.example.com",
     retries: 3
 } as const;
 
 // config.endpoint is type "https://api.example.com" (not string)
 // config.retries is type 3 (not number)
-// config.retries = 4; // Error\`,
+// config.retries = 4; // Error`,
       },
     ],
   },
