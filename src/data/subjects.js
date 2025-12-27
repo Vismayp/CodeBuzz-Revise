@@ -40,7 +40,8 @@ export const subjects = [
     color: "from-blue-500 to-blue-700",
     topics: tsTopics,
   },
-  {redis",
+  {
+    id: "redis",
     title: "Redis",
     description:
       "In-memory data structure store, used as a database, cache, and message broker.",
@@ -49,7 +50,6 @@ export const subjects = [
     topics: redisTopics,
   },
   {
-    id: "
     id: "python",
     title: "Python Masterclass",
     description:
