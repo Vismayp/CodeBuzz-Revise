@@ -522,6 +522,15 @@ sessionStorage.setItem("sessionID", "12345");
 // Cookies
 document.cookie = "user=John; expires=Fri, 31 Dec 2024 23:59:59 GMT";`,
       },
+      {
+        id: "cors-intro",
+        title: "CORS & Security",
+        content: `
+**CORS (Cross-Origin Resource Sharing)** is a critical browser security feature. It prevents malicious websites from making unauthorized requests to other domains.
+
+For a deep dive into CORS, Preflight requests, and Same-Origin Policy, check out the dedicated **Browser Security (CORS)** deck.
+        `,
+      },
     ],
   },
   {

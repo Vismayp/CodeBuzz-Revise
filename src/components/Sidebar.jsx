@@ -20,6 +20,8 @@ import {
   Lock,
   Key,
   Shield,
+  ShieldCheck,
+  List,
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
@@ -41,6 +43,8 @@ const iconMap = {
   Lock,
   Key,
   Shield,
+  ShieldCheck,
+  List,
 };
 
 const Sidebar = ({ isOpen = false, onClose }) => {
@@ -91,24 +95,38 @@ const Sidebar = ({ isOpen = false, onClose }) => {
                 style={{
                   justifyContent: "space-between",
                   fontWeight: 600,
-                  color: isActiveSubject ? "var(--accent)" : "var(--text-primary)",
+                  color: isActiveSubject
+                    ? "var(--accent)"
+                    : "var(--text-primary)",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.75rem",
+                  }}
+                >
                   <SubjIcon size={20} />
                   <span>{subj.title}</span>
                 </div>
-                {isActiveSubject ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                {isActiveSubject ? (
+                  <ChevronDown size={16} />
+                ) : (
+                  <ChevronRight size={16} />
+                )}
               </NavLink>
 
               {/* Topics List (Only if active) */}
               {isActiveSubject && (
-                <div style={{ 
-                  marginLeft: "1rem", 
-                  borderLeft: "1px solid var(--border)",
-                  marginBottom: "1rem",
-                  paddingLeft: "0.5rem"
-                }}>
+                <div
+                  style={{
+                    marginLeft: "1rem",
+                    borderLeft: "1px solid var(--border)",
+                    marginBottom: "1rem",
+                    paddingLeft: "0.5rem",
+                  }}
+                >
                   {subj.topics.map((topic) => {
                     const TopicIcon = iconMap[topic.icon] || Box;
                     return (
@@ -129,7 +147,13 @@ const Sidebar = ({ isOpen = false, onClose }) => {
                           <TopicIcon size={14} />
                           {topic.title}
                         </div>
-                        <div style={{ display: "flex", flexDirection: "column", marginTop: "0.25rem" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            marginTop: "0.25rem",
+                          }}
+                        >
                           {topic.sections.map((section) => (
                             <NavLink
                               key={section.id}
@@ -137,10 +161,10 @@ const Sidebar = ({ isOpen = false, onClose }) => {
                               className={({ isActive }) =>
                                 `nav-item ${isActive ? "active" : ""}`
                               }
-                              style={{ 
-                                padding: "0.4rem 0.5rem 0.4rem 2rem", 
+                              style={{
+                                padding: "0.4rem 0.5rem 0.4rem 2rem",
                                 fontSize: "0.95rem",
-                                borderLeft: "none"
+                                borderLeft: "none",
                               }}
                             >
                               {section.title}
@@ -166,9 +190,7 @@ const Sidebar = ({ isOpen = false, onClose }) => {
         >
           <NavLink
             to="/interview"
-            className={({ isActive }) =>
-              `nav-item ${isActive ? "active" : ""}`
-            }
+            className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
           >
             <HelpCircle size={18} style={{ color: "var(--accent)" }} />
             Interview Q&A

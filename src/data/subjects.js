@@ -8,6 +8,7 @@ import { topics as oopTopics } from "./oop";
 import { topics as graphqlTopics } from "./graphql";
 import { topics as prismaTopics } from "./prisma";
 import { topics as jwtTopics } from "./jwt";
+import { topics as corsTopics } from "./cors";
 import {
   Code,
   FileJson,
@@ -19,6 +20,7 @@ import {
   Server,
   Lock,
   Globe,
+  ShieldCheck,
 } from "lucide-react";
 
 export const subjects = [
@@ -81,6 +83,15 @@ export const subjects = [
     icon: Lock,
     color: "from-indigo-500 to-purple-600",
     topics: jwtTopics,
+  },
+  {
+    id: "cors",
+    title: "Browser Security (CORS)",
+    description:
+      "Master Cross-Origin Resource Sharing and web security fundamentals.",
+    icon: ShieldCheck,
+    color: "from-cyan-500 to-blue-600",
+    topics: corsTopics,
   },
   {
     id: "oop",
