@@ -423,4 +423,223 @@ doSomething("hello"); // TS knows this returns a number`,
       },
     ],
   },
+  {
+    id: "ts-advanced-types-deep-dive",
+    title: "Deep Dive: Advanced Types",
+    description: "Mastering Mapped, Conditional, and Template Literal Types.",
+    icon: "Cpu",
+    sections: [
+      {
+        id: "keyof-typeof",
+        title: "Keyof & Typeof Operators",
+        content: \`
+**\`keyof\`**: Extracts the keys of an object type as a union of string literals.
+**\`typeof\`**: Captures the type of an existing variable or object.
+        \`,
+        code: \`type User = { id: number; name: string; };
+type UserKeys = keyof User; // "id" | "name"
+
+const config = { port: 3000, host: "localhost" };
+type Config = typeof config; // { port: number; host: string; }\`,
+      },
+      {
+        id: "mapped-types",
+        title: "Mapped Types",
+        content: \`
+**Mapped Types** allow you to create new types by iterating over keys of an existing type.
+Syntax: \`{ [P in K]: T }\`
+        \`,
+        code: \`type Options = {
+  darkMode: boolean;
+  saveData: boolean;
+};
+
+// Make all properties boolean and readonly
+type ReadonlyBools<T> = {
+  readonly [P in keyof T]: boolean;
+};
+
+type Config = ReadonlyBools<Options>;
+// { readonly darkMode: boolean; readonly saveData: boolean; }\`,
+      },
+      {
+        id: "conditional-types",
+        title: "Conditional Types",
+        content: \`
+**Conditional Types** select one of two types based on a condition.
+Syntax: \`T extends U ? X : Y\`
+        \`,
+        code: \`type IsString<T> = T extends string ? "Yes" : "No";
+
+type A = IsString<string>; // "Yes"
+type B = IsString<number>; // "No"
+
+// Extract type from Promise
+type Unpack<T> = T extends Promise<infer U> ? U : T;
+type Result = Unpack<Promise<string>>; // string\`,
+      },
+      {
+        id: "template-literal-types",
+        title: "Template Literal Types",
+        content: \`
+Build types using string literal syntax. Useful for defining patterns.
+        \`,
+        code: \`type Color = "red" | "blue";
+type Quantity = "one" | "two";
+
+type Item = \\\`\\\${Quantity}-\\\${Color}\\\`;
+// "one-red" | "one-blue" | "two-red" | "two-blue"\`,
+      },
+    ],
+  },
+  {
+    id: "ts-decorators",
+    title: "Decorators",
+    description: "Meta-programming with Class, Method, and Property decorators.",
+    icon: "Stamp",
+    sections: [
+      {
+        id: "decorators-intro",
+        title: "Decorators Overview",
+        content: \`
+Decorators provide a way to add annotations and a meta-programming syntax for class declarations and members.
+*Requires \`experimentalDecorators: true\` in \`tsconfig.json\`.*
+        \`,
+        code: \`function Logger(target: Function) {
+  console.log("Class loaded:", target.name);
+}
+
+@Logger
+class User {
+  constructor() {}\
+}\`,
+      },
+      {
+        id: "method-decorators",
+        title: "Method Decorators",
+        content: \`
+Applied to the Property Descriptor for the method. Can be used to observe, modify, or replace a method definition.
+        \`,
+        code: \`function Log(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const original = descriptor.value;
+  descriptor.value = function (...args: any[]) {
+    console.log(\\\`Calling \\\${propertyKey} with\\\`, args);
+    return original.apply(this, args);
+  };
+}
+
+class Calculator {
+  @Log
+  add(a: number, b: number) {
+    return a + b;
+  }
+}\`,
+      },
+    ],
+  },
+  {
+    id: "ts-modules-namespaces",
+    title: "Modules vs Namespaces",
+    description: "Organizing code effectively.",
+    icon: "Package",
+    sections: [
+      {
+        id: "modules-vs-namespaces",
+        title: "Modules vs Namespaces",
+        content: \`
+**Modules (ESM)**: The modern standard. File-based scope. Use \`import\` and \`export\`.
+**Namespaces**: TypeScript-specific internal modules. Used to group code globally.
+**Recommendation**: Always use **Modules** for modern application development. Use Namespaces only for legacy code or complex type definitions (\`.d.ts\`).
+        \`,
+        code: \`// Module (Recommended)
+// math.ts
+export function add(x: number, y: number) { return x + y; }
+// app.ts
+import { add } from "./math";
+
+// Namespace (Legacy/Specific use)
+namespace MathUtils {
+    export function subtract(x: number, y: number) { return x - y; }
+}
+/// <reference path="MathUtils.ts" />
+MathUtils.subtract(10, 5);\`,
+      },
+    ],
+  },
+  {
+    id: "ts-configuration",
+    title: "Configuration & Tooling",
+    description: "Mastering tsconfig.json.",
+    icon: "Settings",
+    sections: [
+      {
+        id: "tsconfig-deep-dive",
+        title: "tsconfig.json Deep Dive",
+        content: \`
+The \`tsconfig.json\` file controls how TypeScript compiles your code.
+*   **target**: JS version to output (e.g., "ES6", "ES2020").
+*   **module**: Module system (e.g., "CommonJS", "ESNext").
+*   **strict**: Enables all strict type-checking options.
+*   **outDir**: Where to place compiled files.
+        \`,
+        code: \`{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "strict": true,
+    "outDir": "./dist",
+    "baseUrl": "./src",
+    "paths": {
+      "@components/*": ["components/*"]
+    }
+  }
+}\`,
+      },
+    ],
+  },
+  {
+    id: "ts-modern-features",
+    title: "Modern Features",
+    description: "New operators and assertions.",
+    icon: "Sparkles",
+    sections: [
+      {
+        id: "satisfies-operator",
+        title: "The 'satisfies' Operator",
+        content: \`
+Validates that an expression matches a type, **without** widening the type of the expression.
+        \`,
+        code: \`type Colors = "red" | "green" | "blue";
+type RGB = [number, number, number];
+
+const palette = {
+    red: [255, 0, 0],
+    green: "00ff00",
+    blue: [0, 0, 255]
+} satisfies Record<Colors, string | RGB>;
+
+// TS knows 'red' is an array, and 'green' is a string!
+palette.red.map(x => x * 2); // OK
+palette.green.toUpperCase(); // OK\`,
+      },
+      {
+        id: "const-assertions",
+        title: "Const Assertions",
+        content: \`
+**\`as const\`**: Tells TS that the expression is immutable.
+1.  Primitives become literal types.
+2.  Arrays become \`readonly\` tuples.
+3.  Objects get \`readonly\` properties.
+        \`,
+        code: \`const config = {
+    endpoint: "https://api.example.com",
+    retries: 3
+} as const;
+
+// config.endpoint is type "https://api.example.com" (not string)
+// config.retries is type 3 (not number)
+// config.retries = 4; // Error\`,
+      },
+    ],
+  },
 ];
