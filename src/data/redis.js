@@ -23,12 +23,12 @@ graph TD
     subgraph Traditional_DB [Traditional Database]
     Disk[(Disk Storage)]
     end
-    subgraph Redis [Redis]
+    subgraph Redis_In_Memory [Redis]
     RAM[(System RAM)]
     end
     
-    App[Application] -->|Read/Write (ms)| Disk
-    App -->|Read/Write (micro-sec)| RAM
+    App[Application] -->|"Read/Write (ms)"| Disk
+    App -->|"Read/Write (micro-sec)"| RAM
     
     style RAM fill:#f96,stroke:#333,stroke-width:2px
     style Disk fill:#9cf,stroke:#333,stroke-width:2px
@@ -106,7 +106,7 @@ LRANGE tasks 0 -1
         `,
         diagram: `
 graph LR
-    subgraph List Structure
+    subgraph List_Structure [List Structure]
     Head((Head)) --> Node1[Item A]
     Node1 --> Node2[Item B]
     Node2 --> Node3[Item C]
@@ -310,13 +310,13 @@ graph TD
     R2[Replica 2]
     end
     
-    Client -.->|Ask for Master| S1
-    S1 -.->|Monitor| M
-    S2 -.->|Monitor| M
-    S3 -.->|Monitor| M
+    Client -.->|"Ask for Master"| S1
+    S1 -.->|"Monitor"| M
+    S2 -.->|"Monitor"| M
+    S3 -.->|"Monitor"| M
     
-    M -->|Replicate| R1
-    M -->|Replicate| R2
+    M -->|"Replicate"| R1
+    M -->|"Replicate"| R2
     
     style M fill:#f96
     style S1 fill:#9cf
