@@ -1,5 +1,6 @@
 import { topics as jsTopics } from "./javascript";
 import { topics as tsTopics } from "./typescript";
+import { topics as redisTopics } from "./redis";
 import { topics as pythonTopics } from "./python";
 import { topics as langchainTopics } from "./langchain";
 import { topics as aiTopics } from "./ai";
@@ -39,7 +40,16 @@ export const subjects = [
     color: "from-blue-500 to-blue-700",
     topics: tsTopics,
   },
+  {redis",
+    title: "Redis",
+    description:
+      "In-memory data structure store, used as a database, cache, and message broker.",
+    icon: Database,
+    color: "from-red-500 to-red-700",
+    topics: redisTopics,
+  },
   {
+    id: "
     id: "python",
     title: "Python Masterclass",
     description:
