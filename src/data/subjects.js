@@ -1,4 +1,5 @@
 import { topics as jsTopics } from "./javascript";
+import { topics as tsTopics } from "./typescript";
 import { topics as pythonTopics } from "./python";
 import { topics as langchainTopics } from "./langchain";
 import { topics as aiTopics } from "./ai";
@@ -6,16 +7,17 @@ import { topics as oopTopics } from "./oop";
 import { topics as graphqlTopics } from "./graphql";
 import { topics as prismaTopics } from "./prisma";
 import { topics as jwtTopics } from "./jwt";
-import { 
-  Code, 
-  FileJson, 
-  Brain, 
-  Network, 
-  Box, 
-  Database, 
-  Server, 
-  Lock, 
-  Globe 
+import {
+  Code,
+  FileJson,
+  FileCode,
+  Brain,
+  Network,
+  Box,
+  Database,
+  Server,
+  Lock,
+  Globe,
 } from "lucide-react";
 
 export const subjects = [
@@ -27,6 +29,15 @@ export const subjects = [
     icon: Code,
     color: "from-yellow-400 to-orange-500",
     topics: jsTopics,
+  },
+  {
+    id: "typescript",
+    title: "TypeScript",
+    description:
+      "Supercharge your JavaScript with static types, interfaces, and advanced tooling.",
+    icon: FileCode,
+    color: "from-blue-500 to-blue-700",
+    topics: tsTopics,
   },
   {
     id: "python",
