@@ -1,5 +1,6 @@
 import { topics as jsTopics } from "./javascript";
 import { topics as tsTopics } from "./typescript";
+import { topics as reactTopics } from "./react";
 import { topics as redisTopics } from "./redis";
 import { topics as pythonTopics } from "./python";
 import { topics as langchainTopics } from "./langchain";
@@ -21,6 +22,7 @@ import {
   Lock,
   Globe,
   ShieldCheck,
+  Atom,
 } from "lucide-react";
 
 export const subjects = [
@@ -41,6 +43,15 @@ export const subjects = [
     icon: FileCode,
     color: "from-blue-500 to-blue-700",
     topics: tsTopics,
+  },
+  {
+    id: "react",
+    title: "React.js",
+    description:
+      "Build modern, interactive user interfaces with the most popular JS library.",
+    icon: Atom,
+    color: "from-cyan-400 to-blue-500",
+    topics: reactTopics,
   },
   {
     id: "redis",

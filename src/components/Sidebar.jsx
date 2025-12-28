@@ -24,6 +24,10 @@ import {
   List,
   ChevronDown,
   ChevronRight,
+  Atom,
+  Activity,
+  Anchor,
+  Layers,
 } from "lucide-react";
 
 const iconMap = {
@@ -45,6 +49,10 @@ const iconMap = {
   Shield,
   ShieldCheck,
   List,
+  Atom,
+  Activity,
+  Anchor,
+  Layers,
 };
 
 const Sidebar = ({ isOpen = false, onClose }) => {
