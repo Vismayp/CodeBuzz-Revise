@@ -256,7 +256,7 @@ function Timer(): JSX.Element {
         `,
         diagram: `
 graph TD
-    A[App Component (Provider)] -- "Value: 'Dark'" --> B[Toolbar]
+    A["App Component (Provider)"] -- "Value: \"Dark\"" --> B[Toolbar]
     B --> C[ThemedButton]
     C -- "useContext" --> D((Consumer))
     D -.-> A
