@@ -941,6 +941,86 @@ graph TD
         `,
       },
       {
+        id: "docker-cli",
+        title: "Docker CLI Reference",
+        content: `
+Essential commands for managing containers, images, volumes, and networks.
+
+### Container Lifecycle
+- **run**: Create and start a container (\`docker run -d --name app nginx\`).
+- **start/stop/restart**: Manage container state.
+- **rm**: Remove a container (\`docker rm -f app\`).
+- **ps**: List containers (\`-a\` for all).
+
+### Images
+- **images**: List local images.
+- **pull/push**: Download/Upload images from/to a registry.
+- **build**: Build an image from a Dockerfile (\`docker build -t app:v1 .\`).
+- **rmi**: Remove an image.
+
+### Inspection & Execution
+- **logs**: View container output (\`-f\` to follow).
+- **exec**: Run commands in a running container (\`docker exec -it app sh\`).
+- **inspect**: Detailed JSON info about a container/image.
+- **stats**: Live resource usage.
+
+### Volumes & Networks
+- **volume create/ls**: Manage persistent data.
+- **network create/ls**: Manage container communication.
+        `,
+        code: `# --- Common Workflow ---
+# 1. Build an image
+docker build -t my-node-app .
+
+# 2. Run the container
+docker run -d -p 3000:3000 --name my-app my-node-app
+
+# 3. Check logs
+docker logs -f my-app
+
+# 4. Execute a command inside
+docker exec -it my-app npm test
+
+# 5. Cleanup
+docker stop my-app && docker rm my-app`,
+      },
+      {
+        id: "aws-ecs",
+        title: "AWS Elastic Container Service (ECS)",
+        content: `
+AWS ECS is a fully managed container orchestration service that helps you run, stop, and manage Docker containers on a cluster.
+
+### Key Components:
+1. **Cluster**: A logical grouping of tasks or services.
+2. **Task Definition**: A blueprint (JSON) that describes how a docker container should launch (CPU, memory, ports, images).
+3. **Task**: A running instance of a Task Definition.
+4. **Service**: Ensures that the specified number of tasks are constantly running and handles Load Balancer integration.
+
+### Launch Types:
+- **AWS Fargate**: Serverless. You don't manage servers; you just pay for the resources your containers use.
+- **EC2 Launch Type**: You manage the underlying EC2 instances (servers) that run your containers.
+
+### Deployment Workflow:
+1. **Build & Tag**: Build your Docker image locally.
+2. **Push to ECR**: Push the image to **AWS Elastic Container Registry (ECR)**.
+3. **Create Task Definition**: Define the image URI, ports, and resource limits.
+4. **Create Service**: Deploy the task definition to a cluster, optionally behind an **Application Load Balancer (ALB)**.
+        `,
+        code: `# --- AWS CLI Deployment Snippets ---
+
+# 1. Authenticate Docker to ECR
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com
+
+# 2. Tag your image
+docker tag my-app:latest <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com/my-app:latest
+
+# 3. Push to ECR
+docker push <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com/my-app:latest
+
+# 4. Update ECS Service (triggers new deployment)
+aws ecs update-service --cluster my-cluster --service my-service --force-new-deployment`,
+      },
+      {
         id: "cicd-pipelines",
         title: "CI/CD & Automation",
         content: `
