@@ -23,11 +23,11 @@ Traditional messaging systems (like RabbitMQ) often struggle with mass scale and
         `,
         diagram: `
 graph LR
-    P1[Producer A] --> K[Kafka Cluster]
-    P2[Producer B] --> K
-    K --> C1[Consumer X]
-    K --> C2[Consumer Y]
-    K --> C3[Consumer Z]
+    P1["Producer A"] --> K["Kafka Cluster"]
+    P2["Producer B"] --> K
+    K --> C1["Consumer X"]
+    K --> C2["Consumer Y"]
+    K --> C3["Consumer Z"]
     style K fill:#8b5cf6,stroke:#fff,stroke-width:2px
         `,
       },
@@ -85,13 +85,13 @@ In every cluster, one broker acts as the **Controller**. It is responsible for m
         diagram: `
 graph TD
     subgraph Cluster [Kafka Cluster]
-        B1[Broker 1]
-        B2[Broker 2 (Controller)]
-        B3[Broker 3]
+        B1["Broker 1"]
+        B2["Broker 2 (Controller)"]
+        B3["Broker 3"]
     end
-    ZK[Zookeeper / KRaft] --- Cluster
-    P[Producers] --> Cluster
-    C[Consumers] --> Cluster
+    ZK["Zookeeper / KRaft"] --- Cluster
+    P["Producers"] --> Cluster
+    C["Consumers"] --> Cluster
         `,
       },
       {
@@ -133,13 +133,13 @@ Each message within a partition is assigned an incremental id, called an **Offse
         `,
         diagram: `
 graph LR
-    subgraph Topic [Topic: Orders]
+    subgraph Topic ["Topic: Orders"]
         direction TB
-        subgraph P0 [Partition 0]
-            m0[0] --- m1[1] --- m2[2] --- m3[3]
+        subgraph P0 ["Partition 0"]
+            m0["0"] --- m1["1"] --- m2["2"] --- m3["3"]
         end
-        subgraph P1 [Partition 1]
-            n0[0] --- n1[1] --- n2[2]
+        subgraph P1 ["Partition 1"]
+            n0["0"] --- n1["1"] --- n2["2"]
         end
     end
         `,
@@ -222,14 +222,14 @@ Kafka stores the current offset of a consumer group in a special internal topic 
         `,
         diagram: `
 graph TD
-    subgraph Group [Consumer Group: App_Service]
-        C1[Consumer 1]
-        C2[Consumer 2]
+    subgraph Group ["Consumer Group: App_Service"]
+        C1["Consumer 1"]
+        C2["Consumer 2"]
     end
-    subgraph Topic [Topic: Orders]
-        P0[Partition 0]
-        P1[Partition 1]
-        P2[Partition 2]
+    subgraph Topic ["Topic: Orders"]
+        P0["Partition 0"]
+        P1["Partition 1"]
+        P2["Partition 2"]
     end
     P0 --> C1
     P1 --> C1
@@ -256,11 +256,11 @@ graph TD
         `,
         diagram: `
 graph LR
-    subgraph Original [Original Log]
-        K1_V1[K1:V1] --- K2_V1[K2:V1] --- K1_V2[K1:V2] --- K3_V1[K3:V1]
+    subgraph Original ["Original Log"]
+        K1_V1["K1:V1"] --- K2_V1["K2:V1"] --- K1_V2["K1:V2"] --- K3_V1["K3:V1"]
     end
-    subgraph Compacted [Compacted Log]
-        K2_V1_C[K2:V1] --- K1_V2_C[K1:V2] --- K3_V1_C[K3:V1]
+    subgraph Compacted ["Compacted Log"]
+        K2_V1_C["K2:V1"] --- K1_V2_C["K1:V2"] --- K3_V1_C["K3:V1"]
     end
     Original -->|Compact| Compacted
         `,
