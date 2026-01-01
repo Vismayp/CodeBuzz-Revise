@@ -28,6 +28,8 @@ import {
   Activity,
   Anchor,
   Layers,
+  Share2,
+  Users,
 } from "lucide-react";
 
 const iconMap = {
@@ -53,6 +55,8 @@ const iconMap = {
   Activity,
   Anchor,
   Layers,
+  Share2,
+  Users,
 };
 
 const Sidebar = ({ isOpen = false, onClose }) => {

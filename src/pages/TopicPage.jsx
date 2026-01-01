@@ -139,6 +139,40 @@ const TopicPage = () => {
         </div>
       )}
 
+      {/* Illustrative Image */}
+      {section.image && (
+        <div style={{ margin: "3rem 0" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              marginBottom: "1rem",
+            }}
+          >
+            <h3>Illustration</h3>
+          </div>
+          <div style={{ 
+            borderRadius: "12px", 
+            overflow: "hidden", 
+            border: "1px solid var(--border)",
+            background: "var(--bg-tertiary)",
+            padding: "1rem"
+          }}>
+            <img 
+              src={section.image} 
+              alt={section.title} 
+              style={{ 
+                width: "100%", 
+                height: "auto", 
+                display: "block",
+                borderRadius: "8px"
+              }} 
+            />
+          </div>
+        </div>
+      )}
+
       {/* Code Example */}
       {section.code && (
         <div style={{ marginTop: "2rem" }}>

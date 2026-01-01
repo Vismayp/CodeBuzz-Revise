@@ -10,6 +10,7 @@ import { topics as graphqlTopics } from "./graphql";
 import { topics as prismaTopics } from "./prisma";
 import { topics as jwtTopics } from "./jwt";
 import { topics as corsTopics } from "./cors";
+import { topics as kafkaTopics } from "./kafka";
 import {
   Code,
   FileJson,
@@ -23,6 +24,7 @@ import {
   Globe,
   ShieldCheck,
   Atom,
+  Share2,
 } from "lucide-react";
 
 export const subjects = [
@@ -52,6 +54,14 @@ export const subjects = [
     icon: Atom,
     color: "from-cyan-400 to-blue-500",
     topics: reactTopics,
+  },
+  {
+    id: "kafka",
+    title: "Kafka Mastery",
+    description: "Distributed event streaming, brokers, partitions and high scale architecture.",
+    icon: Share2,
+    color: "from-purple-500 to-indigo-600",
+    topics: kafkaTopics,
   },
   {
     id: "redis",

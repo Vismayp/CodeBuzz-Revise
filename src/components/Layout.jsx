@@ -49,7 +49,7 @@ const Layout = () => {
             >
               <Menu size={20} />
             </button>
-            <div className="mobile-header-title">JS Revision</div>
+            <div className="mobile-header-title">CodeBuzz</div>
             <div className="mobile-header-spacer" aria-hidden="true" />
           </div>
         </header>
