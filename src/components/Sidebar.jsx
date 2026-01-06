@@ -30,6 +30,16 @@ import {
   Layers,
   Share2,
   Users,
+  Target,
+  Variable,
+  Library,
+  Home,
+  TrendingUp,
+  Codepen,
+  Camera,
+  MessageSquare,
+  Maximize,
+  Smile,
 } from "lucide-react";
 
 const iconMap = {
@@ -57,6 +67,16 @@ const iconMap = {
   Layers,
   Share2,
   Users,
+  Target,
+  Variable,
+  Library,
+  Home,
+  TrendingUp,
+  Codepen,
+  Camera,
+  MessageSquare,
+  Maximize,
+  Smile,
 };
 
 const Sidebar = ({ isOpen = false, onClose }) => {
@@ -92,105 +112,141 @@ const Sidebar = ({ isOpen = false, onClose }) => {
       </div>
 
       <nav style={{ flex: 1, overflowY: "auto", padding: "1rem 0" }}>
-        {subjects.map((subj) => {
-          const isActiveSubject = subj.id === subjectId;
-          const SubjIcon = iconMap[subj.icon] || Box;
-
-          return (
-            <div key={subj.id} style={{ marginBottom: "0.5rem" }}>
-              {/* Subject Header / Link */}
-              <NavLink
-                to={`/${subj.id}`}
-                className={({ isActive }) =>
-                  `nav-item ${isActive ? "active" : ""}`
-                }
+        {Object.entries(
+          subjects.reduce((acc, subject) => {
+            const category = subject.category || "Other";
+            if (!acc[category]) acc[category] = [];
+            acc[category].push(subject);
+            return acc;
+          }, {})
+        )
+          .sort(([catA], [catB]) => {
+            const order = [
+              "Generative AI & LLMs",
+              "Python & Data Science",
+              "Backend & Architecture",
+              "Web Development",
+            ];
+            const idxA = order.indexOf(catA);
+            const idxB = order.indexOf(catB);
+            return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
+          })
+          .map(([category, categorySubjects]) => (
+            <div key={category} style={{ marginBottom: "1.5rem" }}>
+              <div
                 style={{
-                  justifyContent: "space-between",
-                  fontWeight: 600,
-                  color: isActiveSubject
-                    ? "var(--accent)"
-                    : "var(--text-primary)",
+                  padding: "0 1.2rem 0.5rem",
+                  fontSize: "0.7rem",
+                  fontWeight: "800",
+                  textTransform: "uppercase",
+                  color: "var(--text-secondary)",
+                  letterSpacing: "0.1em",
+                  opacity: 0.8,
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.75rem",
-                  }}
-                >
-                  <SubjIcon size={20} />
-                  <span>{subj.title}</span>
-                </div>
-                {isActiveSubject ? (
-                  <ChevronDown size={16} />
-                ) : (
-                  <ChevronRight size={16} />
-                )}
-              </NavLink>
+                {category}
+              </div>
+              {categorySubjects.map((subj) => {
+                const isActiveSubject = subj.id === subjectId;
+                const SubjIcon = iconMap[subj.icon] || Box;
 
-              {/* Topics List (Only if active) */}
-              {isActiveSubject && (
-                <div
-                  style={{
-                    marginLeft: "1rem",
-                    borderLeft: "1px solid var(--border)",
-                    marginBottom: "1rem",
-                    paddingLeft: "0.5rem",
-                  }}
-                >
-                  {subj.topics.map((topic) => {
-                    const TopicIcon = iconMap[topic.icon] || Box;
-                    return (
-                      <div key={topic.id} style={{ marginTop: "1rem" }}>
-                        <div
-                          style={{
-                            padding: "0.25rem 0.5rem",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "0.5rem",
-                            color: "var(--text-secondary)",
-                            fontSize: "0.85rem",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.05em",
-                            fontWeight: 600,
-                          }}
-                        >
-                          <TopicIcon size={14} />
-                          {topic.title}
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            marginTop: "0.25rem",
-                          }}
-                        >
-                          {topic.sections.map((section) => (
-                            <NavLink
-                              key={section.id}
-                              to={`/${subj.id}/topic/${topic.id}/${section.id}`}
-                              className={({ isActive }) =>
-                                `nav-item ${isActive ? "active" : ""}`
-                              }
-                              style={{
-                                padding: "0.4rem 0.5rem 0.4rem 2rem",
-                                fontSize: "0.95rem",
-                                borderLeft: "none",
-                              }}
-                            >
-                              {section.title}
-                            </NavLink>
-                          ))}
-                        </div>
+                return (
+                  <div key={subj.id} style={{ marginBottom: "0.2rem" }}>
+                    {/* Subject Header / Link */}
+                    <NavLink
+                      to={`/${subj.id}`}
+                      className={({ isActive }) =>
+                        `nav-item ${isActive ? "active" : ""}`
+                      }
+                      style={{
+                        justifyContent: "space-between",
+                        fontWeight: 600,
+                        color: isActiveSubject
+                          ? "var(--accent)"
+                          : "var(--text-primary)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "0.75rem",
+                        }}
+                      >
+                        <SubjIcon size={20} />
+                        <span>{subj.title}</span>
                       </div>
-                    );
-                  })}
-                </div>
-              )}
+                      {isActiveSubject ? (
+                        <ChevronDown size={16} />
+                      ) : (
+                        <ChevronRight size={16} />
+                      )}
+                    </NavLink>
+
+                    {/* Topics List (Only if active) */}
+                    {isActiveSubject && (
+                      <div
+                        style={{
+                          marginLeft: "1rem",
+                          borderLeft: "1px solid var(--border)",
+                          marginBottom: "1rem",
+                          paddingLeft: "0.5rem",
+                        }}
+                      >
+                        {subj.topics.map((topic) => {
+                          const TopicIcon = iconMap[topic.icon] || Box;
+                          return (
+                            <div key={topic.id} style={{ marginTop: "1rem" }}>
+                              <div
+                                style={{
+                                  padding: "0.25rem 0.5rem",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "0.5rem",
+                                  color: "var(--text-secondary)",
+                                  fontSize: "0.85rem",
+                                  textTransform: "uppercase",
+                                  letterSpacing: "0.05em",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                <TopicIcon size={14} />
+                                {topic.title}
+                              </div>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  marginTop: "0.25rem",
+                                }}
+                              >
+                                {topic.sections.map((section) => (
+                                  <NavLink
+                                    key={section.id}
+                                    to={`/${subj.id}/topic/${topic.id}/${section.id}`}
+                                    className={({ isActive }) =>
+                                      `nav-item ${isActive ? "active" : ""}`
+                                    }
+                                    style={{
+                                      padding: "0.4rem 0.5rem 0.4rem 2rem",
+                                      fontSize: "0.95rem",
+                                      borderLeft: "none",
+                                    }}
+                                  >
+                                    {section.title}
+                                  </NavLink>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
+          ))}
 
         {/* Global Links */}
         <div

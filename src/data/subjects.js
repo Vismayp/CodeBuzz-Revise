@@ -11,6 +11,12 @@ import { topics as prismaTopics } from "./prisma";
 import { topics as jwtTopics } from "./jwt";
 import { topics as corsTopics } from "./cors";
 import { topics as kafkaTopics } from "./kafka";
+import { topics as mlTopics } from "./ml";
+import { topics as llmTopics } from "./llm_engineering";
+import { topics as ragTopics } from "./rag_system";
+import { topics as designTopics } from "./ai_system_design";
+import { topics as advancedAiTopics } from "./advanced_ai";
+
 import {
   Code,
   FileJson,
@@ -25,11 +31,93 @@ import {
   ShieldCheck,
   Atom,
   Share2,
+  Target,
 } from "lucide-react";
 
 export const subjects = [
+  // --- Generative AI & LLMs ---
+  {
+    id: "llm-engineering",
+    category: "Generative AI & LLMs",
+    title: "LLM Engineering",
+    description: "Core Concepts, Attention Mechanisms, and Prompt Engineering.",
+    icon: Brain,
+    color: "from-purple-600 to-pink-500",
+    topics: llmTopics,
+  },
+  {
+    id: "rag-systems",
+    category: "Generative AI & LLMs",
+    title: "RAG Systems",
+    description: "Retrieval-Augmented Generation, Vectors, and Embeddings.",
+    icon: Database,
+    color: "from-green-500 to-emerald-700",
+    topics: ragTopics,
+  },
+  {
+    id: "ai-system-design",
+    category: "Generative AI & LLMs",
+    title: "AI System Design",
+    description: "Serving, Caching, Async Architectures, and MLOps.",
+    icon: Server,
+    color: "from-slate-600 to-slate-800",
+    topics: designTopics,
+  },
+  {
+    id: "advanced-ai",
+    category: "Generative AI & LLMs",
+    title: "Advanced AI",
+    description: "Reinforcement Learning, Computer Vision, and Agents.",
+    icon: Network,
+    color: "from-red-600 to-orange-600",
+    topics: advancedAiTopics,
+  },
+  {
+    id: "langchain",
+    category: "Generative AI & LLMs",
+    title: "LangChain",
+    description: "Building applications with LLMs through composability.",
+    icon: Network,
+    color: "from-green-500 to-lime-600",
+    topics: langchainTopics,
+  },
+
+  // --- Python & Data Science ---
+  {
+    id: "python",
+    category: "Python & Data Science",
+    title: "Python Masterclass",
+    description:
+      "From basics to metaclasses, concurrency, and CPython internals.",
+    icon: FileJson,
+    color: "from-blue-400 to-yellow-300",
+    topics: pythonTopics,
+  },
+  {
+    id: "artificial-intelligence",
+    category: "Python & Data Science",
+    title: "Artificial Intelligence",
+    description:
+      "The broad field of creating smart machines, including ML and DL.",
+    icon: Brain,
+    color: "from-emerald-400 to-teal-500",
+    topics: aiTopics,
+  },
+  {
+    id: "machine-learning",
+    category: "Python & Data Science",
+    title: "Machine Learning",
+    description:
+      "Algorithms that allow computers to learn from data without explicit programming.",
+    icon: Network,
+    color: "from-orange-400 to-red-500",
+    topics: mlTopics,
+  },
+
+  // --- Web Development ---
   {
     id: "javascript",
+    category: "Web Development",
     title: "JavaScript & Node.js",
     description:
       "Master the language of the web, from V8 internals to advanced patterns.",
@@ -39,6 +127,7 @@ export const subjects = [
   },
   {
     id: "typescript",
+    category: "Web Development",
     title: "TypeScript",
     description:
       "Supercharge your JavaScript with static types, interfaces, and advanced tooling.",
@@ -48,6 +137,7 @@ export const subjects = [
   },
   {
     id: "react",
+    category: "Web Development",
     title: "React.js",
     description:
       "Build modern, interactive user interfaces with the most popular JS library.",
@@ -56,33 +146,8 @@ export const subjects = [
     topics: reactTopics,
   },
   {
-    id: "kafka",
-    title: "Kafka Mastery",
-    description: "Distributed event streaming, brokers, partitions and high scale architecture.",
-    icon: Share2,
-    color: "from-purple-500 to-indigo-600",
-    topics: kafkaTopics,
-  },
-  {
-    id: "redis",
-    title: "Redis",
-    description:
-      "In-memory data structure store, used as a database, cache, and message broker.",
-    icon: Database,
-    color: "from-red-500 to-red-700",
-    topics: redisTopics,
-  },
-  {
-    id: "python",
-    title: "Python Masterclass",
-    description:
-      "From basics to metaclasses, concurrency, and CPython internals.",
-    icon: FileJson,
-    color: "from-blue-400 to-yellow-300",
-    topics: pythonTopics,
-  },
-  {
     id: "graphql",
+    category: "Web Development",
     title: "GraphQL Mastery",
     description: "Build efficient APIs with schemas, resolvers, and Apollo.",
     icon: Globe,
@@ -91,6 +156,7 @@ export const subjects = [
   },
   {
     id: "prisma",
+    category: "Web Development",
     title: "Prisma ORM",
     description: "Next-gen Node.js and TypeScript ORM for modern apps.",
     icon: Database,
@@ -99,43 +165,53 @@ export const subjects = [
   },
   {
     id: "jwt",
-    title: "Authentication (JWT)",
-    description: "Secure your apps with JSON Web Tokens and best practices.",
+    category: "Web Development",
+    title: "JWT Authentication",
+    description:
+      "Secure your apps with JSON Web Tokens, sessions, and security best practices.",
     icon: Lock,
-    color: "from-indigo-500 to-purple-600",
+    color: "from-gray-600 to-gray-800",
     topics: jwtTopics,
   },
   {
     id: "cors",
-    title: "Web Security (CORS & WAF)",
+    category: "Web Development",
+    title: "CORS",
     description:
-      "Master Cross-Origin Resource Sharing, Web Application Firewalls, and web security fundamentals.",
+      "Cross-Origin Resource Sharing. Browser security, headers, and preflight requests.",
     icon: ShieldCheck,
-    color: "from-cyan-500 to-blue-600",
+    color: "from-indigo-400 to-purple-500",
     topics: corsTopics,
+  },
+
+  // --- Backend & Architecture ---
+  {
+    id: "kafka",
+    category: "Backend & Architecture",
+    title: "Kafka Mastery",
+    description:
+      "Distributed event streaming, brokers, partitions and high scale architecture.",
+    icon: Share2,
+    color: "from-purple-500 to-indigo-600",
+    topics: kafkaTopics,
+  },
+  {
+    id: "redis",
+    category: "Backend & Architecture",
+    title: "Redis",
+    description:
+      "In-memory data structure store, used as a database, cache, and message broker.",
+    icon: Database,
+    color: "from-red-500 to-red-700",
+    topics: redisTopics,
   },
   {
     id: "oop",
+    category: "Backend & Architecture",
     title: "Object-Oriented Programming",
-    description: "Master OOP concepts, Design Patterns, and SOLID principles.",
+    description: "Design patterns, SOLID principles, and classes.",
     icon: Box,
-    color: "from-red-400 to-rose-600",
+    color: "from-amber-500 to-orange-600",
     topics: oopTopics,
-  },
-  {
-    id: "langchain",
-    title: "LangChain & LangGraph",
-    description: "Build LLM applications, agents, and stateful workflows.",
-    icon: Network,
-    color: "from-green-400 to-emerald-600",
-    topics: langchainTopics,
-  },
-  {
-    id: "ai",
-    title: "Artificial Intelligence",
-    description: "Deep Learning, Neural Networks, Transformers, and LLMs.",
-    icon: Brain,
-    color: "from-purple-400 to-pink-600",
-    topics: aiTopics,
   },
 ];

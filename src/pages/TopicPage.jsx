@@ -6,6 +6,9 @@ import MermaidDiagram from "../components/MermaidDiagram";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 const TopicPage = () => {
   const { subjectId, topicId, sectionId } = useParams();
@@ -56,63 +59,86 @@ const TopicPage = () => {
 
       {/* Main Description */}
       <div className="card" style={{ lineHeight: "1.7" }}>
-        <ReactMarkdown 
-          remarkPlugins={[remarkGfm]}
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm, remarkMath]}
+          rehypePlugins={[rehypeKatex]}
           components={{
-            table: ({node, ...props}) => (
+            table: ({ node, ...props }) => (
               <div style={{ overflowX: "auto", margin: "1.5rem 0" }}>
-                <table style={{ 
-                  width: "100%", 
-                  borderCollapse: "collapse", 
-                  fontSize: "0.95rem",
-                  color: "var(--text-secondary)"
-                }} {...props} />
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: "0.95rem",
+                    color: "var(--text-secondary)",
+                  }}
+                  {...props}
+                />
               </div>
             ),
-            thead: ({node, ...props}) => (
+            thead: ({ node, ...props }) => (
               <thead style={{ background: "var(--bg-hover)" }} {...props} />
             ),
-            th: ({node, ...props}) => (
-              <th style={{ 
-                padding: "0.75rem 1rem", 
-                border: "1px solid var(--border)", 
-                textAlign: "left",
-                color: "var(--text-primary)",
-                fontWeight: 600
-              }} {...props} />
+            th: ({ node, ...props }) => (
+              <th
+                style={{
+                  padding: "0.75rem 1rem",
+                  border: "1px solid var(--border)",
+                  textAlign: "left",
+                  color: "var(--text-primary)",
+                  fontWeight: 600,
+                }}
+                {...props}
+              />
             ),
-            td: ({node, ...props}) => (
-              <td style={{ 
-                padding: "0.75rem 1rem", 
-                border: "1px solid var(--border)" 
-              }} {...props} />
+            td: ({ node, ...props }) => (
+              <td
+                style={{
+                  padding: "0.75rem 1rem",
+                  border: "1px solid var(--border)",
+                }}
+                {...props}
+              />
             ),
-            ul: ({node, ...props}) => (
-              <ul style={{ paddingLeft: "1.5rem", marginBottom: "1rem" }} {...props} />
+            ul: ({ node, ...props }) => (
+              <ul
+                style={{ paddingLeft: "1.5rem", marginBottom: "1rem" }}
+                {...props}
+              />
             ),
-            ol: ({node, ...props}) => (
-              <ol style={{ paddingLeft: "1.5rem", marginBottom: "1rem" }} {...props} />
+            ol: ({ node, ...props }) => (
+              <ol
+                style={{ paddingLeft: "1.5rem", marginBottom: "1rem" }}
+                {...props}
+              />
             ),
-            li: ({node, ...props}) => (
+            li: ({ node, ...props }) => (
               <li style={{ marginBottom: "0.25rem" }} {...props} />
             ),
-            code({node, inline, className, children, ...props}) {
-              const match = /language-(\w+)/.exec(className || '')
+            code({ node, inline, className, children, ...props }) {
+              const match = /language-(\w+)/.exec(className || "");
               return !inline && match ? (
-                <CodeBlock code={String(children).replace(/\n$/, '')} language={match[1]} />
+                <CodeBlock
+                  code={String(children).replace(/\n$/, "")}
+                  language={match[1]}
+                />
               ) : (
-                <code className={className} style={{
+                <code
+                  className={className}
+                  style={{
                     background: "var(--bg-hover)",
                     padding: "0.2rem 0.4rem",
                     borderRadius: "4px",
                     fontFamily: "var(--font-mono)",
                     fontSize: "0.9em",
-                    color: "var(--accent)"
-                }} {...props}>
+                    color: "var(--accent)",
+                  }}
+                  {...props}
+                >
                   {children}
                 </code>
-              )
-            }
+              );
+            },
           }}
         >
           {section.content}
@@ -152,22 +178,24 @@ const TopicPage = () => {
           >
             <h3>Illustration</h3>
           </div>
-          <div style={{ 
-            borderRadius: "12px", 
-            overflow: "hidden", 
-            border: "1px solid var(--border)",
-            background: "var(--bg-tertiary)",
-            padding: "1rem"
-          }}>
-            <img 
-              src={section.image} 
-              alt={section.title} 
-              style={{ 
-                width: "100%", 
-                height: "auto", 
+          <div
+            style={{
+              borderRadius: "12px",
+              overflow: "hidden",
+              border: "1px solid var(--border)",
+              background: "var(--bg-tertiary)",
+              padding: "1rem",
+            }}
+          >
+            <img
+              src={section.image}
+              alt={section.title}
+              style={{
+                width: "100%",
+                height: "auto",
                 display: "block",
-                borderRadius: "8px"
-              }} 
+                borderRadius: "8px",
+              }}
             />
           </div>
         </div>
