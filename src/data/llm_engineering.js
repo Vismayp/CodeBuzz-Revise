@@ -47,11 +47,11 @@ These are concatenated and projected linearly.
         `,
         diagram: `graph TD
     subgraph Attention_Head
-    Q[Query] --> MatMul1[MatMul Q x K^T]
+    Q[Query] --> MatMul1["MatMul Q x K^T"]
     K[Key] --> MatMul1
-    MatMul1 --> Scale[Scale / sqrt(d_k)]
+    MatMul1 --> Scale["Scale / sqrt(d_k)"]
     Scale --> Softmax
-    Softmax --> MatMul2[MatMul x V]
+    Softmax --> MatMul2["MatMul x V"]
     V[Value] --> MatMul2
     MatMul2 --> Output
     end`,
@@ -81,11 +81,11 @@ The context window (e.g., 128k tokens) is limited by the $O(N^2)$ complexity of 
         `,
         diagram: `graph TD
     subgraph Transformer_Encoder
-    Input --> Embed[Embedding + Posional Encoding]
-    Embed --> MHAtt[Multi-Head Attention]
-    MHAtt --> AddNorm1[Add & Norm]
+    Input --> Embed["Embedding + Positional Encoding"]
+    Embed --> MHAtt["Multi-Head Attention"]
+    MHAtt --> AddNorm1["Add & Norm"]
     AddNorm1 --> FFN[Feed Forward]
-    FFN --> AddNorm2[Add & Norm]
+    FFN --> AddNorm2["Add & Norm"]
     end
     AddNorm2 --> Output`,
       },
