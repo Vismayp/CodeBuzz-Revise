@@ -16,9 +16,11 @@ import { topics as llmTopics } from "./llm_engineering";
 import { topics as ragTopics } from "./rag_system";
 import { topics as designTopics } from "./ai_system_design";
 import { topics as advancedAiTopics } from "./advanced_ai";
+import { dsaTopics } from "./dsa/index.js";
 
 import {
   Code,
+  Code2,
   FileJson,
   FileCode,
   Brain,
@@ -32,6 +34,9 @@ import {
   Atom,
   Share2,
   Target,
+  Activity,
+  Cpu,
+  Zap,
 } from "lucide-react";
 
 export const subjects = [
@@ -213,5 +218,16 @@ export const subjects = [
     icon: Box,
     color: "from-amber-500 to-orange-600",
     topics: oopTopics,
+  },
+
+  // --- Algorithms & Core CS ---
+  {
+    id: "dsa",
+    category: "Algorithms & Core CS",
+    title: "Data Structures & Algorithms",
+    description: "Master problem-solving from Big O to Dynamic Programming.",
+    icon: Activity,
+    color: "from-red-500 to-rose-700",
+    topics: dsaTopics,
   },
 ];

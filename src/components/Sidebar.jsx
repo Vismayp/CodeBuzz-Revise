@@ -40,6 +40,13 @@ import {
   MessageSquare,
   Maximize,
   Smile,
+  Type,
+  Link as LinkIcon,
+  MousePointer2,
+  Hash,
+  RotateCw,
+  Search,
+  GitBranch,
 } from "lucide-react";
 
 const iconMap = {
@@ -77,6 +84,13 @@ const iconMap = {
   MessageSquare,
   Maximize,
   Smile,
+  Type,
+  Link: LinkIcon,
+  MousePointer2,
+  Hash,
+  RotateCw,
+  Search,
+  GitBranch,
 };
 
 const Sidebar = ({ isOpen = false, onClose }) => {

@@ -19,6 +19,17 @@ import {
   Lock,
   Key,
   Shield,
+  Activity,
+  Layers,
+  Type,
+  Link,
+  MousePointer2,
+  Hash,
+  RotateCw,
+  Search,
+  GitBranch,
+  Target,
+  Share2,
 } from "lucide-react";
 import { subjects } from "../data/subjects";
 
@@ -39,6 +50,17 @@ const iconMap = {
   Lock,
   Key,
   Shield,
+  Activity,
+  Layers,
+  Type,
+  Link,
+  MousePointer2,
+  Hash,
+  RotateCw,
+  Search,
+  GitBranch,
+  Target,
+  Share2,
 };
 
 const SubjectPage = () => {
