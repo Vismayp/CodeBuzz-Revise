@@ -1007,5 +1007,273 @@ function pathSum(root, targetSum) {
     return result;
 }`,
     },
+    {
+      id: "guide-path-sums",
+      title: "Binary Tree Path Sums (Complete Guide)",
+      type: "guide",
+      content: `
+# Binary Tree Path Sum – Complete Interview Guide
+
+This document covers **Path Sum I, II, III, and Maximum Path Sum** with intuition-first explanations, dry runs, and Python solutions.
+
+---
+
+## 🌳 Common Binary Tree Used
+
+\`\`\`
+        10
+       /  \\
+      5   -3
+     / \\    \\
+    3   2    11
+   / \\   \\
+  3  -2   1
+\`\`\`
+
+---
+
+## 1️⃣ Path Sum I
+
+### 📘 Problem
+Given the root of a binary tree and a target sum, return **true** if the tree has a **root-to-leaf** path such that adding up all the values along the path equals the target sum.
+
+### 🧠 Intuition
+- Start ONLY from root
+- End ONLY at leaf
+- Subtract node value from target while going down
+- At leaf → remaining sum must be zero
+
+### 🧪 Dry Run (Target = 18)
+\`\`\`
+10 → remaining = 8
+5  → remaining = 3
+2  → remaining = 1
+1  → remaining = 0 ✔ (leaf)
+\`\`\`
+
+### 🐍 Python Solution
+\`\`\`python
+def hasPathSum(root, target):
+    if not root:
+        return False
+
+    if not root.left and not root.right:
+        return target == root.val
+
+    return (
+        hasPathSum(root.left, target - root.val) or
+        hasPathSum(root.right, target - root.val)
+    )
+\`\`\`
+
+---
+
+## 2️⃣ Path Sum II
+
+### 📘 Problem
+Return **all root-to-leaf paths** where the sum of node values equals target.
+
+### 🧠 Intuition
+- Same as Path Sum I
+- Maintain a path list
+- Save path when valid leaf is reached
+- Backtrack after recursion
+
+### 🧪 Dry Run
+\`\`\`
+Path = [10]
+Path = [10, 5]
+Path = [10, 5, 2]
+Path = [10, 5, 2, 1] ✔ save
+Backtrack
+\`\`\`
+
+### 🐍 Python Solution
+\`\`\`python
+def pathSum(root, target):
+    res = []
+
+    def dfs(node, remaining, path):
+        if not node:
+            return
+
+        path.append(node.val)
+
+        if not node.left and not node.right and remaining == node.val:
+            res.append(path[:])
+
+        dfs(node.left, remaining - node.val, path)
+        dfs(node.right, remaining - node.val, path)
+
+        path.pop()
+
+    dfs(root, target, [])
+    return res
+\`\`\`
+
+---
+
+## 3️⃣ Path Sum III
+
+### 📘 Problem
+Count the number of paths where the sum equals target.
+Paths can start and end anywhere but must go downward.
+
+### 🧠 Intuition
+- Each node can be a starting point
+- Count downward paths from each node
+- No need to end at leaf
+
+### 🧪 Dry Run (Target = 8)
+\`\`\`
+5 → 3 ✔
+5 → 2 → 1 ✔
+-3 → 11 ✔
+Total = 3
+\`\`\`
+
+### 🐍 Python Solution
+\`\`\`python
+def pathSum(root, target):
+    def countFrom(node, remaining):
+        if not node:
+            return 0
+
+        count = 1 if node.val == remaining else 0
+        count += countFrom(node.left, remaining - node.val)
+        count += countFrom(node.right, remaining - node.val)
+        return count
+
+    if not root:
+        return 0
+
+    return (
+        countFrom(root, target) +
+        pathSum(root.left, target) +
+        pathSum(root.right, target)
+    )
+\`\`\`
+
+---
+
+## 4️⃣ Maximum Path Sum
+
+### 📘 Problem
+Find the maximum sum of any path in the tree.
+Path can start and end at any node and may turn.
+
+### 🧠 Intuition
+- At each node compute max path THROUGH it
+- Return only one side upward
+- Ignore negative contributions
+
+### 🧪 Dry Run
+\`\`\`
+At node 5:
+Left = 3
+Right = 3
+Through = 11
+Return = 8
+
+At node 10:
+Left = 18
+Right = 8
+Through = 36 ✔
+\`\`\`
+
+### 🐍 Python Solution
+\`\`\`python
+def maxPathSum(root):
+    max_sum = float('-inf')
+
+    def dfs(node):
+        nonlocal max_sum
+        if not node:
+            return 0
+
+        left = max(dfs(node.left), 0)
+        right = max(dfs(node.right), 0)
+
+        max_sum = max(max_sum, node.val + left + right)
+        return node.val + max(left, right)
+
+    dfs(root)
+    return max_sum
+\`\`\`
+
+---
+
+## 🎯 Final Comparison
+
+| Problem | Start | End | Can Turn? | Return |
+|---------|-------|-----|-----------|--------|
+| Path Sum I | Root | Leaf | No | Boolean |
+| Path Sum II | Root | Leaf | No | Paths |
+| Path Sum III | Any | Any | No | Count |
+| Max Path Sum | Any | Any | Yes | Maximum |
+
+---
+
+**Interview Rule:**
+Before coding any tree problem, first fix:
+*where paths start, where they end, and what is allowed.*
+      `,
+      code: `# 1. Path Sum I
+def hasPathSum(root, target):
+    if not root:
+        return False
+    if not root.left and not root.right:
+        return target == root.val
+    return (
+        hasPathSum(root.left, target - root.val) or
+        hasPathSum(root.right, target - root.val)
+    )
+
+# 2. Path Sum II
+def pathSum(root, target):
+    res = []
+    def dfs(node, remaining, path):
+        if not node:
+            return
+        path.append(node.val)
+        if not node.left and not node.right and remaining == node.val:
+            res.append(path[:])
+        dfs(node.left, remaining - node.val, path)
+        dfs(node.right, remaining - node.val, path)
+        path.pop()
+    dfs(root, target, [])
+    return res
+
+# 3. Path Sum III
+def pathSumIII(root, target):
+    def countFrom(node, remaining):
+        if not node:
+            return 0
+        count = 1 if node.val == remaining else 0
+        count += countFrom(node.left, remaining - node.val)
+        count += countFrom(node.right, remaining - node.val)
+        return count
+    if not root:
+        return 0
+    return (
+        countFrom(root, target) +
+        pathSumIII(root.left, target) +
+        pathSumIII(root.right, target)
+    )
+
+# 4. Maximum Path Sum
+def maxPathSum(root):
+    max_sum = float('-inf')
+    def dfs(node):
+        nonlocal max_sum
+        if not node:
+            return 0
+        left = max(dfs(node.left), 0)
+        right = max(dfs(node.right), 0)
+        max_sum = max(max_sum, node.val + left + right)
+        return node.val + max(left, right)
+    dfs(root)
+    return max_sum`,
+    },
   ],
 };
