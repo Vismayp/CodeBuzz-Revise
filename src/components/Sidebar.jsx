@@ -102,7 +102,17 @@ const Sidebar = ({ isOpen = false, onClose }) => {
       aria-label="Sidebar navigation"
     >
       <div className="sidebar-header">
-        <Link to="/" style={{ textDecoration: "none" }}>
+        <Link to="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <img 
+            src="/favicon.jpg" 
+            alt="CodeBuzz Logo" 
+            style={{ 
+              width: "32px", 
+              height: "32px", 
+              borderRadius: "8px",
+              boxShadow: "0 0 15px var(--accent-glow)"
+            }} 
+          />
           <h1
             style={{
               fontSize: "1.5rem",
