@@ -17,6 +17,7 @@ import { topics as ragTopics } from "./rag_system";
 import { topics as designTopics } from "./ai_system_design";
 import { topics as advancedAiTopics } from "./advanced_ai";
 import { dsaTopics } from "./dsa/index.js";
+import { topics as n8nTopics } from "./n8n";
 
 import {
   Code,
@@ -209,6 +210,16 @@ export const subjects = [
     icon: Database,
     color: "from-red-500 to-red-700",
     topics: redisTopics,
+  },
+  {
+    id: "n8n",
+    category: "Backend & Architecture",
+    title: "n8n Automation",
+    description:
+      "Workflow automation tool. Visual node-based integrations and self-hosting.",
+    icon: Zap,
+    color: "from-pink-500 to-orange-500",
+    topics: n8nTopics,
   },
   {
     id: "oop",
