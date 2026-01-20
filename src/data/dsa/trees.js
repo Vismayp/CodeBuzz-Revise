@@ -414,6 +414,127 @@ function inorderSuccessor(root, p) {
     },
     // ============== PROBLEM SECTIONS ==============
     {
+      id: "bst-range-queries",
+      title: "Range Sum / Range Count in BST",
+      type: "problem",
+      difficulty: "Medium",
+      leetcode: "https://leetcode.com/problems/range-sum-of-bst/",
+      content: `
+## Range Sum / Range Count in BST
+
+This is a classic **Binary Search Tree pruning problem** where understanding BST properties turns a brute-force traversal into an optimized solution.
+
+### 📘 Problem Statement
+Given the root of a **Binary Search Tree (BST)** and two integers **L** and **R**, return:
+- **Range Sum**: Sum of all node values such that \`L ≤ node.val ≤ R\`
+- **Range Count**: Number of nodes whose values lie in the same range
+
+### 🌳 BST Visual (Example)
+\`\`\`
+              10
+            /    \\
+           5      15
+          / \\       \\
+         3   7       18
+\`\`\`
+
+Let **L = 7** and **R = 15**
+- Valid nodes: 7, 10, 15
+- Range Sum = **32**
+- Range Count = **3**
+
+### 🧠 Core Intuition: BST Pruning
+> **BST Property:**
+> - Left subtree → values < node.val
+> - Right subtree → values > node.val
+
+#### Pruning Rules:
+1. If \`node.val < L\` → Skip **left subtree** (all values there are even smaller)
+2. If \`node.val > R\` → Skip **right subtree** (all values there are even larger)
+3. If \`L ≤ node.val ≤ R\` → Include node and search BOTH sides
+
+This converts a naive **O(n)** traversal into **O(h + k)**, where **h** is height and **k** is number of nodes in range.
+
+### 🐍 Python Solution – Range Sum
+\`\`\`python
+def rangeSumBST(root, L, R):
+    if not root:
+        return 0
+
+    # Node value too small → skip left subtree
+    if root.val < L:
+        return rangeSumBST(root.right, L, R)
+
+    # Node value too large → skip right subtree
+    if root.val > R:
+        return rangeSumBST(root.left, L, R)
+
+    # Node in range → include and explore both sides
+    return (
+        root.val +
+        rangeSumBST(root.left, L, R) +
+        rangeSumBST(root.right, L, R)
+    )
+\`\`\`
+
+### 🐍 Python Solution – Range Count
+\`\`\`python
+def rangeCountBST(root, L, R):
+    if not root:
+        return 0
+
+    if root.val < L:
+        return rangeCountBST(root.right, L, R)
+
+    if root.val > R:
+        return rangeCountBST(root.left, L, R)
+
+    return (
+        1 +
+        rangeCountBST(root.left, L, R) +
+        rangeCountBST(root.right, L, R)
+    )
+\`\`\`
+
+### ⏱️ Time & Space Complexity
+| Approach | Time | Space |
+| --- | --- | --- |
+| Naive DFS | O(n) | O(h) |
+| BST Pruning | **O(h + k)** | O(h) |
+
+### 🎯 Interview Takeaways
+- Always ask: **Is this a BST?**
+- BST → think **pruning, not traversal**
+- Skip entire subtrees confidently
+- This pattern appears in: **Range queries**, **Closest value in BST**, **Floor / Ceil problems**
+
+**Interview One-Liner:** "Because it’s a BST, I prune subtrees that cannot possibly lie in the range."
+      `,
+      code: `// Range Sum in BST (JavaScript)
+function rangeSumBST(root, L, R) {
+    if (!root) return 0;
+
+    // Node value too small → skip left subtree
+    if (root.val < L) return rangeSumBST(root.right, L, R);
+
+    // Node value too large → skip right subtree
+    if (root.val > R) return rangeSumBST(root.left, L, R);
+
+    // Node in range → include and explore both sides
+    return root.val + rangeSumBST(root.left, L, R) + rangeSumBST(root.right, L, R);
+}
+
+// Range Count in BST (JavaScript)
+function rangeCountBST(root, L, R) {
+    if (!root) return 0;
+
+    if (root.val < L) return rangeCountBST(root.right, L, R);
+    if (root.val > R) return rangeCountBST(root.left, L, R);
+
+    return 1 + rangeCountBST(root.left, L, R) + rangeCountBST(root.right, L, R);
+}`,
+    },
+    {
       id: "problem-max-depth",
       title: "Maximum Depth of Binary Tree",
       type: "problem",
