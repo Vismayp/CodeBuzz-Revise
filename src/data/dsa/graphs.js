@@ -946,5 +946,549 @@ class MinHeap {
     }
 }`,
     },
+    // ============== ADVANCED GRAPH ALGORITHMS ==============
+    {
+      id: "shortest-path-algorithms",
+      title: "All Shortest Path Algorithms Compared",
+      type: "theory",
+      content: `
+## Shortest Path Algorithms: Complete Guide 🛤️
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🎯 Algorithm Selection Guide</h3>
+  
+  <table style="width: 100%; border-collapse: collapse; color: #e2e8f0; font-size: 12px;">
+    <thead>
+      <tr style="border-bottom: 2px solid #4ade80;">
+        <th style="text-align: left; padding: 10px; color: #4ade80;">Algorithm</th>
+        <th style="text-align: left; padding: 10px; color: #4ade80;">Time</th>
+        <th style="text-align: left; padding: 10px; color: #4ade80;">Neg Weights</th>
+        <th style="text-align: left; padding: 10px; color: #4ade80;">Use Case</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">BFS</td>
+        <td style="padding: 10px; color: #60a5fa;">O(V+E)</td>
+        <td style="padding: 10px; color: #f87171;">No</td>
+        <td style="padding: 10px;">Unweighted graphs</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Dijkstra</td>
+        <td style="padding: 10px; color: #60a5fa;">O((V+E)logV)</td>
+        <td style="padding: 10px; color: #f87171;">No</td>
+        <td style="padding: 10px;">Single source, non-neg</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Bellman-Ford</td>
+        <td style="padding: 10px; color: #60a5fa;">O(VE)</td>
+        <td style="padding: 10px; color: #4ade80;">Yes</td>
+        <td style="padding: 10px;">Neg edges, detect cycles</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Floyd-Warshall</td>
+        <td style="padding: 10px; color: #60a5fa;">O(V³)</td>
+        <td style="padding: 10px; color: #4ade80;">Yes</td>
+        <td style="padding: 10px;">All pairs shortest</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px;">Topological + DP</td>
+        <td style="padding: 10px; color: #60a5fa;">O(V+E)</td>
+        <td style="padding: 10px; color: #4ade80;">Yes</td>
+        <td style="padding: 10px;">DAGs only</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Decision Tree
+
+\`\`\`
+Unweighted graph?
+├── Yes → BFS
+└── No → Negative weights?
+          ├── No → Dijkstra
+          └── Yes → DAG?
+                    ├── Yes → Topological Sort + DP
+                    └── No → Need all pairs?
+                              ├── Yes → Floyd-Warshall
+                              └── No → Bellman-Ford
+\`\`\`
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// BELLMAN-FORD ALGORITHM
+// Handles negative weights, detects negative cycles
+// ═══════════════════════════════════════════════════════════
+
+function bellmanFord(n, edges, source) {
+    const dist = new Array(n).fill(Infinity);
+    dist[source] = 0;
+    
+    // Relax all edges V-1 times
+    for (let i = 0; i < n - 1; i++) {
+        let updated = false;
+        
+        for (const [u, v, w] of edges) {
+            if (dist[u] !== Infinity && dist[u] + w < dist[v]) {
+                dist[v] = dist[u] + w;
+                updated = true;
+            }
+        }
+        
+        // Early termination if no update
+        if (!updated) break;
+    }
+    
+    // Check for negative cycle (V-th iteration)
+    for (const [u, v, w] of edges) {
+        if (dist[u] !== Infinity && dist[u] + w < dist[v]) {
+            return null;  // Negative cycle exists
+        }
+    }
+    
+    return dist;
+}
+
+// Why V-1 iterations?
+// Shortest path has at most V-1 edges
+// Each iteration, at least one vertex gets its final distance
+
+
+// ═══════════════════════════════════════════════════════════
+// FLOYD-WARSHALL ALGORITHM
+// All pairs shortest path
+// ═══════════════════════════════════════════════════════════
+
+function floydWarshall(n, edges) {
+    // Initialize distance matrix
+    const dist = Array.from({ length: n }, () => 
+        new Array(n).fill(Infinity)
+    );
+    
+    // Self distance is 0
+    for (let i = 0; i < n; i++) {
+        dist[i][i] = 0;
+    }
+    
+    // Add edges
+    for (const [u, v, w] of edges) {
+        dist[u][v] = w;
+        // For undirected: dist[v][u] = w;
+    }
+    
+    // DP: Consider each vertex as intermediate
+    for (let k = 0; k < n; k++) {
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n; j++) {
+                if (dist[i][k] !== Infinity && dist[k][j] !== Infinity) {
+                    dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);
+                }
+            }
+        }
+    }
+    
+    // Check for negative cycle (diagonal < 0)
+    for (let i = 0; i < n; i++) {
+        if (dist[i][i] < 0) return null;
+    }
+    
+    return dist;
+}
+
+// Key insight: dist[i][j] through vertices {0..k}
+// = min(dist[i][j] through {0..k-1}, dist[i][k] + dist[k][j])
+
+
+// ═══════════════════════════════════════════════════════════
+// CHEAPEST FLIGHTS WITH K STOPS (LeetCode #787)
+// Modified Bellman-Ford with limited iterations
+// ═══════════════════════════════════════════════════════════
+
+function findCheapestPrice(n, flights, src, dst, k) {
+    let prices = new Array(n).fill(Infinity);
+    prices[src] = 0;
+    
+    // k+1 iterations (k stops = k+1 edges)
+    for (let i = 0; i <= k; i++) {
+        const temp = [...prices];
+        
+        for (const [u, v, w] of flights) {
+            if (prices[u] !== Infinity && prices[u] + w < temp[v]) {
+                temp[v] = prices[u] + w;
+            }
+        }
+        
+        prices = temp;
+    }
+    
+    return prices[dst] === Infinity ? -1 : prices[dst];
+}
+
+// Why copy array?
+// Prevents using updates from same iteration
+// Each iteration = one more edge used`,
+    },
+    {
+      id: "mst-algorithms",
+      title: "Minimum Spanning Tree Algorithms",
+      type: "theory",
+      content: `
+## MST: Connecting All Nodes Minimally 🌐
+
+A **Minimum Spanning Tree** connects all vertices with minimum total edge weight using exactly V-1 edges.
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🔥 MST Algorithm Comparison</h3>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; border-left: 4px solid #4ade80;">
+      <h4 style="color: #4ade80; margin: 0 0 8px 0;">Kruskal's</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">O(E log E)</p>
+      <p style="color: #60a5fa; margin: 8px 0 0 0; font-size: 12px;">Edge-based, Union-Find</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; border-left: 4px solid #60a5fa;">
+      <h4 style="color: #60a5fa; margin: 0 0 8px 0;">Prim's</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">O(E log V)</p>
+      <p style="color: #60a5fa; margin: 8px 0 0 0; font-size: 12px;">Vertex-based, Heap</p>
+    </div>
+  </div>
+</div>
+
+### When to Use Which
+
+| Criteria | Kruskal | Prim |
+|----------|---------|------|
+| Sparse graph | ✓ Better | Good |
+| Dense graph | Good | ✓ Better |
+| Already sorted edges | ✓ Best | — |
+| Need specific starting point | — | ✓ |
+
+### Applications
+- Network design (cables, pipes)
+- Cluster analysis
+- Approximation for traveling salesman
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// KRUSKAL'S ALGORITHM WITH UNION-FIND
+// ═══════════════════════════════════════════════════════════
+
+function kruskalMST(n, edges) {
+    // Sort edges by weight
+    edges.sort((a, b) => a[2] - b[2]);
+    
+    // Union-Find setup
+    const parent = Array.from({ length: n }, (_, i) => i);
+    const rank = new Array(n).fill(0);
+    
+    function find(x) {
+        if (parent[x] !== x) {
+            parent[x] = find(parent[x]);  // Path compression
+        }
+        return parent[x];
+    }
+    
+    function union(x, y) {
+        const px = find(x), py = find(y);
+        if (px === py) return false;
+        
+        // Union by rank
+        if (rank[px] < rank[py]) {
+            parent[px] = py;
+        } else if (rank[px] > rank[py]) {
+            parent[py] = px;
+        } else {
+            parent[py] = px;
+            rank[px]++;
+        }
+        return true;
+    }
+    
+    let mstWeight = 0;
+    const mstEdges = [];
+    
+    for (const [u, v, w] of edges) {
+        if (union(u, v)) {
+            mstWeight += w;
+            mstEdges.push([u, v, w]);
+            if (mstEdges.length === n - 1) break;
+        }
+    }
+    
+    return { weight: mstWeight, edges: mstEdges };
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// PRIM'S ALGORITHM WITH HEAP
+// ═══════════════════════════════════════════════════════════
+
+function primMST(n, edges) {
+    // Build adjacency list
+    const graph = Array.from({ length: n }, () => []);
+    for (const [u, v, w] of edges) {
+        graph[u].push([v, w]);
+        graph[v].push([u, w]);  // Undirected
+    }
+    
+    const visited = new Set();
+    const minHeap = [[0, 0]];  // [weight, node]
+    let mstWeight = 0;
+    
+    while (visited.size < n && minHeap.length > 0) {
+        // Sort to simulate min-heap (use proper heap in production)
+        minHeap.sort((a, b) => a[0] - b[0]);
+        const [weight, node] = minHeap.shift();
+        
+        if (visited.has(node)) continue;
+        
+        visited.add(node);
+        mstWeight += weight;
+        
+        for (const [neighbor, w] of graph[node]) {
+            if (!visited.has(neighbor)) {
+                minHeap.push([w, neighbor]);
+            }
+        }
+    }
+    
+    return visited.size === n ? mstWeight : -1;  // -1 if not connected
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// MIN COST TO CONNECT ALL POINTS (LeetCode #1584)
+// ═══════════════════════════════════════════════════════════
+
+function minCostConnectPoints(points) {
+    const n = points.length;
+    
+    // Calculate all edge weights (complete graph)
+    const edges = [];
+    for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+            const dist = Math.abs(points[i][0] - points[j][0]) + 
+                        Math.abs(points[i][1] - points[j][1]);
+            edges.push([i, j, dist]);
+        }
+    }
+    
+    // Apply Kruskal's
+    edges.sort((a, b) => a[2] - b[2]);
+    
+    const parent = Array.from({ length: n }, (_, i) => i);
+    
+    function find(x) {
+        if (parent[x] !== x) parent[x] = find(parent[x]);
+        return parent[x];
+    }
+    
+    let cost = 0;
+    let edgesUsed = 0;
+    
+    for (const [u, v, w] of edges) {
+        const pu = find(u), pv = find(v);
+        if (pu !== pv) {
+            parent[pu] = pv;
+            cost += w;
+            edgesUsed++;
+            if (edgesUsed === n - 1) break;
+        }
+    }
+    
+    return cost;
+}`,
+    },
+    {
+      id: "graph-interview-patterns",
+      title: "Graph Interview Patterns: Complete Reference",
+      type: "theory",
+      content: `
+## 🎯 Graph Problem Pattern Recognition
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <div style="display: grid; gap: 12px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #4ade80; margin: 0 0 8px 0;">🔍 "Find if path exists"</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">BFS/DFS or Union-Find</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #60a5fa; margin: 0 0 8px 0;">📏 "Shortest path"</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">Unweighted: BFS | Weighted: Dijkstra | Neg weights: Bellman-Ford</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #f472b6; margin: 0 0 8px 0;">🔄 "Detect cycle"</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">Undirected: Union-Find | Directed: DFS with colors</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #fbbf24; margin: 0 0 8px 0;">📋 "Order of tasks"</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">Topological Sort (Kahn's BFS or DFS)</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #a78bfa; margin: 0 0 8px 0;">🎨 "Bipartite / 2-coloring"</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">BFS/DFS with alternating colors</p>
+    </div>
+  </div>
+</div>
+
+### Master Checklist
+
+Before solving any graph problem:
+1. **Directed or Undirected?**
+2. **Weighted or Unweighted?**
+3. **Cyclic or Acyclic (DAG)?**
+4. **Single source or All pairs?**
+5. **Connected or Multiple components?**
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// TOPOLOGICAL SORT (Kahn's Algorithm - BFS)
+// ═══════════════════════════════════════════════════════════
+
+function topologicalSort(n, prerequisites) {
+    const graph = Array.from({ length: n }, () => []);
+    const inDegree = new Array(n).fill(0);
+    
+    for (const [course, prereq] of prerequisites) {
+        graph[prereq].push(course);
+        inDegree[course]++;
+    }
+    
+    // Start with nodes having no prerequisites
+    const queue = [];
+    for (let i = 0; i < n; i++) {
+        if (inDegree[i] === 0) queue.push(i);
+    }
+    
+    const order = [];
+    
+    while (queue.length > 0) {
+        const node = queue.shift();
+        order.push(node);
+        
+        for (const neighbor of graph[node]) {
+            inDegree[neighbor]--;
+            if (inDegree[neighbor] === 0) {
+                queue.push(neighbor);
+            }
+        }
+    }
+    
+    // If we processed all nodes, no cycle
+    return order.length === n ? order : [];
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// BIPARTITE CHECK (LeetCode #785)
+// ═══════════════════════════════════════════════════════════
+
+function isBipartite(graph) {
+    const n = graph.length;
+    const color = new Array(n).fill(-1);
+    
+    for (let i = 0; i < n; i++) {
+        if (color[i] !== -1) continue;
+        
+        // BFS from unvisited node
+        const queue = [i];
+        color[i] = 0;
+        
+        while (queue.length > 0) {
+            const node = queue.shift();
+            
+            for (const neighbor of graph[node]) {
+                if (color[neighbor] === -1) {
+                    color[neighbor] = 1 - color[node];
+                    queue.push(neighbor);
+                } else if (color[neighbor] === color[node]) {
+                    return false;  // Same color = not bipartite
+                }
+            }
+        }
+    }
+    
+    return true;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// DETECT CYCLE IN DIRECTED GRAPH (3-Color DFS)
+// ═══════════════════════════════════════════════════════════
+
+function hasCycle(n, edges) {
+    const graph = Array.from({ length: n }, () => []);
+    for (const [u, v] of edges) {
+        graph[u].push(v);
+    }
+    
+    // 0: white (unvisited), 1: gray (in stack), 2: black (done)
+    const color = new Array(n).fill(0);
+    
+    function dfs(node) {
+        color[node] = 1;  // Mark as in progress
+        
+        for (const neighbor of graph[node]) {
+            if (color[neighbor] === 1) return true;   // Back edge = cycle
+            if (color[neighbor] === 0 && dfs(neighbor)) return true;
+        }
+        
+        color[node] = 2;  // Mark as complete
+        return false;
+    }
+    
+    for (let i = 0; i < n; i++) {
+        if (color[i] === 0 && dfs(i)) return true;
+    }
+    
+    return false;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// INTERVIEW CHEAT SHEET
+// ═══════════════════════════════════════════════════════════
+
+/*
+GRAPH ALGORITHM SELECTION:
+
+Connectivity:
+- Components count → DFS/BFS or Union-Find
+- Path exists → BFS/DFS or Union-Find
+
+Shortest Path:
+- Unweighted → BFS
+- Non-negative weights → Dijkstra
+- Negative weights (no neg cycle) → Bellman-Ford
+- All pairs → Floyd-Warshall
+- DAG → Topological + relaxation
+
+Cycle Detection:
+- Undirected → Union-Find or DFS with parent
+- Directed → DFS with 3 colors
+
+Spanning Tree:
+- Dense graph → Prim's
+- Sparse graph → Kruskal's
+
+Ordering:
+- Task dependencies → Topological Sort
+
+Coloring:
+- 2-colorable? → Bipartite check
+
+COMPLEXITY REFERENCE:
+- BFS/DFS: O(V + E)
+- Dijkstra: O((V + E) log V) with heap
+- Bellman-Ford: O(VE)
+- Floyd-Warshall: O(V³)
+- Kruskal: O(E log E)
+- Prim: O(E log V)
+- Topological: O(V + E)
+*/`,
+    },
   ],
 };
