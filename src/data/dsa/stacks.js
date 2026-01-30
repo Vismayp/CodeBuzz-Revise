@@ -969,5 +969,573 @@ function evalRPNAlt(tokens) {
     return stack[0];
 }`,
     },
+    // ============== ADVANCED STACK PATTERNS ==============
+    {
+      id: "monotonic-stack-deep-dive",
+      title: "Monotonic Stack: Complete Guide",
+      type: "theory",
+      content: `
+## Monotonic Stack Mastery 📚
+
+A **monotonic stack** maintains elements in strictly increasing or decreasing order, enabling O(n) solutions for many "next greater/smaller" problems.
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🎯 When to Use Monotonic Stack</h3>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; border-left: 4px solid #4ade80;">
+      <h4 style="color: #4ade80; margin: 0 0 8px 0;">Next Greater Element</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">Find first element larger than current to the right</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; border-left: 4px solid #60a5fa;">
+      <h4 style="color: #60a5fa; margin: 0 0 8px 0;">Previous Smaller Element</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">Find first element smaller than current to the left</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; border-left: 4px solid #f472b6;">
+      <h4 style="color: #f472b6; margin: 0 0 8px 0;">Histogram Problems</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">Max rectangle, trapping rain water</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; border-left: 4px solid #fbbf24;">
+      <h4 style="color: #fbbf24; margin: 0 0 8px 0;">Stock Span</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">Days since price was higher</p>
+    </div>
+  </div>
+</div>
+
+### Types of Monotonic Stacks
+
+| Type | Stack Order | Pop When | Use Case |
+|------|-------------|----------|----------|
+| Increasing | Bottom → Top ↑ | Current < Top | Next Smaller |
+| Decreasing | Bottom → Top ↓ | Current > Top | Next Greater |
+
+### Pattern Recognition
+
+\`\`\`
+Need NEXT GREATER → Decreasing stack, iterate left to right
+Need NEXT SMALLER → Increasing stack, iterate left to right
+Need PREV GREATER → Decreasing stack, iterate left to right
+Need PREV SMALLER → Increasing stack, iterate left to right
+\`\`\`
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// NEXT GREATER ELEMENT (LeetCode #496, #503)
+// ═══════════════════════════════════════════════════════════
+
+// Next Greater Element I - Find next greater in nums2 for elements in nums1
+function nextGreaterElement(nums1, nums2) {
+    const stack = [];
+    const map = new Map(); // num → next greater
+    
+    // Process nums2 to find all next greater elements
+    for (const num of nums2) {
+        // Pop all elements smaller than current
+        while (stack.length && stack[stack.length - 1] < num) {
+            map.set(stack.pop(), num);
+        }
+        stack.push(num);
+    }
+    
+    // Remaining elements have no greater element
+    while (stack.length) {
+        map.set(stack.pop(), -1);
+    }
+    
+    return nums1.map(num => map.get(num));
+}
+
+
+// Next Greater Element II - Circular array
+function nextGreaterElements(nums) {
+    const n = nums.length;
+    const result = new Array(n).fill(-1);
+    const stack = []; // Store indices
+    
+    // Process array twice for circular behavior
+    for (let i = 0; i < 2 * n; i++) {
+        const idx = i % n;
+        
+        while (stack.length && nums[stack[stack.length - 1]] < nums[idx]) {
+            result[stack.pop()] = nums[idx];
+        }
+        
+        // Only push in first pass
+        if (i < n) {
+            stack.push(idx);
+        }
+    }
+    
+    return result;
+}
+
+// Example: [1, 2, 1] → [2, -1, 2]
+// Circular: after 1 comes 1,2,1 again
+// For index 2 (val 1), next greater is 1 (at index 0) = 2
+
+
+// ═══════════════════════════════════════════════════════════
+// DAILY TEMPERATURES (LeetCode #739)
+// ═══════════════════════════════════════════════════════════
+
+function dailyTemperatures(temperatures) {
+    const n = temperatures.length;
+    const result = new Array(n).fill(0);
+    const stack = []; // Decreasing stack of indices
+    
+    for (let i = 0; i < n; i++) {
+        // Pop all days with lower temperature
+        while (stack.length && temperatures[stack[stack.length - 1]] < temperatures[i]) {
+            const prevDay = stack.pop();
+            result[prevDay] = i - prevDay;
+        }
+        stack.push(i);
+    }
+    
+    return result;
+}
+
+// Example: [73, 74, 75, 71, 69, 72, 76, 73]
+// Result:  [1,  1,  4,  2,  1,  1,  0,  0]
+// Day 0 (73°) waits 1 day for 74°
+// Day 2 (75°) waits 4 days for 76°
+
+
+// ═══════════════════════════════════════════════════════════
+// LARGEST RECTANGLE IN HISTOGRAM (LeetCode #84 - Hard)
+// ═══════════════════════════════════════════════════════════
+
+function largestRectangleArea(heights) {
+    const stack = []; // Increasing stack of indices
+    let maxArea = 0;
+    
+    // Add sentinel value to handle remaining elements
+    heights.push(0);
+    
+    for (let i = 0; i < heights.length; i++) {
+        while (stack.length && heights[stack[stack.length - 1]] > heights[i]) {
+            const height = heights[stack.pop()];
+            const width = stack.length === 0 ? i : i - stack[stack.length - 1] - 1;
+            maxArea = Math.max(maxArea, height * width);
+        }
+        stack.push(i);
+    }
+    
+    heights.pop(); // Remove sentinel
+    return maxArea;
+}
+
+// Key Insight: When we pop a bar, it's the height of a rectangle
+// Width extends from (previous bar in stack + 1) to (current index - 1)`,
+    },
+    {
+      id: "monotonic-queue-pattern",
+      title: "Monotonic Queue & Deque Patterns",
+      type: "theory",
+      content: `
+## Monotonic Queue: Sliding Window Optimization 🚀
+
+A **monotonic deque** (double-ended queue) maintains elements for efficient sliding window max/min queries in O(1) per query.
+
+### Why Monotonic Queue?
+
+<div style="background: #0f172a; border-radius: 12px; padding: 20px; margin: 16px 0;">
+  <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 16px;">
+    <div style="text-align: center;">
+      <div style="font-size: 32px;">🐢</div>
+      <div style="color: #f87171; font-weight: bold;">Naive</div>
+      <div style="color: #94a3b8; font-size: 13px;">O(n × k)</div>
+    </div>
+    <div style="color: #fbbf24; font-size: 24px;">→</div>
+    <div style="text-align: center;">
+      <div style="font-size: 32px;">🐇</div>
+      <div style="color: #4ade80; font-weight: bold;">Monotonic Queue</div>
+      <div style="color: #94a3b8; font-size: 13px;">O(n)</div>
+    </div>
+  </div>
+</div>
+
+### How It Works
+
+1. **Maintain decreasing deque** for maximum (front = max)
+2. **Remove from back** elements smaller than new element
+3. **Remove from front** elements outside window
+4. **Front always has answer**
+
+### Visualization
+
+\`\`\`
+Array: [1, 3, -1, -3, 5, 3, 6, 7], k=3
+
+Window [1,3,-1]:  Deque: [3,-1]  Max: 3
+Window [3,-1,-3]: Deque: [3,-1,-3] Max: 3
+Window [-1,-3,5]: Deque: [5]    Max: 5
+...
+
+Deque stores indices, shown here as values for clarity
+\`\`\`
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// SLIDING WINDOW MAXIMUM - DEQUE SOLUTION
+// ═══════════════════════════════════════════════════════════
+
+function maxSlidingWindow(nums, k) {
+    const result = [];
+    const deque = []; // Store indices, values are decreasing
+    
+    for (let i = 0; i < nums.length; i++) {
+        // Remove indices outside current window
+        while (deque.length && deque[0] <= i - k) {
+            deque.shift();
+        }
+        
+        // Remove indices of smaller elements (they'll never be max)
+        while (deque.length && nums[deque[deque.length - 1]] < nums[i]) {
+            deque.pop();
+        }
+        
+        deque.push(i);
+        
+        // Add to result once window is complete
+        if (i >= k - 1) {
+            result.push(nums[deque[0]]);
+        }
+    }
+    
+    return result;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// SHORTEST SUBARRAY WITH SUM >= K (LeetCode #862 - Hard)
+// ═══════════════════════════════════════════════════════════
+
+function shortestSubarray(nums, k) {
+    const n = nums.length;
+    const prefix = new Array(n + 1).fill(0);
+    
+    // Build prefix sum
+    for (let i = 0; i < n; i++) {
+        prefix[i + 1] = prefix[i] + nums[i];
+    }
+    
+    const deque = []; // Monotonic increasing deque of prefix indices
+    let minLen = Infinity;
+    
+    for (let i = 0; i <= n; i++) {
+        // Check if we found valid subarray
+        while (deque.length && prefix[i] - prefix[deque[0]] >= k) {
+            minLen = Math.min(minLen, i - deque.shift());
+        }
+        
+        // Maintain increasing order
+        while (deque.length && prefix[i] <= prefix[deque[deque.length - 1]]) {
+            deque.pop();
+        }
+        
+        deque.push(i);
+    }
+    
+    return minLen === Infinity ? -1 : minLen;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// CONSTRAINED SUBSEQUENCE SUM (LeetCode #1425)
+// ═══════════════════════════════════════════════════════════
+
+// Maximum sum subsequence where adjacent elements are at most k apart
+function constrainedSubsetSum(nums, k) {
+    const n = nums.length;
+    const dp = [...nums]; // dp[i] = max sum ending at i
+    const deque = []; // Decreasing deque of dp values
+    
+    for (let i = 0; i < n; i++) {
+        // Remove elements outside window
+        while (deque.length && deque[0] < i - k) {
+            deque.shift();
+        }
+        
+        // Use max from deque if positive
+        if (deque.length) {
+            dp[i] = Math.max(dp[i], dp[i] + dp[deque[0]]);
+        }
+        
+        // Maintain decreasing order
+        while (deque.length && dp[deque[deque.length - 1]] <= dp[i]) {
+            deque.pop();
+        }
+        
+        deque.push(i);
+    }
+    
+    return Math.max(...dp);
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// INTERVIEW CHEAT SHEET: STACK/QUEUE PATTERNS
+// ═══════════════════════════════════════════════════════════
+
+/*
+┌───────────────────────────────────────────────────────────┐
+│              STACK/QUEUE PATTERN SELECTOR                 │
+├───────────────────────────────────────────────────────────┤
+│                                                           │
+│  Need to match/validate pairs?                           │
+│  └─> Regular Stack (parentheses, brackets)               │
+│                                                           │
+│  Need next/prev greater/smaller element?                 │
+│  └─> Monotonic Stack                                     │
+│      ├─ Next Greater: Decreasing stack                   │
+│      └─ Next Smaller: Increasing stack                   │
+│                                                           │
+│  Need sliding window max/min?                            │
+│  └─> Monotonic Deque                                     │
+│      └─ Window Max: Decreasing deque                     │
+│                                                           │
+│  Need to process in LIFO order?                          │
+│  └─> Stack (DFS, backtracking)                           │
+│                                                           │
+│  Need to process in FIFO order?                          │
+│  └─> Queue (BFS, scheduling)                             │
+│                                                           │
+│  Need min/max with O(1) access?                          │
+│  └─> Two stacks (main + min/max)                         │
+│                                                           │
+└───────────────────────────────────────────────────────────┘
+*/
+
+
+// ═══════════════════════════════════════════════════════════
+// TRAPPING RAIN WATER (LeetCode #42) - Stack Solution
+// ═══════════════════════════════════════════════════════════
+
+function trap(height) {
+    const stack = []; // Indices
+    let water = 0;
+    
+    for (let i = 0; i < height.length; i++) {
+        while (stack.length && height[i] > height[stack[stack.length - 1]]) {
+            const bottom = stack.pop();
+            
+            if (!stack.length) break;
+            
+            const left = stack[stack.length - 1];
+            const width = i - left - 1;
+            const boundedHeight = Math.min(height[left], height[i]) - height[bottom];
+            water += width * boundedHeight;
+        }
+        stack.push(i);
+    }
+    
+    return water;
+}
+
+// How it works:
+// Stack stores indices of bars in decreasing height order
+// When we find a taller bar, we calculate water layer by layer
+// Each pop represents the bottom of a water layer`,
+    },
+    {
+      id: "stack-queue-transformations",
+      title: "Stack & Queue Transformations",
+      type: "theory",
+      content: `
+## Classic Interview Patterns: Stack ↔ Queue 🔄
+
+### Implement Queue using Stacks
+
+Two approaches:
+1. **Costly enqueue**: Transfer all elements to add new one at bottom
+2. **Costly dequeue**: Transfer when dequeue is needed (amortized O(1))
+
+### Implement Stack using Queues
+
+Two approaches:
+1. **Costly push**: Rotate to put new element at front
+2. **Single queue**: Rotate n-1 elements after each push
+
+### Min Stack
+
+Track minimum at each level - O(1) getMin.
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// QUEUE USING TWO STACKS (Amortized O(1))
+// ═══════════════════════════════════════════════════════════
+
+class MyQueue {
+    constructor() {
+        this.pushStack = [];  // For push operations
+        this.popStack = [];   // For pop operations
+    }
+    
+    push(x) {
+        this.pushStack.push(x);
+    }
+    
+    pop() {
+        this._transfer();
+        return this.popStack.pop();
+    }
+    
+    peek() {
+        this._transfer();
+        return this.popStack[this.popStack.length - 1];
+    }
+    
+    empty() {
+        return this.pushStack.length === 0 && this.popStack.length === 0;
+    }
+    
+    _transfer() {
+        // Only transfer when popStack is empty
+        if (this.popStack.length === 0) {
+            while (this.pushStack.length > 0) {
+                this.popStack.push(this.pushStack.pop());
+            }
+        }
+    }
+}
+
+// Why amortized O(1)?
+// Each element is moved at most twice (push→transfer, pop)
+// n operations → 2n moves → O(1) amortized per operation
+
+
+// ═══════════════════════════════════════════════════════════
+// STACK USING SINGLE QUEUE
+// ═══════════════════════════════════════════════════════════
+
+class MyStack {
+    constructor() {
+        this.queue = [];
+    }
+    
+    push(x) {
+        this.queue.push(x);
+        // Rotate so new element is at front
+        for (let i = 0; i < this.queue.length - 1; i++) {
+            this.queue.push(this.queue.shift());
+        }
+    }
+    
+    pop() {
+        return this.queue.shift();
+    }
+    
+    top() {
+        return this.queue[0];
+    }
+    
+    empty() {
+        return this.queue.length === 0;
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// MIN STACK WITH O(1) OPERATIONS
+// ═══════════════════════════════════════════════════════════
+
+class MinStack {
+    constructor() {
+        this.stack = [];
+        this.minStack = [];
+    }
+    
+    push(val) {
+        this.stack.push(val);
+        // Push to minStack if empty or val <= current min
+        if (this.minStack.length === 0 || val <= this.getMin()) {
+            this.minStack.push(val);
+        }
+    }
+    
+    pop() {
+        const val = this.stack.pop();
+        if (val === this.getMin()) {
+            this.minStack.pop();
+        }
+        return val;
+    }
+    
+    top() {
+        return this.stack[this.stack.length - 1];
+    }
+    
+    getMin() {
+        return this.minStack[this.minStack.length - 1];
+    }
+}
+
+// Space optimization: Store difference from min
+class MinStackOptimized {
+    constructor() {
+        this.stack = [];
+        this.min = Infinity;
+    }
+    
+    push(val) {
+        if (this.stack.length === 0) {
+            this.stack.push(0);
+            this.min = val;
+        } else {
+            this.stack.push(val - this.min);
+            if (val < this.min) this.min = val;
+        }
+    }
+    
+    pop() {
+        const diff = this.stack.pop();
+        if (diff < 0) {
+            // This was a new minimum
+            const val = this.min;
+            this.min = this.min - diff; // Restore previous min
+            return val;
+        }
+        return this.min + diff;
+    }
+    
+    top() {
+        const diff = this.stack[this.stack.length - 1];
+        return diff < 0 ? this.min : this.min + diff;
+    }
+    
+    getMin() {
+        return this.min;
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// ONLINE STOCK SPAN (LeetCode #901)
+// ═══════════════════════════════════════════════════════════
+
+class StockSpanner {
+    constructor() {
+        this.stack = []; // [price, span]
+    }
+    
+    next(price) {
+        let span = 1;
+        
+        // Pop all days with price <= today's price
+        while (this.stack.length && this.stack[this.stack.length - 1][0] <= price) {
+            span += this.stack.pop()[1];
+        }
+        
+        this.stack.push([price, span]);
+        return span;
+    }
+}
+
+// Stock prices: 100, 80, 60, 70, 60, 75, 85
+// Spans:        1,   1,  1,  2,  1,  4,  6
+// Day 6 (75): 60+70+60=3 consecutive days, span=4
+// Day 7 (85): All previous ≤ 85, span=6`,
+    },
   ],
 };
