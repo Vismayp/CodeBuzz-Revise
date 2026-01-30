@@ -11,7 +11,7 @@ import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 
-const stripIndent = (str) => {
+const processContent = (str) => {
   if (!str) return str;
   const lines = str.split("\n");
 
@@ -28,12 +28,15 @@ const stripIndent = (str) => {
   if (minIndent === Infinity) return str;
 
   // Remove indent from all lines
-  return lines
+  const unindented = lines
     .map((line) => {
       if (line.trim().length === 0) return "";
       return line.slice(minIndent);
     })
     .join("\n");
+    
+  // Collapse blank lines between HTML tags to prevent them from being interpreted as code blocks
+  return unindented.replace(/>\s*[\r\n]+\s*</g, ">\n<");
 };
 
 const TopicPage = () => {
@@ -174,7 +177,7 @@ const TopicPage = () => {
             rehypePlugins={[rehypeRaw, rehypeKatex]}
             components={MarkdownComponents}
           >
-            {stripIndent(section.content)}
+            {processContent(section.content)}
           </ReactMarkdown>
         </div>
 
