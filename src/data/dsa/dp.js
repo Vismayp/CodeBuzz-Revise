@@ -974,5 +974,476 @@ function maxProfit4(k, prices) {
     return dp[k][n-1];
 }`,
     },
+    // ============== ADVANCED DP TECHNIQUES ==============
+    {
+      id: "bitmask-dp",
+      title: "Bitmask DP: Subset State Optimization",
+      type: "theory",
+      content: `
+## Bitmask DP: Encode Subsets as Integers 🎭
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🎯 When to Use Bitmask DP</h3>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #4ade80; margin: 0 0 8px 0;">✓ Use When</h4>
+      <ul style="color: #94a3b8; margin: 0; padding-left: 20px; font-size: 13px;">
+        <li>n ≤ 20 elements</li>
+        <li>State = which elements used</li>
+        <li>Subset problems</li>
+        <li>Permutation with constraints</li>
+      </ul>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #f87171; margin: 0 0 8px 0;">✗ Avoid When</h4>
+      <ul style="color: #94a3b8; margin: 0; padding-left: 20px; font-size: 13px;">
+        <li>n > 20 (2²⁰ = 1M states)</li>
+        <li>Order doesn't matter</li>
+        <li>Simpler DP works</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+### Bit Operations Cheat Sheet
+
+| Operation | Code | Description |
+|-----------|------|-------------|
+| Check if i-th bit set | \`(mask >> i) & 1\` | Is element i used? |
+| Set i-th bit | \`mask \\| (1 << i)\` | Add element i |
+| Clear i-th bit | \`mask & ~(1 << i)\` | Remove element i |
+| Toggle i-th bit | \`mask ^ (1 << i)\` | Flip element i |
+| Count set bits | \`popcount(mask)\` | How many used? |
+| All bits set | \`(1 << n) - 1\` | All elements used |
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// TRAVELING SALESMAN PROBLEM (TSP) - Classic Bitmask DP
+// ═══════════════════════════════════════════════════════════
+
+function tsp(dist) {
+    const n = dist.length;
+    const ALL_VISITED = (1 << n) - 1;
+    
+    // dp[mask][i] = min cost to visit cities in mask, ending at i
+    const dp = Array.from({ length: 1 << n }, () => 
+        new Array(n).fill(Infinity)
+    );
+    
+    // Start from city 0
+    dp[1][0] = 0;
+    
+    for (let mask = 1; mask <= ALL_VISITED; mask++) {
+        for (let last = 0; last < n; last++) {
+            if (!(mask & (1 << last))) continue;  // last not in mask
+            if (dp[mask][last] === Infinity) continue;
+            
+            // Try going to each unvisited city
+            for (let next = 0; next < n; next++) {
+                if (mask & (1 << next)) continue;  // already visited
+                
+                const newMask = mask | (1 << next);
+                dp[newMask][next] = Math.min(
+                    dp[newMask][next],
+                    dp[mask][last] + dist[last][next]
+                );
+            }
+        }
+    }
+    
+    // Find min cost to visit all and return to start
+    let minCost = Infinity;
+    for (let last = 1; last < n; last++) {
+        minCost = Math.min(minCost, dp[ALL_VISITED][last] + dist[last][0]);
+    }
+    
+    return minCost;
+}
+
+// Time: O(2^n * n^2), Space: O(2^n * n)
+
+
+// ═══════════════════════════════════════════════════════════
+// PARTITION TO K EQUAL SUM SUBSETS (LeetCode #698)
+// ═══════════════════════════════════════════════════════════
+
+function canPartitionKSubsets(nums, k) {
+    const total = nums.reduce((a, b) => a + b, 0);
+    if (total % k !== 0) return false;
+    
+    const target = total / k;
+    const n = nums.length;
+    
+    // dp[mask] = sum of current bucket for this state
+    const dp = new Array(1 << n).fill(-1);
+    dp[0] = 0;  // Empty bucket
+    
+    for (let mask = 0; mask < (1 << n); mask++) {
+        if (dp[mask] === -1) continue;  // Invalid state
+        
+        for (let i = 0; i < n; i++) {
+            // If i not used and fits in current bucket
+            if (!(mask & (1 << i)) && dp[mask] + nums[i] <= target) {
+                const newMask = mask | (1 << i);
+                // New bucket sum (reset if filled)
+                dp[newMask] = (dp[mask] + nums[i]) % target;
+            }
+        }
+    }
+    
+    return dp[(1 << n) - 1] === 0;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// SHORTEST PATH VISITING ALL NODES (LeetCode #847)
+// ═══════════════════════════════════════════════════════════
+
+function shortestPathLength(graph) {
+    const n = graph.length;
+    const ALL_VISITED = (1 << n) - 1;
+    
+    // BFS: state = [node, visited_mask]
+    const queue = [];
+    const visited = new Set();
+    
+    // Start from each node
+    for (let i = 0; i < n; i++) {
+        const state = \`\${i},\${1 << i}\`;
+        queue.push([i, 1 << i, 0]);
+        visited.add(state);
+    }
+    
+    while (queue.length > 0) {
+        const [node, mask, dist] = queue.shift();
+        
+        if (mask === ALL_VISITED) return dist;
+        
+        for (const neighbor of graph[node]) {
+            const newMask = mask | (1 << neighbor);
+            const state = \`\${neighbor},\${newMask}\`;
+            
+            if (!visited.has(state)) {
+                visited.add(state);
+                queue.push([neighbor, newMask, dist + 1]);
+            }
+        }
+    }
+    
+    return -1;
+}`,
+    },
+    {
+      id: "dp-space-optimization",
+      title: "DP Space Optimization Techniques",
+      type: "theory",
+      content: `
+## Space Optimization: From O(n²) to O(n) 🗜️
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🎯 Optimization Strategies</h3>
+  
+  <div style="display: grid; gap: 12px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; display: flex; align-items: center; gap: 16px;">
+      <span style="background: #4ade80; color: #000; padding: 8px 16px; border-radius: 8px; font-weight: bold;">1</span>
+      <div>
+        <h4 style="color: #4ade80; margin: 0;">Rolling Array</h4>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 13px;">dp[i] only depends on dp[i-1] → keep 2 rows</p>
+      </div>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; display: flex; align-items: center; gap: 16px;">
+      <span style="background: #60a5fa; color: #000; padding: 8px 16px; border-radius: 8px; font-weight: bold;">2</span>
+      <div>
+        <h4 style="color: #60a5fa; margin: 0;">Single Row + Right Direction</h4>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 13px;">For unbounded: iterate j from small to large</p>
+      </div>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; display: flex; align-items: center; gap: 16px;">
+      <span style="background: #f472b6; color: #000; padding: 8px 16px; border-radius: 8px; font-weight: bold;">3</span>
+      <div>
+        <h4 style="color: #f472b6; margin: 0;">Single Row + Left Direction</h4>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 13px;">For 0/1: iterate j from large to small</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+### Pattern Recognition
+
+| DP Type | Iteration Direction | Reason |
+|---------|---------------------|--------|
+| 0/1 Knapsack | j: large → small | Don't reuse same item |
+| Unbounded Knapsack | j: small → large | Can reuse items |
+| LCS/Edit Distance | i or j fixed, other varies | Depends on previous row |
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// 0/1 KNAPSACK - SPACE OPTIMIZATION
+// ═══════════════════════════════════════════════════════════
+
+// Original: O(n * W) space
+function knapsack2D(weights, values, W) {
+    const n = weights.length;
+    const dp = Array.from({ length: n + 1 }, () => new Array(W + 1).fill(0));
+    
+    for (let i = 1; i <= n; i++) {
+        for (let w = 0; w <= W; w++) {
+            dp[i][w] = dp[i-1][w];  // Don't take item
+            if (weights[i-1] <= w) {
+                dp[i][w] = Math.max(dp[i][w], 
+                    dp[i-1][w - weights[i-1]] + values[i-1]);
+            }
+        }
+    }
+    return dp[n][W];
+}
+
+// Optimized: O(W) space
+function knapsack1D(weights, values, W) {
+    const dp = new Array(W + 1).fill(0);
+    
+    for (let i = 0; i < weights.length; i++) {
+        // Iterate RIGHT TO LEFT to avoid reusing same item
+        for (let w = W; w >= weights[i]; w--) {
+            dp[w] = Math.max(dp[w], dp[w - weights[i]] + values[i]);
+        }
+    }
+    return dp[W];
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// COIN CHANGE - UNBOUNDED KNAPSACK
+// ═══════════════════════════════════════════════════════════
+
+function coinChange(coins, amount) {
+    const dp = new Array(amount + 1).fill(Infinity);
+    dp[0] = 0;
+    
+    for (const coin of coins) {
+        // Iterate LEFT TO RIGHT - can reuse coins
+        for (let a = coin; a <= amount; a++) {
+            dp[a] = Math.min(dp[a], dp[a - coin] + 1);
+        }
+    }
+    
+    return dp[amount] === Infinity ? -1 : dp[amount];
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// EDIT DISTANCE - ROLLING ARRAY
+// ═══════════════════════════════════════════════════════════
+
+// O(m) space instead of O(mn)
+function minDistance(word1, word2) {
+    const m = word1.length, n = word2.length;
+    let prev = Array.from({ length: n + 1 }, (_, i) => i);
+    let curr = new Array(n + 1).fill(0);
+    
+    for (let i = 1; i <= m; i++) {
+        curr[0] = i;
+        
+        for (let j = 1; j <= n; j++) {
+            if (word1[i-1] === word2[j-1]) {
+                curr[j] = prev[j-1];
+            } else {
+                curr[j] = 1 + Math.min(prev[j-1], prev[j], curr[j-1]);
+            }
+        }
+        
+        [prev, curr] = [curr, prev];
+    }
+    
+    return prev[n];
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// UNIQUE PATHS - SINGLE ROW
+// ═══════════════════════════════════════════════════════════
+
+function uniquePaths(m, n) {
+    const dp = new Array(n).fill(1);
+    
+    for (let i = 1; i < m; i++) {
+        for (let j = 1; j < n; j++) {
+            dp[j] += dp[j-1];  // dp[j] = dp[j] + dp[j-1]
+        }
+    }
+    
+    return dp[n-1];
+}`,
+    },
+    {
+      id: "dp-interview-patterns",
+      title: "DP Interview Patterns: Complete Reference",
+      type: "theory",
+      content: `
+## 🎯 Master DP Pattern Recognition
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">DP Category Matrix</h3>
+  
+  <table style="width: 100%; border-collapse: collapse; color: #e2e8f0; font-size: 12px;">
+    <thead>
+      <tr style="border-bottom: 2px solid #4ade80;">
+        <th style="text-align: left; padding: 10px; color: #4ade80;">Pattern</th>
+        <th style="text-align: left; padding: 10px; color: #4ade80;">State</th>
+        <th style="text-align: left; padding: 10px; color: #4ade80;">Examples</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Linear</td>
+        <td style="padding: 10px; color: #60a5fa;">dp[i]</td>
+        <td style="padding: 10px;">Climbing stairs, House robber</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Two Sequences</td>
+        <td style="padding: 10px; color: #60a5fa;">dp[i][j]</td>
+        <td style="padding: 10px;">LCS, Edit distance</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Interval</td>
+        <td style="padding: 10px; color: #60a5fa;">dp[i][j] = f(dp[i][k], dp[k][j])</td>
+        <td style="padding: 10px;">Matrix chain, Burst balloons</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Knapsack</td>
+        <td style="padding: 10px; color: #60a5fa;">dp[i][capacity]</td>
+        <td style="padding: 10px;">Subset sum, Coin change</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Bitmask</td>
+        <td style="padding: 10px; color: #60a5fa;">dp[mask]</td>
+        <td style="padding: 10px;">TSP, Assignment</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px;">Grid</td>
+        <td style="padding: 10px; color: #60a5fa;">dp[i][j]</td>
+        <td style="padding: 10px;">Unique paths, Min path sum</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### State Design Framework
+
+1. **What varies?** → Dimensions of dp array
+2. **What's the decision?** → Transitions
+3. **What's optimal?** → min/max operation
+4. **Base cases?** → Boundary conditions
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// PATTERN: INTERVAL DP - BURST BALLOONS
+// ═══════════════════════════════════════════════════════════
+
+function maxCoins(nums) {
+    // Add virtual balloons at boundaries
+    nums = [1, ...nums, 1];
+    const n = nums.length;
+    
+    // dp[i][j] = max coins from bursting balloons in (i, j)
+    const dp = Array.from({ length: n }, () => new Array(n).fill(0));
+    
+    // Length of interval
+    for (let len = 2; len < n; len++) {
+        for (let i = 0; i + len < n; i++) {
+            const j = i + len;
+            
+            // Try bursting each balloon last
+            for (let k = i + 1; k < j; k++) {
+                dp[i][j] = Math.max(dp[i][j],
+                    dp[i][k] + dp[k][j] + nums[i] * nums[k] * nums[j]
+                );
+            }
+        }
+    }
+    
+    return dp[0][n-1];
+}
+
+// Key insight: Think about which balloon to burst LAST
+// If k is last in (i,j), it sees nums[i] and nums[j] as neighbors
+
+
+// ═══════════════════════════════════════════════════════════
+// PATTERN: DIGIT DP - COUNT NUMBERS WITH UNIQUE DIGITS
+// ═══════════════════════════════════════════════════════════
+
+function countNumbersWithUniqueDigits(n) {
+    if (n === 0) return 1;
+    
+    let result = 10;  // n=1
+    let uniqueDigits = 9;
+    let availableDigits = 9;
+    
+    for (let i = 2; i <= n && availableDigits > 0; i++) {
+        uniqueDigits *= availableDigits;
+        result += uniqueDigits;
+        availableDigits--;
+    }
+    
+    return result;
+}
+
+// For n digits: 9 * 9 * 8 * 7 * ... (first digit can't be 0)
+
+
+// ═══════════════════════════════════════════════════════════
+// PATTERN: STATE MACHINE DP - BEST TIME TO BUY/SELL
+// ═══════════════════════════════════════════════════════════
+
+function maxProfitWithKTransactions(k, prices) {
+    if (!prices.length) return 0;
+    
+    // States: buy[i] = max profit after buying i times
+    //         sell[i] = max profit after selling i times
+    const buy = new Array(k + 1).fill(-Infinity);
+    const sell = new Array(k + 1).fill(0);
+    
+    for (const price of prices) {
+        for (let i = 1; i <= k; i++) {
+            buy[i] = Math.max(buy[i], sell[i-1] - price);
+            sell[i] = Math.max(sell[i], buy[i] + price);
+        }
+    }
+    
+    return sell[k];
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// INTERVIEW CHEAT SHEET
+// ═══════════════════════════════════════════════════════════
+
+/*
+DP PROBLEM RECOGNITION:
+
+1. "Count ways to..." → DP with addition
+2. "Minimum/Maximum..." → DP with min/max
+3. "Is it possible..." → DP with boolean OR
+4. "Longest/Shortest..." → DP with length tracking
+
+STATE DESIGN TIPS:
+- Position (index, row/col)
+- Remaining capacity/count
+- Previous choice (for constraints)
+- Bitmask (for subset states)
+
+TRANSITION PATTERNS:
+- Take or skip: dp[i] = max(dp[i-1], dp[i-2] + val[i])
+- All previous: dp[i] = f(dp[0], dp[1], ..., dp[i-1])
+- Grid: dp[i][j] = f(dp[i-1][j], dp[i][j-1])
+- Interval: dp[i][j] = f(dp[i][k], dp[k][j]) for k in (i,j)
+
+SPACE OPTIMIZATION RULES:
+- 2D → 1D: If only depends on previous row
+- Direction matters: 0/1 = reverse, unbounded = forward
+*/`,
+    },
   ],
 };
