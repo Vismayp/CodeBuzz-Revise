@@ -34,7 +34,7 @@ const processContent = (str) => {
       return line.slice(minIndent);
     })
     .join("\n");
-    
+
   // Collapse blank lines between HTML tags to prevent them from being interpreted as code blocks
   return unindented.replace(/>\s*[\r\n]+\s*</g, ">\n<");
 };
