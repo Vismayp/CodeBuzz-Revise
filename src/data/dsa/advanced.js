@@ -999,5 +999,788 @@ This is a graph connectivity problem - union emails that belong to same account.
 //   ["John","johnnybravo@mail.com"]
 // ]`,
     },
+    // ============== ADVANCED FENWICK TREE TECHNIQUES ==============
+    {
+      id: "fenwick-tree-advanced",
+      title: "Fenwick Tree: Advanced Techniques",
+      type: "theory",
+      content: `
+## Fenwick Tree: Beyond Basic Range Sums 🌲
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🎯 Fenwick Tree Capabilities</h3>
+  
+  <table style="width: 100%; border-collapse: collapse; color: #e2e8f0; font-size: 12px;">
+    <thead>
+      <tr style="border-bottom: 2px solid #4ade80;">
+        <th style="text-align: left; padding: 10px; color: #4ade80;">Operation</th>
+        <th style="text-align: center; padding: 10px; color: #4ade80;">Time</th>
+        <th style="text-align: left; padding: 10px; color: #4ade80;">Use Case</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Point Update</td>
+        <td style="padding: 10px; color: #60a5fa; text-align: center;">O(log n)</td>
+        <td style="padding: 10px;">Add delta to position</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Prefix Sum</td>
+        <td style="padding: 10px; color: #60a5fa; text-align: center;">O(log n)</td>
+        <td style="padding: 10px;">Sum from 0 to i</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Range Update</td>
+        <td style="padding: 10px; color: #fbbf24; text-align: center;">O(log n)</td>
+        <td style="padding: 10px;">Add to range [l, r]</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Find kth</td>
+        <td style="padding: 10px; color: #f472b6; text-align: center;">O(log n)</td>
+        <td style="padding: 10px;">kth smallest element</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px;">2D Queries</td>
+        <td style="padding: 10px; color: #f87171; text-align: center;">O(log² n)</td>
+        <td style="padding: 10px;">Rectangle sums/updates</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Why Fenwick > Segment Tree Sometimes
+
+| Fenwick Tree | Segment Tree |
+|-------------|--------------|
+| 2x less memory | Supports any associative op |
+| Simpler code | Range updates easier |
+| Slightly faster | More versatile |
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// RANGE UPDATE + POINT QUERY FENWICK TREE
+// ═══════════════════════════════════════════════════════════
+
+class FenwickRangeUpdate {
+    constructor(n) {
+        this.n = n;
+        this.tree = new Array(n + 1).fill(0);
+    }
+    
+    // Add delta to all elements from index i to n
+    update(i, delta) {
+        while (i <= this.n) {
+            this.tree[i] += delta;
+            i += i & (-i);
+        }
+    }
+    
+    // Add delta to range [l, r]
+    rangeUpdate(l, r, delta) {
+        this.update(l, delta);
+        this.update(r + 1, -delta);
+    }
+    
+    // Query value at point i
+    pointQuery(i) {
+        let sum = 0;
+        while (i > 0) {
+            sum += this.tree[i];
+            i -= i & (-i);
+        }
+        return sum;
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// RANGE UPDATE + RANGE QUERY (Two Fenwick Trees)
+// ═══════════════════════════════════════════════════════════
+
+class FenwickRangeUpdateRangeQuery {
+    constructor(n) {
+        this.n = n;
+        this.B1 = new Array(n + 1).fill(0);  // Stores delta
+        this.B2 = new Array(n + 1).fill(0);  // Stores delta * (i-1)
+    }
+    
+    update(tree, i, delta) {
+        while (i <= this.n) {
+            tree[i] += delta;
+            i += i & (-i);
+        }
+    }
+    
+    query(tree, i) {
+        let sum = 0;
+        while (i > 0) {
+            sum += tree[i];
+            i -= i & (-i);
+        }
+        return sum;
+    }
+    
+    // Add delta to range [l, r]
+    rangeUpdate(l, r, delta) {
+        this.update(this.B1, l, delta);
+        this.update(this.B1, r + 1, -delta);
+        this.update(this.B2, l, delta * (l - 1));
+        this.update(this.B2, r + 1, -delta * r);
+    }
+    
+    // Prefix sum [1, i]
+    prefixSum(i) {
+        return this.query(this.B1, i) * i - this.query(this.B2, i);
+    }
+    
+    // Range sum [l, r]
+    rangeSum(l, r) {
+        return this.prefixSum(r) - this.prefixSum(l - 1);
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// FINDING K-TH SMALLEST ELEMENT
+// ═══════════════════════════════════════════════════════════
+
+class FenwickOrderStatistic {
+    constructor(maxVal) {
+        this.n = maxVal;
+        this.tree = new Array(maxVal + 1).fill(0);
+    }
+    
+    update(i, delta) {
+        while (i <= this.n) {
+            this.tree[i] += delta;
+            i += i & (-i);
+        }
+    }
+    
+    insert(val) { this.update(val, 1); }
+    remove(val) { this.update(val, -1); }
+    
+    // Find k-th smallest (1-indexed)
+    findKth(k) {
+        let pos = 0;
+        let sum = 0;
+        
+        // Binary lifting: start from highest bit
+        for (let i = Math.floor(Math.log2(this.n)); i >= 0; i--) {
+            const newPos = pos + (1 << i);
+            if (newPos <= this.n && sum + this.tree[newPos] < k) {
+                pos = newPos;
+                sum += this.tree[newPos];
+            }
+        }
+        
+        return pos + 1;  // 1-indexed answer
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// 2D FENWICK TREE
+// ═══════════════════════════════════════════════════════════
+
+class Fenwick2D {
+    constructor(rows, cols) {
+        this.rows = rows;
+        this.cols = cols;
+        this.tree = Array.from(
+            { length: rows + 1 },
+            () => new Array(cols + 1).fill(0)
+        );
+    }
+    
+    // Add delta at (row, col)
+    update(row, col, delta) {
+        for (let i = row; i <= this.rows; i += i & (-i)) {
+            for (let j = col; j <= this.cols; j += j & (-j)) {
+                this.tree[i][j] += delta;
+            }
+        }
+    }
+    
+    // Sum from (1,1) to (row, col)
+    query(row, col) {
+        let sum = 0;
+        for (let i = row; i > 0; i -= i & (-i)) {
+            for (let j = col; j > 0; j -= j & (-j)) {
+                sum += this.tree[i][j];
+            }
+        }
+        return sum;
+    }
+    
+    // Sum in rectangle (r1,c1) to (r2,c2)
+    rangeQuery(r1, c1, r2, c2) {
+        return this.query(r2, c2) 
+             - this.query(r1 - 1, c2) 
+             - this.query(r2, c1 - 1) 
+             + this.query(r1 - 1, c1 - 1);
+    }
+}
+
+// Example: Count inversions using Fenwick Tree
+function countInversions(arr) {
+    const sorted = [...new Set(arr)].sort((a, b) => a - b);
+    const rank = new Map();
+    sorted.forEach((v, i) => rank.set(v, i + 1));
+    
+    const n = sorted.length;
+    const bit = new Array(n + 1).fill(0);
+    
+    const update = (i) => {
+        while (i <= n) {
+            bit[i]++;
+            i += i & (-i);
+        }
+    };
+    
+    const query = (i) => {
+        let sum = 0;
+        while (i > 0) {
+            sum += bit[i];
+            i -= i & (-i);
+        }
+        return sum;
+    };
+    
+    let inversions = 0;
+    for (let i = arr.length - 1; i >= 0; i--) {
+        const r = rank.get(arr[i]);
+        inversions += query(r - 1);  // Count smaller elements seen
+        update(r);
+    }
+    
+    return inversions;
+}`,
+    },
+    {
+      id: "union-find-optimization",
+      title: "Union-Find: Path Compression & Rank",
+      type: "theory",
+      content: `
+## Union-Find: Maximum Optimization 🔗
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">⚡ Amortized Complexity Analysis</h3>
+  
+  <table style="width: 100%; border-collapse: collapse; color: #e2e8f0; font-size: 12px;">
+    <thead>
+      <tr style="border-bottom: 2px solid #4ade80;">
+        <th style="text-align: left; padding: 10px; color: #4ade80;">Optimization</th>
+        <th style="text-align: center; padding: 10px; color: #4ade80;">Find</th>
+        <th style="text-align: center; padding: 10px; color: #4ade80;">Union</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">None (naive)</td>
+        <td style="padding: 10px; color: #f87171; text-align: center;">O(n)</td>
+        <td style="padding: 10px; color: #f87171; text-align: center;">O(n)</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Path Compression only</td>
+        <td style="padding: 10px; color: #fbbf24; text-align: center;">O(log n)*</td>
+        <td style="padding: 10px; color: #fbbf24; text-align: center;">O(log n)*</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Rank only</td>
+        <td style="padding: 10px; color: #fbbf24; text-align: center;">O(log n)</td>
+        <td style="padding: 10px; color: #fbbf24; text-align: center;">O(log n)</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px;">Both (optimal)</td>
+        <td style="padding: 10px; color: #4ade80; text-align: center;">O(α(n))</td>
+        <td style="padding: 10px; color: #4ade80; text-align: center;">O(α(n))</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="color: #94a3b8; font-size: 11px; margin-top: 12px; text-align: center;">
+    α(n) = inverse Ackermann function ≈ constant for all practical inputs
+  </p>
+</div>
+
+### Path Compression Variants
+
+| Technique | Description | Complexity |
+|-----------|-------------|-----------|
+| Full compression | Point all to root | O(α(n)) |
+| Path splitting | Point each to grandparent | O(α(n)) |
+| Path halving | Every other to grandparent | O(α(n)) |
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// OPTIMIZED UNION-FIND WITH ALL TECHNIQUES
+// ═══════════════════════════════════════════════════════════
+
+class UnionFind {
+    constructor(n) {
+        this.parent = Array.from({ length: n }, (_, i) => i);
+        this.rank = new Array(n).fill(0);
+        this.size = new Array(n).fill(1);
+        this.components = n;
+    }
+    
+    // Path compression: make all nodes point to root
+    find(x) {
+        if (this.parent[x] !== x) {
+            this.parent[x] = this.find(this.parent[x]);
+        }
+        return this.parent[x];
+    }
+    
+    // Union by rank
+    union(x, y) {
+        const rootX = this.find(x);
+        const rootY = this.find(y);
+        
+        if (rootX === rootY) return false;
+        
+        // Attach smaller tree under larger tree
+        if (this.rank[rootX] < this.rank[rootY]) {
+            this.parent[rootX] = rootY;
+            this.size[rootY] += this.size[rootX];
+        } else if (this.rank[rootX] > this.rank[rootY]) {
+            this.parent[rootY] = rootX;
+            this.size[rootX] += this.size[rootY];
+        } else {
+            this.parent[rootY] = rootX;
+            this.size[rootX] += this.size[rootY];
+            this.rank[rootX]++;
+        }
+        
+        this.components--;
+        return true;
+    }
+    
+    connected(x, y) {
+        return this.find(x) === this.find(y);
+    }
+    
+    getSize(x) {
+        return this.size[this.find(x)];
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// PATH COMPRESSION VARIANTS
+// ═══════════════════════════════════════════════════════════
+
+// Path Splitting: each node points to its grandparent
+function findPathSplitting(parent, x) {
+    while (parent[x] !== x) {
+        const next = parent[x];
+        parent[x] = parent[parent[x]];
+        x = next;
+    }
+    return x;
+}
+
+// Path Halving: every other node points to grandparent
+function findPathHalving(parent, x) {
+    while (parent[x] !== x) {
+        parent[x] = parent[parent[x]];
+        x = parent[x];
+    }
+    return x;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// WEIGHTED UNION-FIND (for maintaining relative values)
+// ═══════════════════════════════════════════════════════════
+
+class WeightedUnionFind {
+    constructor(n) {
+        this.parent = Array.from({ length: n }, (_, i) => i);
+        this.rank = new Array(n).fill(0);
+        this.diff = new Array(n).fill(0);  // diff[x] = weight to parent
+    }
+    
+    find(x) {
+        if (this.parent[x] === x) {
+            return { root: x, weight: 0 };
+        }
+        
+        const result = this.find(this.parent[x]);
+        this.parent[x] = result.root;
+        this.diff[x] += result.weight;
+        
+        return { root: result.root, weight: this.diff[x] };
+    }
+    
+    // Union x and y with known weight difference
+    // x / y = weight means x = y * weight
+    union(x, y, weight) {
+        const { root: rootX, weight: weightX } = this.find(x);
+        const { root: rootY, weight: weightY } = this.find(y);
+        
+        if (rootX === rootY) {
+            // Check consistency
+            return Math.abs(weightX - weightY - Math.log2(weight)) < 1e-9;
+        }
+        
+        // Connect rootX to rootY
+        // x = rootX * 2^weightX, y = rootY * 2^weightY
+        // x / y = weight
+        // rootX * 2^weightX / (rootY * 2^weightY) = weight
+        // diff[rootX] = log2(weight) + weightY - weightX
+        
+        if (this.rank[rootX] < this.rank[rootY]) {
+            this.parent[rootX] = rootY;
+            this.diff[rootX] = Math.log2(weight) + weightY - weightX;
+        } else {
+            this.parent[rootY] = rootX;
+            this.diff[rootY] = Math.log2(1/weight) + weightX - weightY;
+            if (this.rank[rootX] === this.rank[rootY]) {
+                this.rank[rootX]++;
+            }
+        }
+        
+        return true;
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// PERSISTENT UNION-FIND (for queries on historical state)
+// ═══════════════════════════════════════════════════════════
+
+// Uses array copying for simple persistence
+class PersistentUnionFind {
+    constructor(n) {
+        this.versions = [{
+            parent: Array.from({ length: n }, (_, i) => i),
+            rank: new Array(n).fill(0)
+        }];
+    }
+    
+    find(version, x) {
+        const parent = this.versions[version].parent;
+        while (parent[x] !== x) {
+            x = parent[x];
+        }
+        return x;
+    }
+    
+    union(version, x, y) {
+        const prev = this.versions[version];
+        const newParent = [...prev.parent];
+        const newRank = [...prev.rank];
+        
+        const rootX = this.find(version, x);
+        const rootY = this.find(version, y);
+        
+        if (rootX !== rootY) {
+            if (newRank[rootX] < newRank[rootY]) {
+                newParent[rootX] = rootY;
+            } else if (newRank[rootX] > newRank[rootY]) {
+                newParent[rootY] = rootX;
+            } else {
+                newParent[rootY] = rootX;
+                newRank[rootX]++;
+            }
+        }
+        
+        this.versions.push({ parent: newParent, rank: newRank });
+        return this.versions.length - 1;  // Return new version
+    }
+    
+    connected(version, x, y) {
+        return this.find(version, x) === this.find(version, y);
+    }
+}`,
+    },
+    {
+      id: "segment-tree-lazy",
+      title: "Segment Tree: Lazy Propagation",
+      type: "theory",
+      content: `
+## Segment Tree with Lazy Propagation 🦥
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🎯 Lazy Propagation: The Key Insight</h3>
+  
+  <div style="display: grid; gap: 16px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #f472b6; margin: 0 0 8px 0;">❌ Without Lazy (Range Update)</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">
+        Update every node in range → O(n) per update
+      </p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #4ade80; margin: 0 0 8px 0;">✓ With Lazy</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">
+        Store pending updates, propagate only when needed → O(log n)
+      </p>
+    </div>
+  </div>
+</div>
+
+### When to Use Lazy Propagation
+
+| Use Case | Lazy Needed? |
+|----------|-------------|
+| Point updates | ❌ No |
+| Range sum with range updates | ✅ Yes |
+| Range min/max with range set | ✅ Yes |
+| Range XOR | ✅ Yes |
+| Multiple pending operations | ✅ Yes |
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// SEGMENT TREE WITH LAZY PROPAGATION (RANGE ADD)
+// ═══════════════════════════════════════════════════════════
+
+class LazySegmentTree {
+    constructor(arr) {
+        this.n = arr.length;
+        this.tree = new Array(4 * this.n).fill(0);
+        this.lazy = new Array(4 * this.n).fill(0);
+        this.build(arr, 1, 0, this.n - 1);
+    }
+    
+    build(arr, node, start, end) {
+        if (start === end) {
+            this.tree[node] = arr[start];
+        } else {
+            const mid = Math.floor((start + end) / 2);
+            this.build(arr, 2 * node, start, mid);
+            this.build(arr, 2 * node + 1, mid + 1, end);
+            this.tree[node] = this.tree[2 * node] + this.tree[2 * node + 1];
+        }
+    }
+    
+    // Push lazy value down to children
+    pushDown(node, start, end) {
+        if (this.lazy[node] !== 0) {
+            const mid = Math.floor((start + end) / 2);
+            
+            // Update children's trees
+            this.tree[2 * node] += this.lazy[node] * (mid - start + 1);
+            this.tree[2 * node + 1] += this.lazy[node] * (end - mid);
+            
+            // Pass lazy value to children
+            this.lazy[2 * node] += this.lazy[node];
+            this.lazy[2 * node + 1] += this.lazy[node];
+            
+            // Clear current lazy
+            this.lazy[node] = 0;
+        }
+    }
+    
+    // Range update: add val to all elements in [l, r]
+    updateRange(l, r, val, node = 1, start = 0, end = this.n - 1) {
+        if (r < start || end < l) {
+            return;  // Out of range
+        }
+        
+        if (l <= start && end <= r) {
+            // Complete overlap
+            this.tree[node] += val * (end - start + 1);
+            this.lazy[node] += val;
+            return;
+        }
+        
+        // Partial overlap
+        this.pushDown(node, start, end);
+        
+        const mid = Math.floor((start + end) / 2);
+        this.updateRange(l, r, val, 2 * node, start, mid);
+        this.updateRange(l, r, val, 2 * node + 1, mid + 1, end);
+        this.tree[node] = this.tree[2 * node] + this.tree[2 * node + 1];
+    }
+    
+    // Range query: sum of elements in [l, r]
+    queryRange(l, r, node = 1, start = 0, end = this.n - 1) {
+        if (r < start || end < l) {
+            return 0;  // Out of range
+        }
+        
+        if (l <= start && end <= r) {
+            return this.tree[node];  // Complete overlap
+        }
+        
+        // Partial overlap
+        this.pushDown(node, start, end);
+        
+        const mid = Math.floor((start + end) / 2);
+        const leftSum = this.queryRange(l, r, 2 * node, start, mid);
+        const rightSum = this.queryRange(l, r, 2 * node + 1, mid + 1, end);
+        return leftSum + rightSum;
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// RANGE SET + RANGE QUERY (Assign value to range)
+// ═══════════════════════════════════════════════════════════
+
+class LazySegmentTreeRangeSet {
+    constructor(arr) {
+        this.n = arr.length;
+        this.tree = new Array(4 * this.n).fill(0);
+        this.lazy = new Array(4 * this.n).fill(null);
+        this.build(arr, 1, 0, this.n - 1);
+    }
+    
+    build(arr, node, start, end) {
+        if (start === end) {
+            this.tree[node] = arr[start];
+        } else {
+            const mid = (start + end) >> 1;
+            this.build(arr, 2 * node, start, mid);
+            this.build(arr, 2 * node + 1, mid + 1, end);
+            this.tree[node] = this.tree[2 * node] + this.tree[2 * node + 1];
+        }
+    }
+    
+    pushDown(node, start, end) {
+        if (this.lazy[node] !== null) {
+            const mid = (start + end) >> 1;
+            const val = this.lazy[node];
+            
+            this.tree[2 * node] = val * (mid - start + 1);
+            this.tree[2 * node + 1] = val * (end - mid);
+            
+            this.lazy[2 * node] = val;
+            this.lazy[2 * node + 1] = val;
+            
+            this.lazy[node] = null;
+        }
+    }
+    
+    // Set all elements in [l, r] to val
+    setRange(l, r, val, node = 1, start = 0, end = this.n - 1) {
+        if (r < start || end < l) return;
+        
+        if (l <= start && end <= r) {
+            this.tree[node] = val * (end - start + 1);
+            this.lazy[node] = val;
+            return;
+        }
+        
+        this.pushDown(node, start, end);
+        const mid = (start + end) >> 1;
+        this.setRange(l, r, val, 2 * node, start, mid);
+        this.setRange(l, r, val, 2 * node + 1, mid + 1, end);
+        this.tree[node] = this.tree[2 * node] + this.tree[2 * node + 1];
+    }
+    
+    queryRange(l, r, node = 1, start = 0, end = this.n - 1) {
+        if (r < start || end < l) return 0;
+        if (l <= start && end <= r) return this.tree[node];
+        
+        this.pushDown(node, start, end);
+        const mid = (start + end) >> 1;
+        return this.queryRange(l, r, 2 * node, start, mid) +
+               this.queryRange(l, r, 2 * node + 1, mid + 1, end);
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// INTERVIEW PATTERN: RANGE ADD + RANGE MAX
+// ═══════════════════════════════════════════════════════════
+
+class LazySegmentTreeMax {
+    constructor(arr) {
+        this.n = arr.length;
+        this.tree = new Array(4 * this.n).fill(-Infinity);
+        this.lazy = new Array(4 * this.n).fill(0);
+        this.build(arr, 1, 0, this.n - 1);
+    }
+    
+    build(arr, node, start, end) {
+        if (start === end) {
+            this.tree[node] = arr[start];
+        } else {
+            const mid = (start + end) >> 1;
+            this.build(arr, 2 * node, start, mid);
+            this.build(arr, 2 * node + 1, mid + 1, end);
+            this.tree[node] = Math.max(this.tree[2 * node], this.tree[2 * node + 1]);
+        }
+    }
+    
+    pushDown(node) {
+        if (this.lazy[node] !== 0) {
+            this.tree[2 * node] += this.lazy[node];
+            this.tree[2 * node + 1] += this.lazy[node];
+            this.lazy[2 * node] += this.lazy[node];
+            this.lazy[2 * node + 1] += this.lazy[node];
+            this.lazy[node] = 0;
+        }
+    }
+    
+    // Add val to all elements in [l, r]
+    addRange(l, r, val, node = 1, start = 0, end = this.n - 1) {
+        if (r < start || end < l) return;
+        
+        if (l <= start && end <= r) {
+            this.tree[node] += val;
+            this.lazy[node] += val;
+            return;
+        }
+        
+        this.pushDown(node);
+        const mid = (start + end) >> 1;
+        this.addRange(l, r, val, 2 * node, start, mid);
+        this.addRange(l, r, val, 2 * node + 1, mid + 1, end);
+        this.tree[node] = Math.max(this.tree[2 * node], this.tree[2 * node + 1]);
+    }
+    
+    // Query max in [l, r]
+    queryMax(l, r, node = 1, start = 0, end = this.n - 1) {
+        if (r < start || end < l) return -Infinity;
+        if (l <= start && end <= r) return this.tree[node];
+        
+        this.pushDown(node);
+        const mid = (start + end) >> 1;
+        return Math.max(
+            this.queryMax(l, r, 2 * node, start, mid),
+            this.queryMax(l, r, 2 * node + 1, mid + 1, end)
+        );
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// INTERVIEW CHEAT SHEET
+// ═══════════════════════════════════════════════════════════
+
+/*
+ADVANCED DSA INTERVIEW GUIDE:
+
+FENWICK TREE:
+- Use for: counting inversions, range sums, 2D sums
+- Advantages: simpler code, less memory than segment tree
+- Limitation: mainly for prefix-based operations
+
+UNION-FIND:
+- Always use path compression + union by rank
+- Time: O(α(n)) ≈ O(1) amortized
+- Weighted UF for relative value tracking
+- Use when: connected components, cycle detection, MST
+
+SEGMENT TREE + LAZY:
+- Use lazy when: range updates needed
+- Push down before accessing children
+- Common patterns: range add, range set, range max/min
+- Clear lazy after propagating
+
+COMPLEXITY COMPARISON:
+| Operation | Fenwick | Segment | Lazy Segment |
+|-----------|---------|---------|--------------|
+| Point Update | O(log n) | O(log n) | O(log n) |
+| Point Query | O(log n) | O(log n) | O(log n) |
+| Range Update | O(n)* | O(n)* | O(log n) |
+| Range Query | O(log n) | O(log n) | O(log n) |
+| Memory | O(n) | O(4n) | O(4n) |
+
+* Without modifications; Fenwick can do range update with 2 trees
+*/`,
+    },
   ],
 };
