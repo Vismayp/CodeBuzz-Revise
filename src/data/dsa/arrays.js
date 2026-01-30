@@ -947,5 +947,414 @@ So at each position j, we check if \`(currentSum - k)\` exists in our prefix sum
 // If currentSum itself equals k, then currentSum - k = 0
 // We need to count this case!`,
     },
+    // ============== ADVANCED INTERVIEW SECTIONS ==============
+    {
+      id: "advanced-array-techniques",
+      title: "Advanced Array Techniques (Interview Mastery)",
+      type: "theory",
+      content: `
+## 🏆 Advanced Array Patterns for FAANG Interviews
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🎯 The 5 Essential Array Patterns</h3>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; text-align: center;">
+      <span style="font-size: 24px;">👆👆</span>
+      <h4 style="color: #f87171; margin: 8px 0;">Two Pointers</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 11px;">Sorted arrays, pairs, partitioning</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; text-align: center;">
+      <span style="font-size: 24px;">📦</span>
+      <h4 style="color: #4ade80; margin: 8px 0;">Sliding Window</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 11px;">Subarrays, substrings</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; text-align: center;">
+      <span style="font-size: 24px;">➕</span>
+      <h4 style="color: #fbbf24; margin: 8px 0;">Prefix Sum</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 11px;">Range queries, cumulative</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; text-align: center;">
+      <span style="font-size: 24px;">#️⃣</span>
+      <h4 style="color: #a78bfa; margin: 8px 0;">Hash Map</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 11px;">O(1) lookups, counting</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; text-align: center;">
+      <span style="font-size: 24px;">📈</span>
+      <h4 style="color: #60a5fa; margin: 8px 0;">Kadane's</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 11px;">Max subarray variants</p>
+    </div>
+  </div>
+</div>
+
+### Pattern Recognition Cheat Sheet
+
+| Problem Type | Pattern | Example Problem |
+|-------------|---------|-----------------|
+| Pair sum in sorted array | Two Pointers (converging) | Two Sum II |
+| Remove duplicates in-place | Two Pointers (fast/slow) | Remove Duplicates |
+| Max/min in fixed window | Sliding Window (fixed) | Max Sum of Size K |
+| Subarray with condition | Sliding Window (variable) | Minimum Window Substring |
+| Range sum queries | Prefix Sum | Range Sum Query |
+| Subarray sum equals K | Prefix Sum + Hash Map | Subarray Sum Equals K |
+| Find duplicates | Hash Set | Contains Duplicate |
+| Two sum unsorted | Hash Map | Two Sum |
+| Max contiguous sum | Kadane's Algorithm | Maximum Subarray |
+
+### 🧠 Decision Tree: Which Pattern to Use?
+
+\`\`\`
+Is the array sorted?
+├── YES: Try Two Pointers first
+│   └── Looking for pairs/triplets? → Converging pointers
+│   └── Binary search possible? → Binary search
+├── NO: 
+│   ├── Subarray/substring problem?
+│   │   ├── Fixed size window? → Fixed Sliding Window
+│   │   ├── Variable size with condition? → Variable Sliding Window
+│   │   └── Sum equals K? → Prefix Sum + HashMap
+│   ├── Finding pairs/duplicates?
+│   │   └── Use Hash Map/Set
+│   └── Max contiguous subarray?
+│       └── Kadane's Algorithm
+\`\`\`
+
+### 💡 Interview Pro Tips
+
+> **Tip 1**: When you see "contiguous subarray", think Sliding Window or Prefix Sum
+
+> **Tip 2**: When you see "pairs that sum to X", think Two Pointers (sorted) or Hash Map (unsorted)
+
+> **Tip 3**: When you see "in-place" modification, think Two Pointers
+
+> **Tip 4**: When you see "maximum sum", think Kadane's Algorithm
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// PATTERN COMPARISON: Same Problem, Different Approaches
+// ═══════════════════════════════════════════════════════════
+
+// Problem: Find pair with sum = target
+
+// Approach 1: Brute Force - O(n²)
+function twoSumBrute(nums, target) {
+    for (let i = 0; i < nums.length; i++) {
+        for (let j = i + 1; j < nums.length; j++) {
+            if (nums[i] + nums[j] === target) return [i, j];
+        }
+    }
+    return [];
+}
+
+// Approach 2: Hash Map - O(n) time, O(n) space (UNSORTED)
+function twoSumHashMap(nums, target) {
+    const seen = new Map();
+    for (let i = 0; i < nums.length; i++) {
+        const complement = target - nums[i];
+        if (seen.has(complement)) {
+            return [seen.get(complement), i];
+        }
+        seen.set(nums[i], i);
+    }
+    return [];
+}
+
+// Approach 3: Two Pointers - O(n log n) or O(n) if sorted (SORTED)
+function twoSumTwoPointers(nums, target) {
+    // Assumes nums is sorted!
+    let left = 0, right = nums.length - 1;
+    while (left < right) {
+        const sum = nums[left] + nums[right];
+        if (sum === target) return [left, right];
+        if (sum < target) left++;
+        else right--;
+    }
+    return [];
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// THREE SUM - Classic Two Pointers Problem
+// ═══════════════════════════════════════════════════════════
+
+// LeetCode #15: Three Sum
+// Find all unique triplets that sum to zero
+function threeSum(nums) {
+    const result = [];
+    nums.sort((a, b) => a - b);  // Sort first!
+    
+    for (let i = 0; i < nums.length - 2; i++) {
+        // Skip duplicates for i
+        if (i > 0 && nums[i] === nums[i - 1]) continue;
+        
+        // Two pointers for remaining pair
+        let left = i + 1;
+        let right = nums.length - 1;
+        const target = -nums[i];
+        
+        while (left < right) {
+            const sum = nums[left] + nums[right];
+            
+            if (sum === target) {
+                result.push([nums[i], nums[left], nums[right]]);
+                
+                // Skip duplicates
+                while (left < right && nums[left] === nums[left + 1]) left++;
+                while (left < right && nums[right] === nums[right - 1]) right--;
+                
+                left++;
+                right--;
+            } else if (sum < target) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+    }
+    
+    return result;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// SLIDING WINDOW MAXIMUM - Advanced Deque Pattern
+// ═══════════════════════════════════════════════════════════
+
+// LeetCode #239: Sliding Window Maximum
+function maxSlidingWindow(nums, k) {
+    const result = [];
+    const deque = [];  // Store indices, not values!
+    
+    for (let i = 0; i < nums.length; i++) {
+        // Remove indices outside the window
+        while (deque.length && deque[0] <= i - k) {
+            deque.shift();
+        }
+        
+        // Remove smaller elements (they can never be max)
+        while (deque.length && nums[deque[deque.length - 1]] < nums[i]) {
+            deque.pop();
+        }
+        
+        deque.push(i);
+        
+        // Add to result when window is complete
+        if (i >= k - 1) {
+            result.push(nums[deque[0]]);
+        }
+    }
+    
+    return result;
+}
+// Time: O(n), Space: O(k)`,
+    },
+    {
+      id: "dutch-national-flag",
+      title: "Dutch National Flag Algorithm",
+      type: "theory",
+      content: `
+## Dutch National Flag: Three-Way Partitioning 🇳🇱
+
+This algorithm sorts an array with only 3 distinct values in a single pass!
+
+### The Problem
+Sort an array containing only 0s, 1s, and 2s in-place.
+
+### The Approach
+Use three pointers:
+- **low**: boundary for 0s (everything before is 0)
+- **mid**: current element being examined
+- **high**: boundary for 2s (everything after is 2)
+
+### Visual Walkthrough
+
+\`\`\`
+Initial: [2, 0, 2, 1, 1, 0]
+         L/M            H
+
+Step 1: arr[mid]=2 → swap with high, high--
+        [0, 0, 2, 1, 1, 2]
+         L/M         H
+
+Step 2: arr[mid]=0 → swap with low, low++, mid++
+        [0, 0, 2, 1, 1, 2]
+            L/M      H
+
+Step 3: arr[mid]=0 → swap with low, low++, mid++
+        [0, 0, 2, 1, 1, 2]
+               L/M   H
+
+... continue until mid > high
+\`\`\`
+
+### Why It's Important
+- **One-pass solution**: O(n) time, O(1) space
+- **Used in**: Sort Colors (LeetCode #75), Quick Sort partition
+- **Interview favorite**: Tests in-place manipulation skills
+      `,
+      code: `// Sort Colors (LeetCode #75)
+function sortColors(nums) {
+    let low = 0;      // Boundary: all elements before are 0
+    let mid = 0;      // Current element
+    let high = nums.length - 1;  // Boundary: all elements after are 2
+    
+    while (mid <= high) {
+        if (nums[mid] === 0) {
+            // Swap with low boundary, expand 0-region
+            [nums[low], nums[mid]] = [nums[mid], nums[low]];
+            low++;
+            mid++;
+        } else if (nums[mid] === 1) {
+            // 1 is in correct position, just move forward
+            mid++;
+        } else {
+            // nums[mid] === 2
+            // Swap with high boundary, shrink 2-region
+            [nums[mid], nums[high]] = [nums[high], nums[mid]];
+            high--;
+            // Don't increment mid! Need to check swapped element
+        }
+    }
+    
+    return nums;
+}
+
+// Dry Run: [2, 0, 2, 1, 1, 0]
+// low=0, mid=0, high=5
+// 
+// mid=0: arr[0]=2, swap with arr[5]=0 → [0, 0, 2, 1, 1, 2], high=4
+// mid=0: arr[0]=0, swap with arr[0]=0 → same, low=1, mid=1
+// mid=1: arr[1]=0, swap with arr[1]=0 → same, low=2, mid=2
+// mid=2: arr[2]=2, swap with arr[4]=1 → [0, 0, 1, 1, 2, 2], high=3
+// mid=2: arr[2]=1, mid=3
+// mid=3: arr[3]=1, mid=4
+// mid=4 > high=3, STOP!
+// Result: [0, 0, 1, 1, 2, 2] ✓
+
+
+// Generalized: Three-way partition for QuickSort
+function threeWayPartition(arr, pivot) {
+    let low = 0, mid = 0, high = arr.length - 1;
+    
+    while (mid <= high) {
+        if (arr[mid] < pivot) {
+            [arr[low], arr[mid]] = [arr[mid], arr[low]];
+            low++;
+            mid++;
+        } else if (arr[mid] === pivot) {
+            mid++;
+        } else {
+            [arr[mid], arr[high]] = [arr[high], arr[mid]];
+            high--;
+        }
+    }
+    
+    return arr;
+}`,
+    },
+    {
+      id: "boyer-moore-voting",
+      title: "Boyer-Moore Voting Algorithm",
+      type: "theory",
+      content: `
+## Boyer-Moore Voting: Find Majority Element 🗳️
+
+Find the element that appears more than n/2 times in O(n) time and O(1) space!
+
+### The Intuition
+Think of it as a **battle** between elements:
+- Each majority element "votes" for itself (+1)
+- Each different element "votes against" (-1)
+- If count reaches 0, start fresh with new candidate
+- Majority element always survives!
+
+### Why It Works
+If an element appears > n/2 times, it will always have more "votes" than all other elements combined.
+
+### Visual Example
+
+\`\`\`
+Array: [2, 2, 1, 1, 1, 2, 2]
+
+Step  Element  Candidate  Count
+ 1       2        2         1
+ 2       2        2         2
+ 3       1        2         1 (different, -1)
+ 4       1        2         0 (reset!)
+ 5       1        1         1 (new candidate)
+ 6       2        1         0 (reset!)
+ 7       2        2         1
+
+Candidate: 2 ✓ (verify: appears 4/7 times > 50%)
+\`\`\`
+
+### ⚠️ Important Note
+This only finds a **candidate**. You must verify it appears > n/2 times!
+      `,
+      code: `// Majority Element (LeetCode #169)
+function majorityElement(nums) {
+    let candidate = null;
+    let count = 0;
+    
+    // Phase 1: Find candidate
+    for (const num of nums) {
+        if (count === 0) {
+            candidate = num;  // New candidate
+        }
+        count += (num === candidate) ? 1 : -1;
+    }
+    
+    // Phase 2: Verify (if not guaranteed to exist)
+    // let verifyCount = nums.filter(n => n === candidate).length;
+    // if (verifyCount > nums.length / 2) return candidate;
+    // return -1;
+    
+    return candidate;  // Problem guarantees majority exists
+}
+
+
+// Extended: Majority Element II (LeetCode #229)
+// Find all elements appearing more than n/3 times
+// At most 2 such elements can exist!
+function majorityElementII(nums) {
+    let candidate1 = null, count1 = 0;
+    let candidate2 = null, count2 = 0;
+    
+    // Phase 1: Find candidates
+    for (const num of nums) {
+        if (candidate1 !== null && num === candidate1) {
+            count1++;
+        } else if (candidate2 !== null && num === candidate2) {
+            count2++;
+        } else if (count1 === 0) {
+            candidate1 = num;
+            count1 = 1;
+        } else if (count2 === 0) {
+            candidate2 = num;
+            count2 = 1;
+        } else {
+            count1--;
+            count2--;
+        }
+    }
+    
+    // Phase 2: Verify candidates
+    const result = [];
+    const threshold = Math.floor(nums.length / 3);
+    
+    count1 = nums.filter(n => n === candidate1).length;
+    count2 = nums.filter(n => n === candidate2).length;
+    
+    if (count1 > threshold) result.push(candidate1);
+    if (candidate2 !== candidate1 && count2 > threshold) {
+        result.push(candidate2);
+    }
+    
+    return result;
+}`,
+    },
   ],
 };
