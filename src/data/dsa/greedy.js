@@ -601,5 +601,338 @@ Two pointers: Try to pair heaviest with lightest. If they don't fit together, he
 // Alternative: If each boat could carry more than 2 people,
 // this becomes bin packing (NP-hard) - greedy won't work optimally`,
     },
+    // ============== ADVANCED GREEDY TECHNIQUES ==============
+    {
+      id: "greedy-proof-techniques",
+      title: "Proving Greedy Algorithms Correct",
+      type: "theory",
+      content: `
+## Greedy Proof Techniques: Interview Mastery 🎓
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🎯 Three Ways to Prove Greedy Works</h3>
+  
+  <div style="display: grid; gap: 12px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #4ade80; margin: 0 0 8px 0;">1. Exchange Argument</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">
+        Show that swapping any non-greedy choice with greedy choice doesn't make solution worse.
+      </p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #60a5fa; margin: 0 0 8px 0;">2. Greedy Stays Ahead</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">
+        Show that at every step, greedy is at least as good as any other solution.
+      </p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #f472b6; margin: 0 0 8px 0;">3. Contradiction</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">
+        Assume greedy isn't optimal, show this leads to contradiction.
+      </p>
+    </div>
+  </div>
+</div>
+
+### Exchange Argument Template
+
+For any optimal solution OPT that differs from greedy GREEDY:
+1. Find first difference between OPT and GREEDY
+2. Show we can swap to match GREEDY without making solution worse
+3. Repeat until OPT = GREEDY
+4. Therefore, GREEDY is optimal
+
+### When Greedy Works
+
+| ✓ Works | ✗ Doesn't Work |
+|---------|----------------|
+| Activity selection | 0/1 Knapsack |
+| Huffman coding | Traveling salesman |
+| Fractional knapsack | Subset sum |
+| Dijkstra (non-neg) | Longest path (general) |
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// EXCHANGE ARGUMENT EXAMPLE: ACTIVITY SELECTION
+// ═══════════════════════════════════════════════════════════
+
+/*
+CLAIM: Selecting activity with earliest end time is optimal.
+
+PROOF (Exchange Argument):
+1. Let OPT be any optimal solution
+2. Let greedy pick activity A (earliest end time)
+3. Let OPT pick activity B first (where B ≠ A)
+
+Since A ends earliest: end(A) ≤ end(B)
+
+If we replace B with A in OPT:
+- A ends earlier, so it doesn't conflict with more activities
+- We can still pick at least as many activities after A
+- Therefore, OPT with A is at least as good as OPT with B
+
+By induction, greedy solution is optimal. □
+*/
+
+function activitySelection(activities) {
+    // Sort by end time
+    activities.sort((a, b) => a[1] - b[1]);
+    
+    const selected = [activities[0]];
+    let lastEnd = activities[0][1];
+    
+    for (let i = 1; i < activities.length; i++) {
+        if (activities[i][0] >= lastEnd) {
+            selected.push(activities[i]);
+            lastEnd = activities[i][1];
+        }
+    }
+    
+    return selected;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// GREEDY STAYS AHEAD EXAMPLE: TASK SCHEDULING
+// ═══════════════════════════════════════════════════════════
+
+/*
+PROBLEM: Minimize total lateness (deadline - finish time)
+GREEDY: Process in deadline order (Earliest Deadline First)
+
+PROOF (Greedy Stays Ahead):
+Let d₁ ≤ d₂ ≤ ... ≤ dₙ be deadlines in order.
+
+For any schedule S, define:
+- fᵢ = finish time of job i in S
+- Lᵢ = max(0, fᵢ - dᵢ) = lateness of job i
+
+In EDF, job i finishes at f*ᵢ = sum of first i processing times.
+
+KEY INSIGHT: Any inversion (i before j where dᵢ > dⱼ) can be 
+fixed without increasing max lateness.
+
+By removing all inversions, we get EDF schedule. □
+*/
+
+function minimizeLateness(jobs) {
+    // jobs = [[processingTime, deadline], ...]
+    // Sort by deadline
+    jobs.sort((a, b) => a[1] - b[1]);
+    
+    let currentTime = 0;
+    let maxLateness = 0;
+    
+    for (const [processTime, deadline] of jobs) {
+        currentTime += processTime;
+        const lateness = Math.max(0, currentTime - deadline);
+        maxLateness = Math.max(maxLateness, lateness);
+    }
+    
+    return maxLateness;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// WHEN GREEDY FAILS: COUNTEREXAMPLE
+// ═══════════════════════════════════════════════════════════
+
+/*
+PROBLEM: 0/1 Knapsack
+GREEDY: Take items with best value/weight ratio
+
+COUNTEREXAMPLE:
+Items: [(value=60, weight=10), (value=100, weight=20), (value=120, weight=30)]
+Capacity: 50
+
+Greedy by ratio:
+- Item 0: ratio = 6.0 ✓ (total weight=10, value=60)
+- Item 1: ratio = 5.0 ✓ (total weight=30, value=160)
+- Item 2: ratio = 4.0 ✗ (would exceed capacity)
+Greedy answer: 160
+
+Optimal:
+- Take items 1 and 2: weight=50, value=220
+
+Greedy fails because we can't take fractions!
+*/`,
+    },
+    {
+      id: "greedy-scheduling-patterns",
+      title: "Scheduling Problems: Greedy Patterns",
+      type: "theory",
+      content: `
+## Scheduling Problems: Interview Essential 📅
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🎯 Scheduling Problem Types</h3>
+  
+  <table style="width: 100%; border-collapse: collapse; color: #e2e8f0; font-size: 12px;">
+    <thead>
+      <tr style="border-bottom: 2px solid #4ade80;">
+        <th style="text-align: left; padding: 10px; color: #4ade80;">Problem</th>
+        <th style="text-align: left; padding: 10px; color: #4ade80;">Goal</th>
+        <th style="text-align: left; padding: 10px; color: #4ade80;">Sort By</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Max activities</td>
+        <td style="padding: 10px; color: #60a5fa;">Most non-overlapping</td>
+        <td style="padding: 10px;">End time ↑</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Min rooms</td>
+        <td style="padding: 10px; color: #60a5fa;">Fewest parallel resources</td>
+        <td style="padding: 10px;">Start time ↑</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 10px;">Min lateness</td>
+        <td style="padding: 10px; color: #60a5fa;">Meet deadlines</td>
+        <td style="padding: 10px;">Deadline ↑</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px;">Max profit</td>
+        <td style="padding: 10px; color: #60a5fa;">Best weighted selection</td>
+        <td style="padding: 10px;">Deadline + heap</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// MEETING ROOMS II - MINIMUM ROOMS NEEDED
+// ═══════════════════════════════════════════════════════════
+
+function minMeetingRooms(intervals) {
+    const starts = intervals.map(i => i[0]).sort((a, b) => a - b);
+    const ends = intervals.map(i => i[1]).sort((a, b) => a - b);
+    
+    let rooms = 0, maxRooms = 0;
+    let s = 0, e = 0;
+    
+    while (s < intervals.length) {
+        if (starts[s] < ends[e]) {
+            rooms++;  // New meeting starts before current ends
+            s++;
+        } else {
+            rooms--;  // Meeting ends, free up room
+            e++;
+        }
+        maxRooms = Math.max(maxRooms, rooms);
+    }
+    
+    return maxRooms;
+}
+
+// Alternative: Heap approach
+function minMeetingRoomsHeap(intervals) {
+    if (!intervals.length) return 0;
+    
+    intervals.sort((a, b) => a[0] - b[0]);
+    
+    const endTimes = [intervals[0][1]];  // Min-heap of end times
+    
+    for (let i = 1; i < intervals.length; i++) {
+        // If earliest ending room is free, reuse it
+        if (intervals[i][0] >= Math.min(...endTimes)) {
+            endTimes.splice(endTimes.indexOf(Math.min(...endTimes)), 1);
+        }
+        endTimes.push(intervals[i][1]);
+    }
+    
+    return endTimes.length;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// JOB SCHEDULING WITH DEADLINES AND PROFITS
+// ═══════════════════════════════════════════════════════════
+
+function jobScheduling(jobs) {
+    // jobs = [[profit, deadline], ...]
+    // Each job takes 1 unit of time
+    
+    // Sort by profit descending
+    jobs.sort((a, b) => b[0] - a[0]);
+    
+    const n = jobs.length;
+    const maxDeadline = Math.max(...jobs.map(j => j[1]));
+    const slots = new Array(maxDeadline + 1).fill(false);
+    
+    let totalProfit = 0;
+    let jobsDone = 0;
+    
+    for (const [profit, deadline] of jobs) {
+        // Find latest available slot <= deadline
+        for (let slot = deadline; slot > 0; slot--) {
+            if (!slots[slot]) {
+                slots[slot] = true;
+                totalProfit += profit;
+                jobsDone++;
+                break;
+            }
+        }
+    }
+    
+    return { jobs: jobsDone, profit: totalProfit };
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// NON-OVERLAPPING INTERVALS (LeetCode #435)
+// ═══════════════════════════════════════════════════════════
+
+function eraseOverlapIntervals(intervals) {
+    if (intervals.length === 0) return 0;
+    
+    // Sort by end time
+    intervals.sort((a, b) => a[1] - b[1]);
+    
+    let nonOverlapping = 1;
+    let lastEnd = intervals[0][1];
+    
+    for (let i = 1; i < intervals.length; i++) {
+        if (intervals[i][0] >= lastEnd) {
+            nonOverlapping++;
+            lastEnd = intervals[i][1];
+        }
+    }
+    
+    // Remove = total - max non-overlapping
+    return intervals.length - nonOverlapping;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// INTERVIEW CHEAT SHEET
+// ═══════════════════════════════════════════════════════════
+
+/*
+GREEDY PATTERN RECOGNITION:
+
+1. "Maximum number of..." + non-overlapping → Sort by end time
+2. "Minimum resources for..." + overlapping → Sweep line or heap
+3. "Meet all deadlines" → Sort by deadline (EDF)
+4. "Maximum profit with constraints" → Sort by profit + feasibility check
+
+SORTING KEY SELECTION:
+- End time: Maximize count of selections
+- Start time: Process in order / sweep line
+- Deadline: Minimize lateness
+- Profit/Value: Maximize gain (with feasibility)
+
+PROOF TECHNIQUES:
+1. Exchange argument: Swap non-greedy → greedy, show not worse
+2. Stays ahead: Greedy ≥ OPT at every step
+3. Contradiction: Assume greedy fails → find contradiction
+
+COMMON MISTAKES:
+- Assuming greedy works without proof
+- Wrong sorting key
+- Not handling ties correctly
+*/`,
+    },
   ],
 };
