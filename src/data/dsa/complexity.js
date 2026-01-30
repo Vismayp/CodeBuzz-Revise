@@ -601,6 +601,430 @@ function mergeSort(arr) {
 // - If d = log_b(a): O(n^d × log n)
 // - If d > log_b(a): O(n^d)`,
     },
+    // ============== ADVANCED INTERVIEW SECTIONS ==============
+    {
+      id: "big-o-theta-omega",
+      title: "Big-O vs Big-Θ vs Big-Ω (Interview Essential)",
+      type: "theory",
+      content: `
+## The Complete Asymptotic Notation Family 🎯
+
+Most developers only know Big-O, but interviewers love asking about all three notations!
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">📊 The Three Bounds</h3>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; border-left: 4px solid #f87171;">
+      <h4 style="color: #f87171; margin: 0 0 8px 0;">O (Big-O)</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;"><strong>Upper Bound</strong></p>
+      <p style="color: #a78bfa; margin: 8px 0 0 0; font-size: 12px;">"At most this slow"</p>
+      <p style="color: #60a5fa; margin: 4px 0 0 0; font-size: 11px;">Worst-case guarantee</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; border-left: 4px solid #4ade80;">
+      <h4 style="color: #4ade80; margin: 0 0 8px 0;">Ω (Big-Omega)</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;"><strong>Lower Bound</strong></p>
+      <p style="color: #a78bfa; margin: 8px 0 0 0; font-size: 12px;">"At least this fast"</p>
+      <p style="color: #60a5fa; margin: 4px 0 0 0; font-size: 11px;">Best-case baseline</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; border-left: 4px solid #fbbf24;">
+      <h4 style="color: #fbbf24; margin: 0 0 8px 0;">Θ (Big-Theta)</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;"><strong>Tight Bound</strong></p>
+      <p style="color: #a78bfa; margin: 8px 0 0 0; font-size: 12px;">"Exactly this"</p>
+      <p style="color: #60a5fa; margin: 4px 0 0 0; font-size: 11px;">Upper AND lower bound</p>
+    </div>
+  </div>
+</div>
+
+### Mathematical Definitions
+
+| Notation | Meaning | Mathematical Definition |
+|----------|---------|------------------------|
+| $O(g(n))$ | Upper bound | $f(n) \\leq c \\cdot g(n)$ for some $c > 0$, $n > n_0$ |
+| $\\Omega(g(n))$ | Lower bound | $f(n) \\geq c \\cdot g(n)$ for some $c > 0$, $n > n_0$ |
+| $\\Theta(g(n))$ | Tight bound | $c_1 \\cdot g(n) \\leq f(n) \\leq c_2 \\cdot g(n)$ |
+
+### 🧠 Real-World Analogy
+
+Think of driving times:
+- **O(2 hours)**: "I'll arrive in at most 2 hours" (traffic could help)
+- **Ω(30 min)**: "It takes at least 30 minutes" (even with no traffic)
+- **Θ(1 hour)**: "It takes about 1 hour" (consistent timing)
+
+### Interview Example: QuickSort
+
+| Case | Complexity | Notation Used |
+|------|------------|---------------|
+| Best | $O(n \\log n)$ | $\\Omega(n \\log n)$ |
+| Average | $O(n \\log n)$ | $\\Theta(n \\log n)$ |
+| Worst | $O(n^2)$ | $O(n^2)$ |
+
+> ✅ **Interview Tip**: When asked "What's the complexity?", specify which case you're describing!
+
+### 💡 One-Line Definitions
+- **Big-O**: Maximum time your algorithm will ever take
+- **Big-Omega**: Minimum time your algorithm needs  
+- **Big-Theta**: Algorithm always takes approximately this time
+      `,
+      code: `// Understanding the three notations with examples
+
+// ═══════════════════════════════════════════════════════════
+// LINEAR SEARCH COMPLEXITY ANALYSIS
+// ═══════════════════════════════════════════════════════════
+function linearSearch(arr, target) {
+    for (let i = 0; i < arr.length; i++) {
+        if (arr[i] === target) return i;
+    }
+    return -1;
+}
+
+// Best Case: Target is first element → Ω(1)
+// Worst Case: Target is last or not present → O(n)
+// Average Case: Target is in middle → Θ(n/2) → Θ(n)
+
+// We say: O(n), Ω(1) - NOT tight bound possible!
+
+
+// ═══════════════════════════════════════════════════════════
+// BINARY SEARCH - ALL CASES ARE LOGARITHMIC
+// ═══════════════════════════════════════════════════════════
+function binarySearchNotation(arr, target) {
+    let left = 0, right = arr.length - 1;
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        if (arr[mid] === target) return mid;
+        if (arr[mid] < target) left = mid + 1;
+        else right = mid - 1;
+    }
+    return -1;
+}
+
+// Best Case: Middle element is target → Ω(1)
+// Worst Case: Element not found → O(log n)
+// We can't use Θ(log n) because best ≠ worst!
+
+
+// ═══════════════════════════════════════════════════════════
+// SUMMING ARRAY - ALWAYS LINEAR (TIGHT BOUND)
+// ═══════════════════════════════════════════════════════════
+function sumArray(arr) {
+    let total = 0;
+    for (const num of arr) {
+        total += num;  // Must visit every element
+    }
+    return total;
+}
+
+// EVERY case is exactly n iterations!
+// Best = Average = Worst = n
+// So we CAN say: Θ(n) - tight bound!
+
+
+// ═══════════════════════════════════════════════════════════
+// INTERVIEW QUESTION: "What's the complexity of this?"
+// ═══════════════════════════════════════════════════════════
+// Correct answer format:
+// "This algorithm is O(n) in the worst case, but Ω(1) 
+//  in the best case when the element is found early.
+//  If you need a tight bound, it's Θ(n) on average."`,
+    },
+    {
+      id: "master-theorem-deep-dive",
+      title: "Master Theorem (Divide & Conquer Analysis)",
+      type: "theory",
+      content: `
+## Master Theorem: Solving Recurrence Relations 🧮
+
+The Master Theorem is your secret weapon for analyzing **divide and conquer** algorithms!
+
+### The Master Theorem Formula
+
+For recurrence relations of the form:
+$$T(n) = aT(n/b) + O(n^d)$$
+
+Where:
+- **a** = number of subproblems
+- **b** = factor by which input is divided
+- **d** = exponent in the cost of combining
+
+### The Three Cases
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h4 style="color: #60a5fa; margin: 0 0 20px 0;">🎯 Compare d with log_b(a)</h4>
+  
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 8px;">
+      <span style="color: #4ade80; font-weight: bold;">Case 1:</span>
+      <span style="color: #94a3b8;"> If d < log_b(a) → </span>
+      <span style="color: #fbbf24; font-weight: bold;">T(n) = O(n^(log_b(a)))</span>
+      <p style="color: #a78bfa; margin: 8px 0 0 0; font-size: 12px;">Leaves dominate - more work at bottom of tree</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 8px;">
+      <span style="color: #4ade80; font-weight: bold;">Case 2:</span>
+      <span style="color: #94a3b8;"> If d = log_b(a) → </span>
+      <span style="color: #fbbf24; font-weight: bold;">T(n) = O(n^d × log n)</span>
+      <p style="color: #a78bfa; margin: 8px 0 0 0; font-size: 12px;">Equal work at each level</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 8px;">
+      <span style="color: #4ade80; font-weight: bold;">Case 3:</span>
+      <span style="color: #94a3b8;"> If d > log_b(a) → </span>
+      <span style="color: #fbbf24; font-weight: bold;">T(n) = O(n^d)</span>
+      <p style="color: #a78bfa; margin: 8px 0 0 0; font-size: 12px;">Root dominates - most work at top</p>
+    </div>
+  </div>
+</div>
+
+### Common Algorithm Examples
+
+| Algorithm | Recurrence | a | b | d | Case | Result |
+|-----------|------------|---|---|---|------|--------|
+| Binary Search | T(n) = T(n/2) + 1 | 1 | 2 | 0 | d = log_2(1) = 0 | O(log n) |
+| Merge Sort | T(n) = 2T(n/2) + n | 2 | 2 | 1 | d = log_2(2) = 1 | O(n log n) |
+| Karatsuba | T(n) = 3T(n/2) + n | 3 | 2 | 1 | d < log_2(3) ≈ 1.58 | O(n^1.58) |
+| Strassen | T(n) = 7T(n/2) + n² | 7 | 2 | 2 | d < log_2(7) ≈ 2.81 | O(n^2.81) |
+
+### 🧠 Visual Mental Model
+
+\`\`\`
+Recursion Tree Analysis:
+                    Level 0: n^d work
+                   /        \\
+          Level 1: a × (n/b)^d work each
+         /    \\       /    \\
+Level k: a^k × (n/b^k)^d work each
+
+Total levels: log_b(n)
+Total leaves: a^(log_b(n)) = n^(log_b(a))
+\`\`\`
+
+> 💡 **Pro Tip**: The key insight is comparing the work done at leaves vs root!
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// MASTER THEOREM EXAMPLES IN CODE
+// ═══════════════════════════════════════════════════════════
+
+// Example 1: Binary Search
+// T(n) = T(n/2) + O(1)
+// a=1, b=2, d=0
+// log_2(1) = 0 = d → Case 2
+// Result: O(n^0 × log n) = O(log n)
+function binarySearchMaster(arr, target, low = 0, high = arr.length - 1) {
+    if (low > high) return -1;
+    const mid = Math.floor((low + high) / 2);
+    if (arr[mid] === target) return mid;
+    if (arr[mid] < target) {
+        return binarySearchMaster(arr, target, mid + 1, high);
+    }
+    return binarySearchMaster(arr, target, low, mid - 1);
+}
+
+
+// Example 2: Merge Sort
+// T(n) = 2T(n/2) + O(n)
+// a=2, b=2, d=1
+// log_2(2) = 1 = d → Case 2
+// Result: O(n^1 × log n) = O(n log n)
+function mergeSortMaster(arr) {
+    if (arr.length <= 1) return arr;
+    
+    const mid = Math.floor(arr.length / 2);
+    const left = mergeSortMaster(arr.slice(0, mid));
+    const right = mergeSortMaster(arr.slice(mid));
+    
+    return mergeMaster(left, right);
+}
+
+function mergeMaster(left, right) {
+    const result = [];
+    let i = 0, j = 0;
+    while (i < left.length && j < right.length) {
+        if (left[i] <= right[j]) result.push(left[i++]);
+        else result.push(right[j++]);
+    }
+    return [...result, ...left.slice(i), ...right.slice(j)];
+}
+
+
+// Example 3: Finding max (divide and conquer)
+// T(n) = 2T(n/2) + O(1)
+// a=2, b=2, d=0
+// log_2(2) = 1 > d=0 → Case 1
+// Result: O(n^1) = O(n)
+function findMaxRecursive(arr, start = 0, end = arr.length - 1) {
+    if (start === end) return arr[start];
+    
+    const mid = Math.floor((start + end) / 2);
+    const leftMax = findMaxRecursive(arr, start, mid);
+    const rightMax = findMaxRecursive(arr, mid + 1, end);
+    
+    return Math.max(leftMax, rightMax);
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// INTERVIEW PRACTICE: Analyze this recurrence
+// ═══════════════════════════════════════════════════════════
+function mystery(n) {
+    if (n <= 1) return 1;
+    return mystery(n / 3) + mystery(n / 3) + mystery(n / 3) + n * n;
+}
+// Recurrence: T(n) = 3T(n/3) + O(n²)
+// a=3, b=3, d=2
+// log_3(3) = 1 < d=2 → Case 3
+// Result: O(n²) - the combining work dominates!`,
+    },
+    {
+      id: "common-interview-traps",
+      title: "Common Interview Traps & Edge Cases",
+      type: "theory",
+      content: `
+## 🚨 Complexity Analysis Traps Interviewers Love
+
+### Trap 1: Hidden Loops in Built-in Methods
+
+\`\`\`javascript
+// This looks O(n), but it's O(n²)!
+for (let i = 0; i < arr.length; i++) {
+    arr.includes(target);  // includes() is O(n)!
+}
+\`\`\`
+
+### Trap 2: String Concatenation
+
+\`\`\`javascript
+// This is O(n²), not O(n)!
+let result = "";
+for (let i = 0; i < n; i++) {
+    result += char;  // Creates new string each time!
+}
+\`\`\`
+
+### Trap 3: Array.slice() and Array.splice()
+
+| Operation | Complexity | Why |
+|-----------|------------|-----|
+| \`slice()\` | O(k) | Copies k elements |
+| \`splice()\` | O(n) | May shift remaining elements |
+| \`shift()\` | O(n) | Shifts all elements left |
+| \`unshift()\` | O(n) | Shifts all elements right |
+
+### Trap 4: Multiple Variables
+
+\`\`\`javascript
+// This is O(n + m), NOT O(n)!
+function processTwo(arr1, arr2) {
+    for (const x of arr1) { /* n ops */ }
+    for (const y of arr2) { /* m ops */ }
+}
+\`\`\`
+
+### Trap 5: Logarithmic Base Confusion
+
+All logarithmic bases are equivalent in Big-O!
+$$O(\\log_2 n) = O(\\log_{10} n) = O(\\ln n) = O(\\log n)$$
+
+Because: $\\log_a n = \\frac{\\log_b n}{\\log_b a}$ (constant factor!)
+
+### 🎯 Interview Checklist
+
+✅ Identify hidden loops in built-in methods
+✅ Account for string immutability  
+✅ Consider array shifting operations
+✅ Keep different inputs as separate variables
+✅ Don't forget recursive stack space
+✅ Consider amortized vs worst-case
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// TRAP 1: HIDDEN LOOPS IN BUILT-IN METHODS
+// ═══════════════════════════════════════════════════════════
+
+// BAD: O(n²) - includes() is O(n)
+function hasDuplicateBad(arr) {
+    for (let i = 0; i < arr.length; i++) {
+        if (arr.slice(i + 1).includes(arr[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// GOOD: O(n) - Set lookup is O(1)
+function hasDuplicateGood(arr) {
+    const seen = new Set();
+    for (const num of arr) {
+        if (seen.has(num)) return true;
+        seen.add(num);
+    }
+    return false;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// TRAP 2: STRING CONCATENATION
+// ═══════════════════════════════════════════════════════════
+
+// BAD: O(n²) - string is immutable!
+function repeatCharBad(char, n) {
+    let result = "";
+    for (let i = 0; i < n; i++) {
+        result += char;
+    }
+    return result;
+}
+
+// GOOD: O(n) - array join
+function repeatCharGood(char, n) {
+    const chars = [];
+    for (let i = 0; i < n; i++) {
+        chars.push(char);
+    }
+    return chars.join("");
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// TRAP 3: SHIFT/UNSHIFT OPERATIONS
+// ═══════════════════════════════════════════════════════════
+
+// BAD: O(n²) - shift is O(n)
+function processQueueBad(queue) {
+    while (queue.length > 0) {
+        const item = queue.shift();
+        console.log(item);
+    }
+}
+
+// GOOD: O(n) - use index pointer
+function processQueueGood(queue) {
+    for (let i = 0; i < queue.length; i++) {
+        console.log(queue[i]);
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// TRAP 4: FORGETTING RECURSION STACK SPACE
+// ═══════════════════════════════════════════════════════════
+
+// Uses O(n) SPACE even though no arrays created!
+function sumRecursive(n) {
+    if (n <= 0) return 0;
+    return n + sumRecursive(n - 1);
+}
+
+// O(1) space - iterative
+function sumIterative(n) {
+    let total = 0;
+    for (let i = 1; i <= n; i++) {
+        total += i;
+    }
+    return total;
+}`,
+    },
     {
       id: "problem-optimize-complexity",
       title: "Problem: Optimize to Better Complexity",
