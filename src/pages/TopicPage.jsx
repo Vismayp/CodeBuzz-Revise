@@ -11,6 +11,31 @@ import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 
+const stripIndent = (str) => {
+  if (!str) return str;
+  const lines = str.split("\n");
+
+  // Find minimum indent, ignoring empty lines
+  let minIndent = Infinity;
+  for (const line of lines) {
+    if (line.trim().length === 0) continue;
+    const indent = line.search(/\S/);
+    if (indent !== -1 && indent < minIndent) {
+      minIndent = indent;
+    }
+  }
+
+  if (minIndent === Infinity) return str;
+
+  // Remove indent from all lines
+  return lines
+    .map((line) => {
+      if (line.trim().length === 0) return "";
+      return line.slice(minIndent);
+    })
+    .join("\n");
+};
+
 const TopicPage = () => {
   const { subjectId, topicId, sectionId } = useParams();
 
@@ -149,7 +174,7 @@ const TopicPage = () => {
             rehypePlugins={[rehypeRaw, rehypeKatex]}
             components={MarkdownComponents}
           >
-            {section.content}
+            {stripIndent(section.content)}
           </ReactMarkdown>
         </div>
 
