@@ -5,6 +5,166 @@ export const complexityTopic = {
     "Master Big O notation, time-space trade-offs, and complexity analysis for interviews.",
   icon: "Activity",
   sections: [
+    // ============== BEGINNER INTRODUCTION ==============
+    {
+      id: "what-is-big-o",
+      title: "What is Big O? (Start Here! 🚀)",
+      type: "theory",
+      content: `
+## 🍪 Big O Explained: The Cookie Counting Story!
+
+Imagine you have a box of cookies and need to count them. How you count determines your **algorithm's efficiency**!
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🍪 Two Ways to Count Cookies</h3>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+    <div style="background: #0f3460; padding: 20px; border-radius: 12px; border-left: 4px solid #f87171;">
+      <h4 style="color: #f87171; margin: 0 0 10px 0;">❌ Slow Way: Count One by One</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 14px;">3 cookies = 3 seconds</p>
+      <p style="color: #94a3b8; margin: 5px 0; font-size: 14px;">100 cookies = 100 seconds</p>
+      <p style="color: #94a3b8; margin: 5px 0; font-size: 14px;">n cookies = <strong style="color: #fbbf24;">n seconds</strong></p>
+      <p style="color: #a78bfa; margin: 10px 0 0 0; font-weight: bold;">This is O(n) - Linear Time</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 20px; border-radius: 12px; border-left: 4px solid #4ade80;">
+      <h4 style="color: #4ade80; margin: 0 0 10px 0;">✅ Fast Way: Read the Label!</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 14px;">3 cookies = 1 second (just read)</p>
+      <p style="color: #94a3b8; margin: 5px 0; font-size: 14px;">100 cookies = 1 second</p>
+      <p style="color: #94a3b8; margin: 5px 0; font-size: 14px;">n cookies = <strong style="color: #fbbf24;">1 second</strong></p>
+      <p style="color: #a78bfa; margin: 10px 0 0 0; font-weight: bold;">This is O(1) - Constant Time</p>
+    </div>
+  </div>
+</div>
+
+### 🎯 What is Big O Notation?
+
+Big O answers: **"How does my code's speed change as input grows?"**
+
+Think of it like asking:
+- 🚗 If I drive **10 miles**, it takes 10 minutes
+- 🚗 If I drive **100 miles**, does it take 100 minutes? Or still 10 minutes?
+
+<div style="background: #1e293b; padding: 20px; border-radius: 12px; margin: 20px 0;">
+  <h4 style="color: #60a5fa; margin: 0 0 15px 0;">📊 The Big O Speed Chart</h4>
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="background: #22c55e; color: black; padding: 4px 12px; border-radius: 20px; font-weight: bold; min-width: 80px; text-align: center;">O(1)</span>
+      <div style="flex: 1; height: 20px; background: linear-gradient(90deg, #22c55e 5%, #1e293b 5%); border-radius: 4px;"></div>
+      <span style="color: #94a3b8; font-size: 12px;">Instant! 🚀</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="background: #84cc16; color: black; padding: 4px 12px; border-radius: 20px; font-weight: bold; min-width: 80px; text-align: center;">O(log n)</span>
+      <div style="flex: 1; height: 20px; background: linear-gradient(90deg, #84cc16 15%, #1e293b 15%); border-radius: 4px;"></div>
+      <span style="color: #94a3b8; font-size: 12px;">Very Fast</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="background: #facc15; color: black; padding: 4px 12px; border-radius: 20px; font-weight: bold; min-width: 80px; text-align: center;">O(n)</span>
+      <div style="flex: 1; height: 20px; background: linear-gradient(90deg, #facc15 35%, #1e293b 35%); border-radius: 4px;"></div>
+      <span style="color: #94a3b8; font-size: 12px;">Fair</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="background: #fb923c; color: black; padding: 4px 12px; border-radius: 20px; font-weight: bold; min-width: 80px; text-align: center;">O(n log n)</span>
+      <div style="flex: 1; height: 20px; background: linear-gradient(90deg, #fb923c 50%, #1e293b 50%); border-radius: 4px;"></div>
+      <span style="color: #94a3b8; font-size: 12px;">Okay</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="background: #f87171; color: black; padding: 4px 12px; border-radius: 20px; font-weight: bold; min-width: 80px; text-align: center;">O(n²)</span>
+      <div style="flex: 1; height: 20px; background: linear-gradient(90deg, #f87171 75%, #1e293b 75%); border-radius: 4px;"></div>
+      <span style="color: #94a3b8; font-size: 12px;">Slow 🐢</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span style="background: #ef4444; color: white; padding: 4px 12px; border-radius: 20px; font-weight: bold; min-width: 80px; text-align: center;">O(2ⁿ)</span>
+      <div style="flex: 1; height: 20px; background: linear-gradient(90deg, #ef4444 100%, #1e293b 100%); border-radius: 4px;"></div>
+      <span style="color: #94a3b8; font-size: 12px;">Terrible! 💀</span>
+    </div>
+  </div>
+</div>
+
+### 💡 Real-World Analogies for Each Complexity
+
+| Big O | Real World Example | What It Means |
+|-------|-------------------|---------------|
+| **O(1)** | Looking up a word in a dictionary by page number | Same time regardless of dictionary size |
+| **O(log n)** | Finding a name in a phone book (binary search) | Cut problem in half each step |
+| **O(n)** | Reading every page of a book | Time grows with book size |
+| **O(n²)** | Comparing every student with every other student | Double input = 4x time |
+| **O(2ⁿ)** | Trying every combination of a password | Explodes exponentially! |
+
+### ⚠️ The Golden Rule for Beginners
+
+> **Drop the constants, keep the biggest term!**
+> - O(2n) → O(n)
+> - O(n² + n) → O(n²)
+> - O(500) → O(1)
+      `,
+      code: `// 🍪 THE COOKIE COUNTING STORY IN CODE
+
+// ═══════════════════════════════════════════════════════════
+// O(1) - CONSTANT TIME: "Read the label!"
+// ═══════════════════════════════════════════════════════════
+function getCookieCount(box) {
+    return box.label; // Just read it - instant!
+    // Whether box has 5 or 5 million cookies, same speed!
+}
+
+// Real example: Array access by index
+function getFirstCookie(cookies) {
+    return cookies[0]; // Always 1 step, no matter array size
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// O(n) - LINEAR TIME: "Count one by one"
+// ═══════════════════════════════════════════════════════════
+function countCookiesOneByOne(cookies) {
+    let count = 0;
+    for (let i = 0; i < cookies.length; i++) {
+        count++; // Visit each cookie once
+    }
+    return count;
+    // 10 cookies = 10 steps, 1000 cookies = 1000 steps
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// O(n²) - QUADRATIC TIME: "Compare every cookie with every other"
+// ═══════════════════════════════════════════════════════════
+function findDuplicateFlavors(cookies) {
+    for (let i = 0; i < cookies.length; i++) {
+        for (let j = i + 1; j < cookies.length; j++) {
+            if (cookies[i].flavor === cookies[j].flavor) {
+                console.log("Duplicate found!");
+            }
+        }
+    }
+    // 10 cookies = ~50 comparisons
+    // 100 cookies = ~5000 comparisons (100x more cookies = 100x more time)
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// O(log n) - LOGARITHMIC TIME: "Phone book search"
+// ═══════════════════════════════════════════════════════════
+function findCookieByName(sortedCookies, name) {
+    let left = 0;
+    let right = sortedCookies.length - 1;
+    
+    while (left <= right) {
+        let mid = Math.floor((left + right) / 2);
+        
+        if (sortedCookies[mid].name === name) {
+            return mid; // Found it!
+        } else if (sortedCookies[mid].name < name) {
+            left = mid + 1;  // Search right half
+        } else {
+            right = mid - 1; // Search left half
+        }
+    }
+    return -1;
+    // 1000 cookies = ~10 steps (cuts in half each time!)
+}`,
+    },
     // ============== THEORY SECTIONS ==============
     {
       id: "big-o-introduction",
