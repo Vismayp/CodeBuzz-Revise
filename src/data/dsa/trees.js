@@ -1396,5 +1396,569 @@ def maxPathSum(root):
     dfs(root)
     return max_sum`,
     },
+    // ============== ADVANCED TREE ALGORITHMS ==============
+    {
+      id: "morris-traversal",
+      title: "Morris Traversal: O(1) Space Tree Traversal",
+      type: "theory",
+      content: `
+## Morris Traversal: The Space-Optimal Solution 🚀
+
+Traverse a binary tree **without stack or recursion** using threaded binary tree concept.
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🎯 Why Morris Traversal?</h3>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; text-align: center;">
+      <div style="font-size: 28px; margin-bottom: 8px;">📚</div>
+      <div style="color: #f87171; font-weight: bold;">Recursive</div>
+      <div style="color: #94a3b8; font-size: 12px;">O(h) stack space</div>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; text-align: center;">
+      <div style="font-size: 28px; margin-bottom: 8px;">📋</div>
+      <div style="color: #fbbf24; font-weight: bold;">Iterative</div>
+      <div style="color: #94a3b8; font-size: 12px;">O(h) explicit stack</div>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; text-align: center; border: 2px solid #4ade80;">
+      <div style="font-size: 28px; margin-bottom: 8px;">🧵</div>
+      <div style="color: #4ade80; font-weight: bold;">Morris</div>
+      <div style="color: #94a3b8; font-size: 12px;">O(1) space!</div>
+    </div>
+  </div>
+</div>
+
+### The Key Idea: Threaded Binary Tree
+
+1. Find inorder predecessor of current node
+2. Make current node the right child of predecessor (create thread)
+3. Follow thread back after processing left subtree
+4. Remove thread to restore tree structure
+
+### When to Use
+- Memory-critical environments
+- Very deep trees where O(h) stack is too much
+- Interview optimization question
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// MORRIS INORDER TRAVERSAL - O(1) SPACE
+// ═══════════════════════════════════════════════════════════
+
+function morrisInorder(root) {
+    const result = [];
+    let current = root;
+    
+    while (current) {
+        if (!current.left) {
+            // No left subtree: visit and go right
+            result.push(current.val);
+            current = current.right;
+        } else {
+            // Find inorder predecessor
+            let predecessor = current.left;
+            while (predecessor.right && predecessor.right !== current) {
+                predecessor = predecessor.right;
+            }
+            
+            if (!predecessor.right) {
+                // Create thread: predecessor → current
+                predecessor.right = current;
+                current = current.left;
+            } else {
+                // Thread exists: remove it and visit
+                predecessor.right = null;
+                result.push(current.val);
+                current = current.right;
+            }
+        }
+    }
+    
+    return result;
+}
+
+// Dry Run:
+//        4
+//       / \\
+//      2   6
+//     / \\
+//    1   3
+//
+// Step 1: current=4, has left
+//   predecessor=2→3 (rightmost in left subtree)
+//   3.right = 4 (create thread)
+//   current = 2
+//
+// Step 2: current=2, has left
+//   predecessor=1 (no right)
+//   1.right = 2 (create thread)
+//   current = 1
+//
+// Step 3: current=1, no left
+//   Visit 1, current = 1.right = 2 (via thread)
+//
+// Step 4: current=2, has left, but 1.right = 2 (thread exists!)
+//   Remove thread: 1.right = null
+//   Visit 2, current = 3
+//
+// Step 5: current=3, no left
+//   Visit 3, current = 4 (via thread)
+//
+// Step 6: current=4, has left, but 3.right = 4 (thread exists!)
+//   Remove thread
+//   Visit 4, current = 6
+//
+// Step 7: current=6, no left
+//   Visit 6, current = null
+//
+// Result: [1, 2, 3, 4, 6]
+
+
+// ═══════════════════════════════════════════════════════════
+// MORRIS PREORDER TRAVERSAL
+// ═══════════════════════════════════════════════════════════
+
+function morrisPreorder(root) {
+    const result = [];
+    let current = root;
+    
+    while (current) {
+        if (!current.left) {
+            result.push(current.val);
+            current = current.right;
+        } else {
+            let predecessor = current.left;
+            while (predecessor.right && predecessor.right !== current) {
+                predecessor = predecessor.right;
+            }
+            
+            if (!predecessor.right) {
+                result.push(current.val);  // Visit BEFORE going left
+                predecessor.right = current;
+                current = current.left;
+            } else {
+                predecessor.right = null;
+                current = current.right;
+            }
+        }
+    }
+    
+    return result;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// APPLICATION: RECOVER BST (LeetCode #99)
+// ═══════════════════════════════════════════════════════════
+
+// Two elements of BST are swapped by mistake. Recover it.
+function recoverTree(root) {
+    let first = null, second = null, prev = null;
+    let current = root;
+    
+    while (current) {
+        if (!current.left) {
+            // Check for violation
+            if (prev && prev.val > current.val) {
+                if (!first) first = prev;
+                second = current;
+            }
+            prev = current;
+            current = current.right;
+        } else {
+            let predecessor = current.left;
+            while (predecessor.right && predecessor.right !== current) {
+                predecessor = predecessor.right;
+            }
+            
+            if (!predecessor.right) {
+                predecessor.right = current;
+                current = current.left;
+            } else {
+                predecessor.right = null;
+                // Check for violation
+                if (prev && prev.val > current.val) {
+                    if (!first) first = prev;
+                    second = current;
+                }
+                prev = current;
+                current = current.right;
+            }
+        }
+    }
+    
+    // Swap the values
+    [first.val, second.val] = [second.val, first.val];
+}`,
+    },
+    {
+      id: "lca-algorithms",
+      title: "Lowest Common Ancestor: All Variants",
+      type: "theory",
+      content: `
+## LCA: The Complete Guide 🌳
+
+The **Lowest Common Ancestor** of two nodes p and q is the deepest node that has both p and q as descendants.
+
+### LCA Variants
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <table style="width: 100%; border-collapse: collapse; color: #e2e8f0;">
+    <thead>
+      <tr style="border-bottom: 2px solid #4ade80;">
+        <th style="text-align: left; padding: 12px; color: #4ade80;">Tree Type</th>
+        <th style="text-align: left; padding: 12px; color: #4ade80;">Approach</th>
+        <th style="text-align: left; padding: 12px; color: #4ade80;">Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">Binary Tree</td>
+        <td style="padding: 12px;">Recursive DFS</td>
+        <td style="padding: 12px; color: #60a5fa;">O(n)</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">BST</td>
+        <td style="padding: 12px;">Use BST property</td>
+        <td style="padding: 12px; color: #60a5fa;">O(h)</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">With Parent Pointers</td>
+        <td style="padding: 12px;">Like linked list intersection</td>
+        <td style="padding: 12px; color: #60a5fa;">O(h)</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px;">Multiple Queries</td>
+        <td style="padding: 12px;">Binary Lifting</td>
+        <td style="padding: 12px; color: #60a5fa;">O(log n) per query</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Key Insight for Binary Tree LCA
+
+At each node, ask:
+- Is p in left subtree? Is q in left subtree?
+- Is p in right subtree? Is q in right subtree?
+- Is current node p or q?
+
+If we find answers in both subtrees → current is LCA!
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// LCA IN BINARY TREE (LeetCode #236)
+// ═══════════════════════════════════════════════════════════
+
+function lowestCommonAncestor(root, p, q) {
+    // Base cases
+    if (!root || root === p || root === q) {
+        return root;
+    }
+    
+    // Search in left and right subtrees
+    const left = lowestCommonAncestor(root.left, p, q);
+    const right = lowestCommonAncestor(root.right, p, q);
+    
+    // If both sides found something, current is LCA
+    if (left && right) return root;
+    
+    // Otherwise, return the non-null side
+    return left || right;
+}
+
+// Why this works:
+// Case 1: p and q in different subtrees → both return non-null → current is LCA
+// Case 2: p is ancestor of q (or vice versa) → first found returns up
+// Case 3: Both in same subtree → that subtree returns the LCA
+
+
+// ═══════════════════════════════════════════════════════════
+// LCA IN BST (LeetCode #235)
+// ═══════════════════════════════════════════════════════════
+
+function lowestCommonAncestorBST(root, p, q) {
+    let current = root;
+    
+    while (current) {
+        if (p.val < current.val && q.val < current.val) {
+            // Both in left subtree
+            current = current.left;
+        } else if (p.val > current.val && q.val > current.val) {
+            // Both in right subtree
+            current = current.right;
+        } else {
+            // Split point found - this is LCA
+            return current;
+        }
+    }
+    
+    return null;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// LCA WITH PARENT POINTERS (LeetCode #1650)
+// ═══════════════════════════════════════════════════════════
+
+function lowestCommonAncestorIII(p, q) {
+    // Like finding intersection of two linked lists
+    let a = p, b = q;
+    
+    while (a !== b) {
+        a = a.parent ? a.parent : q;
+        b = b.parent ? b.parent : p;
+    }
+    
+    return a;
+}
+
+// Alternative: Using heights
+function lowestCommonAncestorIIIv2(p, q) {
+    // Get depths
+    function getDepth(node) {
+        let depth = 0;
+        while (node.parent) {
+            depth++;
+            node = node.parent;
+        }
+        return depth;
+    }
+    
+    let depthP = getDepth(p);
+    let depthQ = getDepth(q);
+    
+    // Bring to same level
+    while (depthP > depthQ) {
+        p = p.parent;
+        depthP--;
+    }
+    while (depthQ > depthP) {
+        q = q.parent;
+        depthQ--;
+    }
+    
+    // Move up together
+    while (p !== q) {
+        p = p.parent;
+        q = q.parent;
+    }
+    
+    return p;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// BINARY LIFTING FOR MULTIPLE LCA QUERIES
+// ═══════════════════════════════════════════════════════════
+
+class BinaryLifting {
+    constructor(n, parent) {
+        this.LOG = Math.ceil(Math.log2(n)) + 1;
+        this.depth = new Array(n).fill(0);
+        
+        // up[node][j] = 2^j-th ancestor of node
+        this.up = Array.from({ length: n }, () => new Array(this.LOG).fill(-1));
+        
+        // Build using parent array
+        for (let i = 0; i < n; i++) {
+            this.up[i][0] = parent[i];
+        }
+        
+        for (let j = 1; j < this.LOG; j++) {
+            for (let i = 0; i < n; i++) {
+                if (this.up[i][j-1] !== -1) {
+                    this.up[i][j] = this.up[this.up[i][j-1]][j-1];
+                }
+            }
+        }
+    }
+    
+    // Get k-th ancestor in O(log n)
+    getKthAncestor(node, k) {
+        for (let j = 0; j < this.LOG && node !== -1; j++) {
+            if ((k >> j) & 1) {
+                node = this.up[node][j];
+            }
+        }
+        return node;
+    }
+    
+    // LCA in O(log n) after O(n log n) preprocessing
+    lca(u, v) {
+        // Bring to same depth
+        if (this.depth[u] < this.depth[v]) [u, v] = [v, u];
+        
+        const diff = this.depth[u] - this.depth[v];
+        u = this.getKthAncestor(u, diff);
+        
+        if (u === v) return u;
+        
+        // Binary search for LCA
+        for (let j = this.LOG - 1; j >= 0; j--) {
+            if (this.up[u][j] !== this.up[v][j]) {
+                u = this.up[u][j];
+                v = this.up[v][j];
+            }
+        }
+        
+        return this.up[u][0];
+    }
+}`,
+    },
+    {
+      id: "tree-dp-patterns",
+      title: "Tree DP: Dynamic Programming on Trees",
+      type: "theory",
+      content: `
+## Tree DP: When Recursion Meets Optimization 🌲
+
+Tree DP combines tree traversal with dynamic programming to solve optimization problems on trees.
+
+### Common Tree DP Patterns
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <div style="display: grid; gap: 12px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #4ade80; margin: 0 0 8px 0;">Pattern 1: Subtree DP</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">dp[node] depends on dp of all children. Bottom-up computation.</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #60a5fa; margin: 0 0 8px 0;">Pattern 2: Path DP</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">Track best path through each node. Return single chain upward.</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px;">
+      <h4 style="color: #f472b6; margin: 0 0 8px 0;">Pattern 3: Rerooting</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">Compute answer for all nodes as root efficiently.</p>
+    </div>
+  </div>
+</div>
+
+### When to Use Tree DP
+
+- Counting paths/subtrees with properties
+- Finding maximum/minimum in subtrees
+- Problems where state depends on children's states
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// TREE DP: HOUSE ROBBER III (LeetCode #337)
+// ═══════════════════════════════════════════════════════════
+
+// Can't rob two directly connected houses
+function rob(root) {
+    function dfs(node) {
+        if (!node) return [0, 0];  // [rob, notRob]
+        
+        const left = dfs(node.left);
+        const right = dfs(node.right);
+        
+        // Rob this node: can't rob children
+        const robThis = node.val + left[1] + right[1];
+        
+        // Don't rob this: take max of each child
+        const notRobThis = Math.max(left[0], left[1]) + Math.max(right[0], right[1]);
+        
+        return [robThis, notRobThis];
+    }
+    
+    const result = dfs(root);
+    return Math.max(result[0], result[1]);
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// TREE DP: DIAMETER OF BINARY TREE (LeetCode #543)
+// ═══════════════════════════════════════════════════════════
+
+function diameterOfBinaryTree(root) {
+    let maxDiameter = 0;
+    
+    function depth(node) {
+        if (!node) return 0;
+        
+        const left = depth(node.left);
+        const right = depth(node.right);
+        
+        // Update diameter (path through current node)
+        maxDiameter = Math.max(maxDiameter, left + right);
+        
+        // Return height for parent's calculation
+        return 1 + Math.max(left, right);
+    }
+    
+    depth(root);
+    return maxDiameter;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// TREE DP: BINARY TREE CAMERAS (LeetCode #968 - Hard)
+// ═══════════════════════════════════════════════════════════
+
+function minCameraCover(root) {
+    let cameras = 0;
+    
+    // States: 0 = needs camera, 1 = has camera, 2 = covered
+    function dfs(node) {
+        if (!node) return 2;  // Null nodes are "covered"
+        
+        const left = dfs(node.left);
+        const right = dfs(node.right);
+        
+        // If any child needs camera, put camera here
+        if (left === 0 || right === 0) {
+            cameras++;
+            return 1;
+        }
+        
+        // If any child has camera, we're covered
+        if (left === 1 || right === 1) {
+            return 2;
+        }
+        
+        // Both children covered but no camera pointing at us
+        return 0;
+    }
+    
+    // If root needs camera, add one
+    if (dfs(root) === 0) cameras++;
+    
+    return cameras;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// INTERVIEW CHEAT SHEET: TREE PROBLEMS
+// ═══════════════════════════════════════════════════════════
+
+/*
+TREE PROBLEM PATTERNS:
+
+1. Height/Depth problems → Return height, track max
+2. Path problems → Return chain, update through-path
+3. Subtree problems → Aggregate from children
+4. Level problems → BFS with queue
+5. Validation → Track min/max bounds
+
+COMMON TREE DP STATES:
+- Include/exclude current node
+- Take left path / right path / both
+- State at node based on children's states
+
+TRAVERSAL SELECTION:
+- Preorder: Process before children (serialize, copy)
+- Inorder: BST sorted order
+- Postorder: Process after children (delete, aggregate)
+- Level: Distance from root matters
+- Morris: O(1) space required
+
+TIME COMPLEXITY:
+- Most tree traversals: O(n)
+- BST operations: O(h) = O(log n) balanced, O(n) worst
+- Binary Lifting LCA: O(log n) per query after O(n log n) prep
+*/`,
+    },
   ],
 };
