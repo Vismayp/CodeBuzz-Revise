@@ -1110,5 +1110,671 @@ function letterCombinationsIterative(digits) {
 //   'c' + 'd/e/f' = 'cd', 'ce', 'cf'
 // Result: ['ad','ae','af','bd','be','bf','cd','ce','cf']`,
     },
+    // ============== ADVANCED RECURSION & BACKTRACKING ==============
+    {
+      id: "recursion-optimization-techniques",
+      title: "Recursion Optimization: From Basic to Advanced",
+      type: "theory",
+      content: `
+## Master Recursion Optimization 🚀
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🎯 Optimization Hierarchy</h3>
+  
+  <div style="display: grid; gap: 12px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; display: flex; align-items: center; gap: 16px;">
+      <span style="background: #4ade80; color: #000; padding: 8px 16px; border-radius: 8px; font-weight: bold;">1</span>
+      <div>
+        <h4 style="color: #4ade80; margin: 0;">Memoization</h4>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 13px;">Cache overlapping subproblems → Exponential to Polynomial</p>
+      </div>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; display: flex; align-items: center; gap: 16px;">
+      <span style="background: #60a5fa; color: #000; padding: 8px 16px; border-radius: 8px; font-weight: bold;">2</span>
+      <div>
+        <h4 style="color: #60a5fa; margin: 0;">Pruning</h4>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 13px;">Cut branches early → Huge constant factor reduction</p>
+      </div>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; display: flex; align-items: center; gap: 16px;">
+      <span style="background: #f472b6; color: #000; padding: 8px 16px; border-radius: 8px; font-weight: bold;">3</span>
+      <div>
+        <h4 style="color: #f472b6; margin: 0;">Tail Recursion</h4>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 13px;">Eliminate stack frames → O(n) to O(1) space</p>
+      </div>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; display: flex; align-items: center; gap: 16px;">
+      <span style="background: #fbbf24; color: #000; padding: 8px 16px; border-radius: 8px; font-weight: bold;">4</span>
+      <div>
+        <h4 style="color: #fbbf24; margin: 0;">Iterative Conversion</h4>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 13px;">Use explicit stack → Avoid stack overflow</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+### When Each Technique Applies
+
+| Problem Type | Technique | Example |
+|-------------|-----------|---------|
+| Overlapping subproblems | Memoization | Fibonacci, paths in grid |
+| Search with constraints | Pruning | N-Queens, Sudoku |
+| Linear recursion | Tail recursion | Factorial, list traversal |
+| Deep recursion | Iteration | Tree traversal, DFS |
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// TECHNIQUE 1: MEMOIZATION
+// ═══════════════════════════════════════════════════════════
+
+// Without memoization: O(2^n) - exponential
+function fibNaive(n) {
+    if (n <= 1) return n;
+    return fibNaive(n - 1) + fibNaive(n - 2);
+}
+
+// With memoization: O(n) - linear
+function fibMemo(n, memo = {}) {
+    if (n in memo) return memo[n];
+    if (n <= 1) return n;
+    memo[n] = fibMemo(n - 1, memo) + fibMemo(n - 2, memo);
+    return memo[n];
+}
+
+// Using closure for cleaner API
+function createMemoizedFib() {
+    const cache = new Map();
+    
+    return function fib(n) {
+        if (cache.has(n)) return cache.get(n);
+        if (n <= 1) return n;
+        const result = fib(n - 1) + fib(n - 2);
+        cache.set(n, result);
+        return result;
+    };
+}
+
+// Generic memoization decorator
+function memoize(fn) {
+    const cache = new Map();
+    return function(...args) {
+        const key = JSON.stringify(args);
+        if (cache.has(key)) return cache.get(key);
+        const result = fn.apply(this, args);
+        cache.set(key, result);
+        return result;
+    };
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// TECHNIQUE 2: TAIL RECURSION
+// ═══════════════════════════════════════════════════════════
+
+// Regular recursion: O(n) stack space
+function factorial(n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);  // Has pending multiplication
+}
+
+// Tail recursive: O(1) stack space (with TCO)
+function factorialTail(n, accumulator = 1) {
+    if (n <= 1) return accumulator;
+    return factorialTail(n - 1, n * accumulator);  // Nothing to do after return
+}
+
+// Why tail recursion matters:
+// Tail call = recursive call is the LAST operation
+// Compiler can reuse same stack frame (Tail Call Optimization)
+// JavaScript engines may or may not support TCO
+
+// Tail recursive sum of array
+function sumArrayTail(arr, index = 0, acc = 0) {
+    if (index >= arr.length) return acc;
+    return sumArrayTail(arr, index + 1, acc + arr[index]);
+}
+
+// Tail recursive reverse
+function reverseTail(arr, left = 0, right = arr.length - 1) {
+    if (left >= right) return arr;
+    [arr[left], arr[right]] = [arr[right], arr[left]];
+    return reverseTail(arr, left + 1, right - 1);
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// TECHNIQUE 3: CONVERT TO ITERATION
+// ═══════════════════════════════════════════════════════════
+
+// Recursive DFS
+function dfsRecursive(node, visited = new Set()) {
+    if (!node || visited.has(node)) return;
+    visited.add(node);
+    console.log(node.val);
+    for (const neighbor of node.neighbors) {
+        dfsRecursive(neighbor, visited);
+    }
+}
+
+// Iterative DFS (explicit stack)
+function dfsIterative(node) {
+    if (!node) return;
+    const stack = [node];
+    const visited = new Set();
+    
+    while (stack.length > 0) {
+        const curr = stack.pop();
+        if (visited.has(curr)) continue;
+        
+        visited.add(curr);
+        console.log(curr.val);
+        
+        // Add neighbors in reverse for same order as recursive
+        for (let i = curr.neighbors.length - 1; i >= 0; i--) {
+            if (!visited.has(curr.neighbors[i])) {
+                stack.push(curr.neighbors[i]);
+            }
+        }
+    }
+}
+
+// Recursive to iterative pattern:
+// 1. Create explicit stack
+// 2. Push initial state
+// 3. While stack not empty:
+//    a. Pop current state
+//    b. Process
+//    c. Push new states (in reverse order)`,
+    },
+    {
+      id: "backtracking-pruning-strategies",
+      title: "Backtracking: Advanced Pruning Strategies",
+      type: "theory",
+      content: `
+## Pruning: The Secret to Fast Backtracking 🔥
+
+Pruning eliminates branches that cannot lead to valid solutions, dramatically reducing time complexity.
+
+### Pruning Strategies
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <table style="width: 100%; border-collapse: collapse; color: #e2e8f0;">
+    <thead>
+      <tr style="border-bottom: 2px solid #4ade80;">
+        <th style="text-align: left; padding: 12px; color: #4ade80;">Strategy</th>
+        <th style="text-align: left; padding: 12px; color: #4ade80;">When to Use</th>
+        <th style="text-align: left; padding: 12px; color: #4ade80;">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">Constraint propagation</td>
+        <td style="padding: 12px;">CSP problems</td>
+        <td style="padding: 12px; color: #60a5fa;">Sudoku: eliminate impossibles</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">Bound checking</td>
+        <td style="padding: 12px;">Optimization</td>
+        <td style="padding: 12px; color: #60a5fa;">Branch & bound</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">Symmetry breaking</td>
+        <td style="padding: 12px;">Combinatorial</td>
+        <td style="padding: 12px; color: #60a5fa;">N-Queens: first half only</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">Duplicate avoidance</td>
+        <td style="padding: 12px;">With duplicates</td>
+        <td style="padding: 12px; color: #60a5fa;">Skip same element</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px;">Early termination</td>
+        <td style="padding: 12px;">Target found</td>
+        <td style="padding: 12px; color: #60a5fa;">Sum exceeds target</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Pruning Decision Framework
+
+\`\`\`
+Before recursing, ask:
+1. Is current state already invalid? → PRUNE
+2. Can this branch possibly lead to solution? → Continue : PRUNE
+3. Have we seen equivalent state? → PRUNE (memoize)
+4. Is this path worse than known solution? → PRUNE (branch & bound)
+\`\`\`
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// PRUNING IN ACTION: COMBINATION SUM
+// ═══════════════════════════════════════════════════════════
+
+// Without pruning - explores many dead ends
+function combinationSumNaive(candidates, target) {
+    const result = [];
+    
+    function backtrack(remain, combo, start) {
+        if (remain === 0) {
+            result.push([...combo]);
+            return;
+        }
+        
+        for (let i = start; i < candidates.length; i++) {
+            combo.push(candidates[i]);
+            backtrack(remain - candidates[i], combo, i);
+            combo.pop();
+        }
+    }
+    
+    backtrack(target, [], 0);
+    return result;
+}
+
+// With pruning - skip impossible branches
+function combinationSumOptimized(candidates, target) {
+    const result = [];
+    candidates.sort((a, b) => a - b);  // Sort for pruning
+    
+    function backtrack(remain, combo, start) {
+        if (remain === 0) {
+            result.push([...combo]);
+            return;
+        }
+        
+        for (let i = start; i < candidates.length; i++) {
+            // PRUNING: If current number > remain, all subsequent will too
+            if (candidates[i] > remain) break;
+            
+            combo.push(candidates[i]);
+            backtrack(remain - candidates[i], combo, i);
+            combo.pop();
+        }
+    }
+    
+    backtrack(target, [], 0);
+    return result;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// DUPLICATE PRUNING: COMBINATION SUM II
+// ═══════════════════════════════════════════════════════════
+
+function combinationSum2(candidates, target) {
+    const result = [];
+    candidates.sort((a, b) => a - b);
+    
+    function backtrack(remain, combo, start) {
+        if (remain === 0) {
+            result.push([...combo]);
+            return;
+        }
+        
+        for (let i = start; i < candidates.length; i++) {
+            // PRUNING 1: Skip if too large
+            if (candidates[i] > remain) break;
+            
+            // PRUNING 2: Skip duplicates at same level
+            if (i > start && candidates[i] === candidates[i - 1]) continue;
+            
+            combo.push(candidates[i]);
+            backtrack(remain - candidates[i], combo, i + 1);
+            combo.pop();
+        }
+    }
+    
+    backtrack(target, [], 0);
+    return result;
+}
+
+// Why skip duplicates only when i > start?
+// [1,1,2] target=3
+// First 1: can use second 1 → [1,1] valid path
+// Second 1 at start: would create duplicate [1,1]
+
+
+// ═══════════════════════════════════════════════════════════
+// SYMMETRY PRUNING: N-QUEENS OPTIMIZATION
+// ═══════════════════════════════════════════════════════════
+
+function solveNQueensOptimized(n) {
+    const result = [];
+    const cols = new Set();
+    const diag1 = new Set();  // row - col
+    const diag2 = new Set();  // row + col
+    
+    function backtrack(row, queens) {
+        if (row === n) {
+            result.push(buildBoard(queens, n));
+            return;
+        }
+        
+        // SYMMETRY PRUNING: For first row, only check half
+        // Then mirror solutions
+        const end = (row === 0) ? Math.ceil(n / 2) : n;
+        
+        for (let col = 0; col < end; col++) {
+            // CONSTRAINT PRUNING: Check all constraints
+            if (cols.has(col) || diag1.has(row - col) || diag2.has(row + col)) {
+                continue;
+            }
+            
+            cols.add(col);
+            diag1.add(row - col);
+            diag2.add(row + col);
+            queens.push(col);
+            
+            backtrack(row + 1, queens);
+            
+            cols.delete(col);
+            diag1.delete(row - col);
+            diag2.delete(row + col);
+            queens.pop();
+        }
+    }
+    
+    backtrack(0, []);
+    
+    // Add mirrored solutions
+    const mirrored = result.map(board => 
+        board.map(row => row.split('').reverse().join(''))
+    );
+    
+    return [...result, ...mirrored.filter((_, i) => 
+        // Avoid duplicating symmetric solutions
+        result[i][0] !== mirrored[i][0]
+    )];
+}
+
+function buildBoard(queens, n) {
+    return queens.map(col => 
+        '.'.repeat(col) + 'Q' + '.'.repeat(n - col - 1)
+    );
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// BRANCH AND BOUND: MINIMUM PATH SUM
+// ═══════════════════════════════════════════════════════════
+
+function minPathSum(grid) {
+    const m = grid.length, n = grid[0].length;
+    let minSum = Infinity;
+    
+    function backtrack(row, col, currentSum) {
+        // BOUND PRUNING: Current path already worse than best
+        if (currentSum >= minSum) return;
+        
+        // Base case
+        if (row === m - 1 && col === n - 1) {
+            minSum = Math.min(minSum, currentSum + grid[row][col]);
+            return;
+        }
+        
+        // Out of bounds
+        if (row >= m || col >= n) return;
+        
+        const newSum = currentSum + grid[row][col];
+        
+        // Try both directions
+        backtrack(row + 1, col, newSum);
+        backtrack(row, col + 1, newSum);
+    }
+    
+    backtrack(0, 0, 0);
+    return minSum;
+}
+
+// Note: DP is better for this problem O(mn)
+// Branch & bound shown for illustration`,
+    },
+    {
+      id: "backtracking-templates",
+      title: "Backtracking Templates: Interview Ready",
+      type: "theory",
+      content: `
+## 🎯 Master Backtracking Templates
+
+### The Universal Backtracking Template
+
+\`\`\`javascript
+function backtrack(candidate, state, result) {
+    if (isSolution(candidate)) {
+        result.push(clone(candidate));
+        return;
+    }
+    
+    for (const choice of getChoices(state)) {
+        if (!isValid(choice, state)) continue;  // Pruning
+        
+        makeChoice(candidate, choice, state);
+        backtrack(candidate, state, result);
+        undoChoice(candidate, choice, state);   // Backtrack
+    }
+}
+\`\`\`
+
+### Problem Type → Template Mapping
+
+| Problem | Choices | State | Pruning |
+|---------|---------|-------|---------|
+| Permutations | Unused elements | used[] | None |
+| Combinations | Elements from index | start | Sum > target |
+| Subsets | Include/exclude | index | None |
+| Partitions | Assign to bucket | buckets | Bucket overflow |
+| Path finding | Neighbors | visited | Dead end |
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// TEMPLATE 1: PERMUTATIONS
+// ═══════════════════════════════════════════════════════════
+
+function permute(nums) {
+    const result = [];
+    const used = new Array(nums.length).fill(false);
+    
+    function backtrack(path) {
+        if (path.length === nums.length) {
+            result.push([...path]);
+            return;
+        }
+        
+        for (let i = 0; i < nums.length; i++) {
+            if (used[i]) continue;
+            
+            used[i] = true;
+            path.push(nums[i]);
+            backtrack(path);
+            path.pop();
+            used[i] = false;
+        }
+    }
+    
+    backtrack([]);
+    return result;
+}
+
+// With duplicates - Permutations II
+function permuteUnique(nums) {
+    const result = [];
+    nums.sort((a, b) => a - b);
+    const used = new Array(nums.length).fill(false);
+    
+    function backtrack(path) {
+        if (path.length === nums.length) {
+            result.push([...path]);
+            return;
+        }
+        
+        for (let i = 0; i < nums.length; i++) {
+            if (used[i]) continue;
+            // Skip duplicates: if previous same element wasn't used
+            if (i > 0 && nums[i] === nums[i-1] && !used[i-1]) continue;
+            
+            used[i] = true;
+            path.push(nums[i]);
+            backtrack(path);
+            path.pop();
+            used[i] = false;
+        }
+    }
+    
+    backtrack([]);
+    return result;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// TEMPLATE 2: SUBSETS
+// ═══════════════════════════════════════════════════════════
+
+function subsets(nums) {
+    const result = [];
+    
+    function backtrack(start, current) {
+        result.push([...current]);  // Add every subset
+        
+        for (let i = start; i < nums.length; i++) {
+            current.push(nums[i]);
+            backtrack(i + 1, current);
+            current.pop();
+        }
+    }
+    
+    backtrack(0, []);
+    return result;
+}
+
+// With duplicates - Subsets II
+function subsetsWithDup(nums) {
+    const result = [];
+    nums.sort((a, b) => a - b);
+    
+    function backtrack(start, current) {
+        result.push([...current]);
+        
+        for (let i = start; i < nums.length; i++) {
+            // Skip duplicates at same level
+            if (i > start && nums[i] === nums[i-1]) continue;
+            
+            current.push(nums[i]);
+            backtrack(i + 1, current);
+            current.pop();
+        }
+    }
+    
+    backtrack(0, []);
+    return result;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// TEMPLATE 3: PARTITION (K Equal Sum Subsets)
+// ═══════════════════════════════════════════════════════════
+
+function canPartitionKSubsets(nums, k) {
+    const total = nums.reduce((a, b) => a + b, 0);
+    if (total % k !== 0) return false;
+    
+    const target = total / k;
+    nums.sort((a, b) => b - a);  // Sort desc for early pruning
+    
+    if (nums[0] > target) return false;
+    
+    const buckets = new Array(k).fill(0);
+    
+    function backtrack(index) {
+        if (index === nums.length) {
+            return buckets.every(b => b === target);
+        }
+        
+        const seen = new Set();  // Avoid duplicate bucket states
+        
+        for (let i = 0; i < k; i++) {
+            // PRUNING 1: Bucket would overflow
+            if (buckets[i] + nums[index] > target) continue;
+            
+            // PRUNING 2: Duplicate bucket sum already tried
+            if (seen.has(buckets[i])) continue;
+            seen.add(buckets[i]);
+            
+            buckets[i] += nums[index];
+            if (backtrack(index + 1)) return true;
+            buckets[i] -= nums[index];
+            
+            // PRUNING 3: If empty bucket didn't work, none will
+            if (buckets[i] === 0) break;
+        }
+        
+        return false;
+    }
+    
+    return backtrack(0);
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// TEMPLATE 4: WORD SEARCH (Grid Backtracking)
+// ═══════════════════════════════════════════════════════════
+
+function exist(board, word) {
+    const m = board.length, n = board[0].length;
+    const dirs = [[0,1], [0,-1], [1,0], [-1,0]];
+    
+    function backtrack(row, col, index) {
+        if (index === word.length) return true;
+        
+        if (row < 0 || row >= m || col < 0 || col >= n) return false;
+        if (board[row][col] !== word[index]) return false;
+        
+        // Mark as visited
+        const temp = board[row][col];
+        board[row][col] = '#';
+        
+        for (const [dr, dc] of dirs) {
+            if (backtrack(row + dr, col + dc, index + 1)) {
+                return true;
+            }
+        }
+        
+        // Backtrack
+        board[row][col] = temp;
+        return false;
+    }
+    
+    for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+            if (backtrack(i, j, 0)) return true;
+        }
+    }
+    
+    return false;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// INTERVIEW CHEAT SHEET
+// ═══════════════════════════════════════════════════════════
+
+/*
+BACKTRACKING PATTERN RECOGNITION:
+
+1. "Generate all..." → Backtracking
+2. "Find all combinations/permutations" → Backtracking
+3. "Can we partition into..." → Backtracking with buckets
+4. "Path in grid" → Grid backtracking
+5. "Validate/solve puzzle" → Constraint backtracking
+
+OPTIMIZATION CHECKLIST:
+□ Sort input for early termination
+□ Skip duplicates at same level
+□ Use sets for O(1) constraint checking
+□ Prune when sum/count exceeds target
+□ Try larger elements first for quicker failures
+□ Memoize if subproblems overlap
+*/`,
+    },
   ],
 };
