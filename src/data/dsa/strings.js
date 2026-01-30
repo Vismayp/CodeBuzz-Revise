@@ -777,5 +777,525 @@ function longestCommonPrefixSort(strs) {
 // Time: O(S) where S = sum of all characters
 // Space: O(1) for vertical scanning`,
     },
+    // ============== ADVANCED STRING ALGORITHMS ==============
+    {
+      id: "kmp-algorithm",
+      title: "KMP Pattern Matching Algorithm",
+      type: "theory",
+      content: `
+## KMP Algorithm: O(n+m) Pattern Matching 🚀
+
+The **Knuth-Morris-Pratt** algorithm finds all occurrences of a pattern in text without backtracking!
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🧠 Why KMP is Powerful</h3>
+  
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; border-left: 4px solid #f87171;">
+      <h4 style="color: #f87171; margin: 0 0 8px 0;">Brute Force</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">O(n × m) time</p>
+      <p style="color: #a78bfa; margin: 8px 0 0 0; font-size: 12px;">Resets on mismatch</p>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; border-left: 4px solid #4ade80;">
+      <h4 style="color: #4ade80; margin: 0 0 8px 0;">KMP</h4>
+      <p style="color: #94a3b8; margin: 0; font-size: 13px;">O(n + m) time</p>
+      <p style="color: #a78bfa; margin: 8px 0 0 0; font-size: 12px;">Never backtracks text</p>
+    </div>
+  </div>
+</div>
+
+### The Key Insight: LPS Array
+
+**LPS** = Longest Proper Prefix which is also Suffix
+
+For pattern "ABAB":
+\`\`\`
+Index:  0  1  2  3
+Pattern: A  B  A  B
+LPS:    0  0  1  2
+         ↑     ↑
+       "A"="A" "AB"="AB"
+\`\`\`
+
+### How LPS Helps
+
+When mismatch occurs at position j in pattern:
+- Instead of restarting from 0
+- Jump to LPS[j-1] and continue
+- Because that prefix already matched!
+
+### Visual Example
+
+\`\`\`
+Text:    ABABDABACDABABCABAB
+Pattern: ABABCABAB
+
+Mismatch at index 4 ('D' vs 'C')
+Pattern matched: "ABAB"
+LPS[3] = 2, so pattern[:2] = "AB" already matches!
+Jump to index 2 and continue, don't restart!
+\`\`\`
+
+### When to Use KMP
+- Finding pattern in text
+- Repeated pattern detection
+- String rotation check
+- Prefix-suffix problems
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// KMP ALGORITHM IMPLEMENTATION
+// ═══════════════════════════════════════════════════════════
+
+// Step 1: Build LPS (Longest Proper Prefix Suffix) Array
+function buildLPS(pattern) {
+    const lps = new Array(pattern.length).fill(0);
+    let length = 0;  // Length of previous longest prefix suffix
+    let i = 1;
+    
+    while (i < pattern.length) {
+        if (pattern[i] === pattern[length]) {
+            length++;
+            lps[i] = length;
+            i++;
+        } else {
+            if (length !== 0) {
+                // Don't increment i, try shorter prefix
+                length = lps[length - 1];
+            } else {
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+    
+    return lps;
+}
+
+// Step 2: KMP Search
+function kmpSearch(text, pattern) {
+    if (pattern.length === 0) return 0;
+    
+    const lps = buildLPS(pattern);
+    const result = [];
+    
+    let i = 0;  // Index in text
+    let j = 0;  // Index in pattern
+    
+    while (i < text.length) {
+        if (text[i] === pattern[j]) {
+            i++;
+            j++;
+            
+            if (j === pattern.length) {
+                result.push(i - j);  // Found match at index i-j
+                j = lps[j - 1];      // Look for more matches
+            }
+        } else {
+            if (j !== 0) {
+                j = lps[j - 1];  // Use LPS to skip
+            } else {
+                i++;
+            }
+        }
+    }
+    
+    return result;
+}
+
+// Dry Run: buildLPS("ABABCABAB")
+// i=1: 'B' vs 'A' → no match, lps[1]=0
+// i=2: 'A' vs 'A' → match! length=1, lps[2]=1
+// i=3: 'B' vs 'B' → match! length=2, lps[3]=2
+// i=4: 'C' vs 'A' → no match, length=lps[1]=0
+//      'C' vs 'A' → no match, lps[4]=0
+// i=5: 'A' vs 'A' → match! length=1, lps[5]=1
+// i=6: 'B' vs 'B' → match! length=2, lps[6]=2
+// i=7: 'A' vs 'A' → match! length=3, lps[7]=3
+// i=8: 'B' vs 'B' → match! length=4, lps[8]=4
+// Result: [0, 0, 1, 2, 0, 1, 2, 3, 4]
+
+
+// ═══════════════════════════════════════════════════════════
+// PRACTICAL APPLICATIONS
+// ═══════════════════════════════════════════════════════════
+
+// Application 1: Find first occurrence
+function strStr(haystack, needle) {
+    const matches = kmpSearch(haystack, needle);
+    return matches.length > 0 ? matches[0] : -1;
+}
+
+// Application 2: Check if rotation
+function isRotation(s1, s2) {
+    if (s1.length !== s2.length) return false;
+    // s2 is rotation of s1 if s2 exists in s1+s1
+    return kmpSearch(s1 + s1, s2).length > 0;
+}
+
+// Application 3: Count pattern occurrences
+function countOccurrences(text, pattern) {
+    return kmpSearch(text, pattern).length;
+}
+
+console.log(isRotation("abcde", "cdeab"));  // true
+console.log(isRotation("abcde", "abced"));  // false`,
+    },
+    {
+      id: "rabin-karp-algorithm",
+      title: "Rabin-Karp Rolling Hash Algorithm",
+      type: "theory",
+      content: `
+## Rabin-Karp: Hash-Based Pattern Matching 🎲
+
+Uses **rolling hash** to find pattern occurrences in O(n+m) average time.
+
+### The Core Idea
+
+1. Compute hash of pattern
+2. Compute hash of each window in text
+3. If hashes match, verify characters
+4. Use **rolling hash** for O(1) window updates
+
+### Rolling Hash Formula
+
+For string "abc" with base 26:
+$$hash = a \\times 26^2 + b \\times 26^1 + c \\times 26^0$$
+
+To slide window (remove 'a', add 'd'):
+$$new\\_hash = (old\\_hash - a \\times 26^2) \\times 26 + d$$
+
+### When to Use Rabin-Karp
+
+| Use Case | Why |
+|----------|-----|
+| Multiple pattern search | Same hash comparison for all |
+| Plagiarism detection | Compare document substrings |
+| Finding repeated substrings | Hash fingerprinting |
+| 2D pattern matching | Extend to matrices |
+
+### Comparison with KMP
+
+| Aspect | KMP | Rabin-Karp |
+|--------|-----|------------|
+| Time (average) | O(n+m) | O(n+m) |
+| Time (worst) | O(n+m) | O(nm) with collisions |
+| Multiple patterns | Run separately | Single pass |
+| Implementation | Complex LPS | Simpler hashing |
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// RABIN-KARP ALGORITHM
+// ═══════════════════════════════════════════════════════════
+
+function rabinKarp(text, pattern) {
+    const BASE = 256;        // Number of characters
+    const MOD = 101;         // Prime number for mod
+    const n = text.length;
+    const m = pattern.length;
+    const result = [];
+    
+    if (m > n) return result;
+    
+    // Calculate BASE^(m-1) % MOD
+    let basePow = 1;
+    for (let i = 0; i < m - 1; i++) {
+        basePow = (basePow * BASE) % MOD;
+    }
+    
+    // Calculate initial hashes
+    let patternHash = 0;
+    let textHash = 0;
+    
+    for (let i = 0; i < m; i++) {
+        patternHash = (patternHash * BASE + pattern.charCodeAt(i)) % MOD;
+        textHash = (textHash * BASE + text.charCodeAt(i)) % MOD;
+    }
+    
+    // Slide the window
+    for (let i = 0; i <= n - m; i++) {
+        // Check if hashes match
+        if (patternHash === textHash) {
+            // Verify characters (handle hash collision)
+            let match = true;
+            for (let j = 0; j < m; j++) {
+                if (text[i + j] !== pattern[j]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) result.push(i);
+        }
+        
+        // Calculate hash for next window
+        if (i < n - m) {
+            // Remove leading char, add trailing char
+            textHash = (BASE * (textHash - text.charCodeAt(i) * basePow) 
+                       + text.charCodeAt(i + m)) % MOD;
+            
+            // Handle negative hash
+            if (textHash < 0) textHash += MOD;
+        }
+    }
+    
+    return result;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// PRACTICAL APPLICATION: REPEATED DNA SEQUENCES
+// ═══════════════════════════════════════════════════════════
+
+// LeetCode #187: Find all 10-letter sequences that occur more than once
+function findRepeatedDnaSequences(s) {
+    if (s.length < 10) return [];
+    
+    const seen = new Set();
+    const result = new Set();
+    
+    // Use rolling hash with base 4 (A,C,G,T)
+    const charToNum = { 'A': 0, 'C': 1, 'G': 2, 'T': 3 };
+    const BASE = 4;
+    const WINDOW = 10;
+    const MOD = Math.pow(BASE, WINDOW);
+    
+    let hash = 0;
+    
+    for (let i = 0; i < s.length; i++) {
+        // Add new character to hash
+        hash = hash * BASE + charToNum[s[i]];
+        
+        if (i >= WINDOW - 1) {
+            if (seen.has(hash)) {
+                result.add(s.substring(i - WINDOW + 1, i + 1));
+            }
+            seen.add(hash);
+            
+            // Remove oldest character from hash
+            hash -= charToNum[s[i - WINDOW + 1]] * Math.pow(BASE, WINDOW - 1);
+        }
+    }
+    
+    return [...result];
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// LONGEST DUPLICATE SUBSTRING (Hard)
+// ═══════════════════════════════════════════════════════════
+
+// Binary search on length + Rabin-Karp
+function longestDupSubstring(s) {
+    const n = s.length;
+    
+    // Binary search on the length of duplicate
+    let left = 1, right = n - 1;
+    let result = "";
+    
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        const dup = findDuplicate(s, mid);
+        
+        if (dup !== null) {
+            result = dup;
+            left = mid + 1;  // Try longer
+        } else {
+            right = mid - 1; // Try shorter
+        }
+    }
+    
+    return result;
+}
+
+function findDuplicate(s, length) {
+    const BASE = 26n;
+    const MOD = BigInt(2 ** 63 - 1);
+    const seen = new Map();
+    
+    let hash = 0n;
+    let basePow = 1n;
+    
+    // Compute basePow = BASE^(length-1)
+    for (let i = 0; i < length - 1; i++) {
+        basePow = (basePow * BASE) % MOD;
+    }
+    
+    // Initial hash
+    for (let i = 0; i < length; i++) {
+        hash = (hash * BASE + BigInt(s.charCodeAt(i) - 97)) % MOD;
+    }
+    seen.set(hash.toString(), 0);
+    
+    // Roll the hash
+    for (let i = length; i < s.length; i++) {
+        hash = (hash - BigInt(s.charCodeAt(i - length) - 97) * basePow % MOD + MOD) % MOD;
+        hash = (hash * BASE + BigInt(s.charCodeAt(i) - 97)) % MOD;
+        
+        const hashStr = hash.toString();
+        if (seen.has(hashStr)) {
+            const prevStart = seen.get(hashStr);
+            const currStart = i - length + 1;
+            // Verify to avoid collision
+            if (s.substring(prevStart, prevStart + length) === s.substring(currStart, currStart + length)) {
+                return s.substring(currStart, currStart + length);
+            }
+        }
+        seen.set(hashStr, i - length + 1);
+    }
+    
+    return null;
+}`,
+    },
+    {
+      id: "z-algorithm",
+      title: "Z-Algorithm for Pattern Matching",
+      type: "theory",
+      content: `
+## Z-Algorithm: Linear Time Pattern Matching 📊
+
+The Z-array stores the length of the longest substring starting from each position that matches a prefix of the string.
+
+### What is Z-Array?
+
+For string S = "aabxaab":
+\`\`\`
+Index:   0  1  2  3  4  5  6
+String:  a  a  b  x  a  a  b
+Z-array: -  1  0  0  3  1  0
+\`\`\`
+
+- Z[1] = 1: "a" matches prefix "a"
+- Z[4] = 3: "aab" matches prefix "aab"
+
+### Pattern Matching with Z
+
+Concatenate: pattern + "$" + text
+
+If any Z[i] = pattern.length, pattern found at position i - pattern.length - 1
+
+### Why Z-Algorithm?
+
+| Feature | Benefit |
+|---------|---------|
+| O(n) time | Optimal |
+| Simple logic | Easy to code |
+| No preprocessing | Pattern in same pass |
+
+### Use Cases
+- Pattern matching
+- String compression
+- Finding periods
+- Longest prefix suffix
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// Z-ALGORITHM IMPLEMENTATION
+// ═══════════════════════════════════════════════════════════
+
+function buildZArray(s) {
+    const n = s.length;
+    const z = new Array(n).fill(0);
+    
+    let left = 0, right = 0;
+    
+    for (let i = 1; i < n; i++) {
+        if (i < right) {
+            // We're inside a Z-box
+            z[i] = Math.min(right - i, z[i - left]);
+        }
+        
+        // Try to extend
+        while (i + z[i] < n && s[z[i]] === s[i + z[i]]) {
+            z[i]++;
+        }
+        
+        // Update Z-box if extended beyond right
+        if (i + z[i] > right) {
+            left = i;
+            right = i + z[i];
+        }
+    }
+    
+    return z;
+}
+
+function zSearch(text, pattern) {
+    const combined = pattern + "$" + text;
+    const z = buildZArray(combined);
+    const result = [];
+    
+    for (let i = pattern.length + 1; i < combined.length; i++) {
+        if (z[i] === pattern.length) {
+            result.push(i - pattern.length - 1);
+        }
+    }
+    
+    return result;
+}
+
+// Example: text = "aabxaabxcaabxaabxay", pattern = "aabx"
+// combined = "aabx$aabxaabxcaabxaabxay"
+// z-array will have z[i] = 4 at positions where "aabx" matches
+
+
+// ═══════════════════════════════════════════════════════════
+// INTERVIEW SUMMARY: STRING ALGORITHMS COMPARISON
+// ═══════════════════════════════════════════════════════════
+
+/*
+┌─────────────┬───────────────┬───────────────┬─────────────────┐
+│ Algorithm   │ Time          │ Space         │ Best For        │
+├─────────────┼───────────────┼───────────────┼─────────────────┤
+│ Brute Force │ O(n × m)      │ O(1)          │ Short patterns  │
+│ KMP         │ O(n + m)      │ O(m)          │ Single pattern  │
+│ Rabin-Karp  │ O(n + m) avg  │ O(1)          │ Multi-pattern   │
+│ Z-Algorithm │ O(n + m)      │ O(n + m)      │ Prefix problems │
+└─────────────┴───────────────┴───────────────┴─────────────────┘
+
+Interview Decision Tree:
+1. Single pattern search → KMP or Z
+2. Multiple pattern search → Rabin-Karp or Aho-Corasick
+3. Repeated substring → Rabin-Karp with binary search
+4. Prefix/suffix problems → Z-Algorithm or KMP's LPS
+*/
+
+// ═══════════════════════════════════════════════════════════
+// BONUS: STRING ENCODING/DECODING (LeetCode #394)
+// ═══════════════════════════════════════════════════════════
+
+function decodeString(s) {
+    const stack = [];
+    let currentNum = 0;
+    let currentStr = "";
+    
+    for (const char of s) {
+        if (char >= '0' && char <= '9') {
+            currentNum = currentNum * 10 + parseInt(char);
+        } else if (char === '[') {
+            // Push current state and reset
+            stack.push([currentStr, currentNum]);
+            currentStr = "";
+            currentNum = 0;
+        } else if (char === ']') {
+            // Pop and build string
+            const [prevStr, num] = stack.pop();
+            currentStr = prevStr + currentStr.repeat(num);
+        } else {
+            currentStr += char;
+        }
+    }
+    
+    return currentStr;
+}
+
+// Example: "3[a2[c]]" → "accaccacc"
+// Stack trace:
+// '3' → num=3
+// '[' → push ["", 3], reset
+// 'a' → str="a"
+// '2' → num=2  
+// '[' → push ["a", 2], reset
+// 'c' → str="c"
+// ']' → pop ["a", 2], str = "a" + "c".repeat(2) = "acc"
+// ']' → pop ["", 3], str = "" + "acc".repeat(3) = "accaccacc"`,
+    },
   ],
 };
