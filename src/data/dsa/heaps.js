@@ -757,5 +757,474 @@ function leastIntervalMath(tasks, n) {
 // [A] [B] [_] [A] [B] [_] [A] [B]
 //  1   2   3   4   5   6   7   8`,
     },
+    // ============== ADVANCED HEAP CONCEPTS ==============
+    {
+      id: "heap-advanced-variants",
+      title: "Advanced Heap Variants & Optimizations",
+      type: "theory",
+      content: `
+## Heap Variants: Beyond Binary Heaps 🚀
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">🎯 Heap Comparison</h3>
+  
+  <table style="width: 100%; border-collapse: collapse; color: #e2e8f0; font-size: 13px;">
+    <thead>
+      <tr style="border-bottom: 2px solid #4ade80;">
+        <th style="text-align: left; padding: 12px; color: #4ade80;">Heap Type</th>
+        <th style="text-align: left; padding: 12px; color: #4ade80;">Insert</th>
+        <th style="text-align: left; padding: 12px; color: #4ade80;">Extract</th>
+        <th style="text-align: left; padding: 12px; color: #4ade80;">Decrease Key</th>
+        <th style="text-align: left; padding: 12px; color: #4ade80;">Use Case</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">Binary Heap</td>
+        <td style="padding: 12px; color: #60a5fa;">O(log n)</td>
+        <td style="padding: 12px; color: #60a5fa;">O(log n)</td>
+        <td style="padding: 12px; color: #60a5fa;">O(log n)</td>
+        <td style="padding: 12px;">General purpose</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">D-ary Heap</td>
+        <td style="padding: 12px; color: #60a5fa;">O(log_d n)</td>
+        <td style="padding: 12px; color: #60a5fa;">O(d log_d n)</td>
+        <td style="padding: 12px; color: #60a5fa;">O(log_d n)</td>
+        <td style="padding: 12px;">Cache-friendly</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">Fibonacci Heap</td>
+        <td style="padding: 12px; color: #4ade80;">O(1)</td>
+        <td style="padding: 12px; color: #60a5fa;">O(log n)*</td>
+        <td style="padding: 12px; color: #4ade80;">O(1)*</td>
+        <td style="padding: 12px;">Graph algorithms</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px;">Pairing Heap</td>
+        <td style="padding: 12px; color: #4ade80;">O(1)</td>
+        <td style="padding: 12px; color: #60a5fa;">O(log n)*</td>
+        <td style="padding: 12px; color: #60a5fa;">O(log n)*</td>
+        <td style="padding: 12px;">Practical Fib alt</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="color: #94a3b8; font-size: 11px; margin-top: 8px;">* Amortized complexity</p>
+</div>
+
+### D-ary Heap Advantages
+
+- **Cache efficiency**: More children per node = fewer cache misses
+- **Shallower tree**: Height = log_d(n) instead of log_2(n)
+- **Trade-off**: Faster insert/decrease-key, slower extract
+
+### Interview Knowledge: Fibonacci Heap
+
+You don't need to implement it, but understand:
+- Used in theoretical optimal Dijkstra O(E + V log V)
+- O(1) amortized insert and decrease-key
+- Rarely used in practice due to constant factors
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// D-ARY HEAP IMPLEMENTATION
+// ═══════════════════════════════════════════════════════════
+
+class DaryHeap {
+    constructor(d = 4) {
+        this.d = d;        // Number of children per node
+        this.heap = [];
+    }
+    
+    // Get parent index
+    parent(i) {
+        return Math.floor((i - 1) / this.d);
+    }
+    
+    // Get k-th child (k: 0 to d-1)
+    child(i, k) {
+        return this.d * i + k + 1;
+    }
+    
+    push(val) {
+        this.heap.push(val);
+        this._bubbleUp(this.heap.length - 1);
+    }
+    
+    pop() {
+        if (this.heap.length === 0) return undefined;
+        
+        const min = this.heap[0];
+        const last = this.heap.pop();
+        
+        if (this.heap.length > 0) {
+            this.heap[0] = last;
+            this._bubbleDown(0);
+        }
+        
+        return min;
+    }
+    
+    _bubbleUp(i) {
+        while (i > 0 && this.heap[i] < this.heap[this.parent(i)]) {
+            [this.heap[i], this.heap[this.parent(i)]] = 
+                [this.heap[this.parent(i)], this.heap[i]];
+            i = this.parent(i);
+        }
+    }
+    
+    _bubbleDown(i) {
+        while (true) {
+            let smallest = i;
+            
+            // Check all d children
+            for (let k = 0; k < this.d; k++) {
+                const childIdx = this.child(i, k);
+                if (childIdx < this.heap.length && 
+                    this.heap[childIdx] < this.heap[smallest]) {
+                    smallest = childIdx;
+                }
+            }
+            
+            if (smallest === i) break;
+            
+            [this.heap[i], this.heap[smallest]] = 
+                [this.heap[smallest], this.heap[i]];
+            i = smallest;
+        }
+    }
+}
+
+// Usage: For Dijkstra with many decrease-key operations
+// 4-ary heap often performs better than binary heap
+
+
+// ═══════════════════════════════════════════════════════════
+// INDEXED PRIORITY QUEUE (Decrease Key Support)
+// ═══════════════════════════════════════════════════════════
+
+class IndexedMinHeap {
+    constructor() {
+        this.heap = [];        // [{ key, priority }]
+        this.keyToIndex = new Map();  // key → heap index
+    }
+    
+    push(key, priority) {
+        if (this.keyToIndex.has(key)) {
+            this.decreaseKey(key, priority);
+            return;
+        }
+        
+        const index = this.heap.length;
+        this.heap.push({ key, priority });
+        this.keyToIndex.set(key, index);
+        this._bubbleUp(index);
+    }
+    
+    pop() {
+        if (this.heap.length === 0) return undefined;
+        
+        const min = this.heap[0];
+        const last = this.heap.pop();
+        this.keyToIndex.delete(min.key);
+        
+        if (this.heap.length > 0) {
+            this.heap[0] = last;
+            this.keyToIndex.set(last.key, 0);
+            this._bubbleDown(0);
+        }
+        
+        return min;
+    }
+    
+    decreaseKey(key, newPriority) {
+        const index = this.keyToIndex.get(key);
+        if (index === undefined) return;
+        
+        if (newPriority < this.heap[index].priority) {
+            this.heap[index].priority = newPriority;
+            this._bubbleUp(index);
+        }
+    }
+    
+    contains(key) {
+        return this.keyToIndex.has(key);
+    }
+    
+    _bubbleUp(i) {
+        while (i > 0) {
+            const parent = Math.floor((i - 1) / 2);
+            if (this.heap[i].priority >= this.heap[parent].priority) break;
+            
+            this._swap(i, parent);
+            i = parent;
+        }
+    }
+    
+    _bubbleDown(i) {
+        while (true) {
+            let smallest = i;
+            const left = 2 * i + 1;
+            const right = 2 * i + 2;
+            
+            if (left < this.heap.length && 
+                this.heap[left].priority < this.heap[smallest].priority) {
+                smallest = left;
+            }
+            if (right < this.heap.length && 
+                this.heap[right].priority < this.heap[smallest].priority) {
+                smallest = right;
+            }
+            
+            if (smallest === i) break;
+            this._swap(i, smallest);
+            i = smallest;
+        }
+    }
+    
+    _swap(i, j) {
+        [this.heap[i], this.heap[j]] = [this.heap[j], this.heap[i]];
+        this.keyToIndex.set(this.heap[i].key, i);
+        this.keyToIndex.set(this.heap[j].key, j);
+    }
+}`,
+    },
+    {
+      id: "heap-interview-patterns",
+      title: "Heap Interview Patterns: Complete Guide",
+      type: "theory",
+      content: `
+## 🎯 Master Heap Interview Patterns
+
+### Pattern Recognition
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <div style="display: grid; gap: 12px;">
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; display: flex; align-items: center; gap: 16px;">
+      <span style="background: #4ade80; color: #000; padding: 8px 16px; border-radius: 8px; font-weight: bold;">1</span>
+      <div>
+        <h4 style="color: #4ade80; margin: 0;">Top-K / Kth Element</h4>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 13px;">Use heap of size K. Min-heap for largest, max-heap for smallest.</p>
+      </div>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; display: flex; align-items: center; gap: 16px;">
+      <span style="background: #60a5fa; color: #000; padding: 8px 16px; border-radius: 8px; font-weight: bold;">2</span>
+      <div>
+        <h4 style="color: #60a5fa; margin: 0;">Merge K Sorted</h4>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 13px;">Min-heap with one element from each list.</p>
+      </div>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; display: flex; align-items: center; gap: 16px;">
+      <span style="background: #f472b6; color: #000; padding: 8px 16px; border-radius: 8px; font-weight: bold;">3</span>
+      <div>
+        <h4 style="color: #f472b6; margin: 0;">Two Heaps</h4>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 13px;">Median, sliding window. Balance two heaps.</p>
+      </div>
+    </div>
+    
+    <div style="background: #0f3460; padding: 16px; border-radius: 12px; display: flex; align-items: center; gap: 16px;">
+      <span style="background: #fbbf24; color: #000; padding: 8px 16px; border-radius: 8px; font-weight: bold;">4</span>
+      <div>
+        <h4 style="color: #fbbf24; margin: 0;">Scheduling</h4>
+        <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 13px;">Process by priority, meetings, CPU tasks.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+### Decision Table
+
+| Problem Type | Heap Type | Size Constraint |
+|-------------|-----------|-----------------|
+| Kth largest | Min-heap | K elements |
+| Kth smallest | Max-heap | K elements |
+| Merge K lists | Min-heap | K elements |
+| Median stream | 2 heaps | N/2 each |
+| Top K frequent | Min-heap | K elements |
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// PATTERN 1: KTH LARGEST IN STREAM
+// ═══════════════════════════════════════════════════════════
+
+class KthLargest {
+    constructor(k, nums) {
+        this.k = k;
+        this.minHeap = [];
+        
+        for (const num of nums) {
+            this.add(num);
+        }
+    }
+    
+    add(val) {
+        if (this.minHeap.length < this.k) {
+            this._heapPush(val);
+        } else if (val > this.minHeap[0]) {
+            this._heapPop();
+            this._heapPush(val);
+        }
+        return this.minHeap[0];
+    }
+    
+    _heapPush(val) {
+        this.minHeap.push(val);
+        let i = this.minHeap.length - 1;
+        while (i > 0) {
+            const parent = Math.floor((i - 1) / 2);
+            if (this.minHeap[i] >= this.minHeap[parent]) break;
+            [this.minHeap[i], this.minHeap[parent]] = 
+                [this.minHeap[parent], this.minHeap[i]];
+            i = parent;
+        }
+    }
+    
+    _heapPop() {
+        const min = this.minHeap[0];
+        const last = this.minHeap.pop();
+        if (this.minHeap.length > 0) {
+            this.minHeap[0] = last;
+            this._bubbleDown(0);
+        }
+        return min;
+    }
+    
+    _bubbleDown(i) {
+        while (true) {
+            let smallest = i;
+            const left = 2 * i + 1;
+            const right = 2 * i + 2;
+            if (left < this.minHeap.length && 
+                this.minHeap[left] < this.minHeap[smallest]) smallest = left;
+            if (right < this.minHeap.length && 
+                this.minHeap[right] < this.minHeap[smallest]) smallest = right;
+            if (smallest === i) break;
+            [this.minHeap[i], this.minHeap[smallest]] = 
+                [this.minHeap[smallest], this.minHeap[i]];
+            i = smallest;
+        }
+    }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// PATTERN 2: TOP K FREQUENT ELEMENTS
+// ═══════════════════════════════════════════════════════════
+
+function topKFrequent(nums, k) {
+    // Count frequencies
+    const freq = new Map();
+    for (const num of nums) {
+        freq.set(num, (freq.get(num) || 0) + 1);
+    }
+    
+    // Min-heap of size k (by frequency)
+    const minHeap = [];  // [[num, freq], ...]
+    
+    for (const [num, count] of freq) {
+        if (minHeap.length < k) {
+            heapPush(minHeap, [num, count], (a, b) => a[1] - b[1]);
+        } else if (count > minHeap[0][1]) {
+            heapPop(minHeap, (a, b) => a[1] - b[1]);
+            heapPush(minHeap, [num, count], (a, b) => a[1] - b[1]);
+        }
+    }
+    
+    return minHeap.map(([num]) => num);
+}
+
+// Alternative: Bucket Sort - O(n)
+function topKFrequentBucket(nums, k) {
+    const freq = new Map();
+    for (const num of nums) {
+        freq.set(num, (freq.get(num) || 0) + 1);
+    }
+    
+    // Bucket by frequency
+    const buckets = Array.from({ length: nums.length + 1 }, () => []);
+    for (const [num, count] of freq) {
+        buckets[count].push(num);
+    }
+    
+    // Collect top k from highest frequency
+    const result = [];
+    for (let i = buckets.length - 1; i >= 0 && result.length < k; i--) {
+        for (const num of buckets[i]) {
+            result.push(num);
+            if (result.length === k) break;
+        }
+    }
+    
+    return result;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// PATTERN 3: MERGE K SORTED LISTS
+// ═══════════════════════════════════════════════════════════
+
+function mergeKLists(lists) {
+    const minHeap = [];
+    
+    // Initialize heap with first node from each list
+    for (let i = 0; i < lists.length; i++) {
+        if (lists[i]) {
+            heapPush(minHeap, lists[i], (a, b) => a.val - b.val);
+        }
+    }
+    
+    const dummy = { next: null };
+    let tail = dummy;
+    
+    while (minHeap.length > 0) {
+        const node = heapPop(minHeap, (a, b) => a.val - b.val);
+        tail.next = node;
+        tail = tail.next;
+        
+        if (node.next) {
+            heapPush(minHeap, node.next, (a, b) => a.val - b.val);
+        }
+    }
+    
+    return dummy.next;
+}
+
+// Time: O(N log K) where N = total nodes, K = number of lists
+// Space: O(K) for the heap
+
+
+// ═══════════════════════════════════════════════════════════
+// INTERVIEW CHEAT SHEET
+// ═══════════════════════════════════════════════════════════
+
+/*
+HEAP DECISION GUIDE:
+
+"Find Kth largest" → Min-heap of size K
+"Find Kth smallest" → Max-heap of size K
+"Merge K sorted" → Min-heap with K elements
+"Running median" → Two heaps (max-heap lower, min-heap upper)
+"Schedule by deadline" → Min-heap by deadline
+"Process by priority" → Max-heap by priority
+
+COMMON MISTAKES:
+1. Using max-heap for kth largest (use min-heap!)
+2. Not maintaining heap size K
+3. Forgetting to heapify after modifications
+
+JAVASCRIPT TIP:
+No built-in heap in JS. Either:
+- Implement manually (interview safe)
+- Use array with sort (slower but simpler for small k)
+- Use third-party library (not for interviews)
+
+TIME COMPLEXITY REMINDER:
+- Build heap: O(n)
+- Push: O(log n)
+- Pop: O(log n)
+- Peek: O(1)
+- K largest in stream: O(n log k)
+*/`,
+    },
   ],
 };
