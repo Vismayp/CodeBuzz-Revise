@@ -870,5 +870,583 @@ Design a data structure that follows the constraints of a Least Recently Used (L
 // Time: O(1) for both get and put
 // Space: O(capacity)`,
     },
+    // ============== ADVANCED LINKED LIST TECHNIQUES ==============
+    {
+      id: "floyd-cycle-detection-deep-dive",
+      title: "Floyd's Cycle Detection: Mathematical Proof",
+      type: "theory",
+      content: `
+## Floyd's Tortoise & Hare: The Complete Guide 🐢🐇
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <h3 style="color: #4ade80; margin: 0 0 20px 0; text-align: center;">Why Does It Work? Mathematical Proof</h3>
+  
+  <div style="background: #0f3460; padding: 20px; border-radius: 12px; margin-bottom: 16px;">
+    <h4 style="color: #60a5fa; margin: 0 0 12px 0;">Setup</h4>
+    <ul style="color: #94a3b8; margin: 0; padding-left: 20px;">
+      <li>Distance from head to cycle start: <b style="color: #fbbf24;">F</b></li>
+      <li>Cycle length: <b style="color: #fbbf24;">C</b></li>
+      <li>When they meet, slow traveled: <b style="color: #fbbf24;">d</b> steps</li>
+      <li>Fast traveled: <b style="color: #fbbf24;">2d</b> steps</li>
+    </ul>
+  </div>
+  
+  <div style="background: #0f3460; padding: 20px; border-radius: 12px;">
+    <h4 style="color: #f472b6; margin: 0 0 12px 0;">The Proof</h4>
+    <p style="color: #94a3b8; margin: 0;">
+      Fast is 2d, Slow is d, difference = d = k × C (multiple of cycle)<br/>
+      Meeting point from cycle start: (d - F) mod C<br/>
+      Distance from meeting to cycle start: F mod C<br/>
+      <b style="color: #4ade80;">After meeting, move one pointer to head, both move 1 step → meet at cycle start!</b>
+    </p>
+  </div>
+</div>
+
+### Three Problems Solved by Floyd's Algorithm
+
+| Problem | Solution |
+|---------|----------|
+| Detect cycle | Fast and slow meet |
+| Find cycle start | Reset one to head, move both by 1 |
+| Find cycle length | After meeting, count until meet again |
+
+### Visual Representation
+
+\`\`\`
+Head ----F---- Cycle Start
+                    ↓
+            ← ← ← ← ← ←
+            ↓           ↑
+            → → M → → →
+                ↑
+           Meeting Point
+\`\`\`
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// COMPLETE FLOYD'S ALGORITHM: ALL THREE OPERATIONS
+// ═══════════════════════════════════════════════════════════
+
+function floydCycleComplete(head) {
+    if (!head || !head.next) return { hasCycle: false };
+    
+    // Step 1: Detect cycle
+    let slow = head;
+    let fast = head;
+    
+    while (fast && fast.next) {
+        slow = slow.next;
+        fast = fast.next.next;
+        
+        if (slow === fast) {
+            // Cycle detected! Now find start and length
+            
+            // Step 2: Find cycle start
+            let ptr1 = head;
+            let ptr2 = slow;
+            while (ptr1 !== ptr2) {
+                ptr1 = ptr1.next;
+                ptr2 = ptr2.next;
+            }
+            const cycleStart = ptr1;
+            
+            // Step 3: Find cycle length
+            let length = 1;
+            let current = cycleStart.next;
+            while (current !== cycleStart) {
+                length++;
+                current = current.next;
+            }
+            
+            return {
+                hasCycle: true,
+                cycleStart: cycleStart,
+                cycleLength: length
+            };
+        }
+    }
+    
+    return { hasCycle: false };
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// APPLICATION: FIND DUPLICATE NUMBER (LeetCode #287)
+// ═══════════════════════════════════════════════════════════
+
+// Array treated as linked list: index → value as next pointer
+function findDuplicate(nums) {
+    // Phase 1: Find intersection point
+    let slow = nums[0];
+    let fast = nums[0];
+    
+    do {
+        slow = nums[slow];
+        fast = nums[nums[fast]];
+    } while (slow !== fast);
+    
+    // Phase 2: Find cycle entrance (duplicate number)
+    slow = nums[0];
+    while (slow !== fast) {
+        slow = nums[slow];
+        fast = nums[fast];
+    }
+    
+    return slow;
+}
+
+// Example: [1, 3, 4, 2, 2]
+// Implicit linked list: 0→1→3→2→4→2→4→2... (cycle at 2)
+// The duplicate (2) is the entrance to the cycle!
+
+
+// ═══════════════════════════════════════════════════════════
+// HAPPY NUMBER (LeetCode #202)
+// ═══════════════════════════════════════════════════════════
+
+function isHappy(n) {
+    function getNext(num) {
+        let sum = 0;
+        while (num > 0) {
+            const digit = num % 10;
+            sum += digit * digit;
+            num = Math.floor(num / 10);
+        }
+        return sum;
+    }
+    
+    let slow = n;
+    let fast = getNext(n);
+    
+    while (fast !== 1 && slow !== fast) {
+        slow = getNext(slow);
+        fast = getNext(getNext(fast));
+    }
+    
+    return fast === 1;
+}
+
+// If reaches 1 → happy number
+// If cycle without 1 → not happy number`,
+    },
+    {
+      id: "advanced-linked-list-patterns",
+      title: "Advanced Linked List Patterns",
+      type: "theory",
+      content: `
+## Master-Level Linked List Patterns 🎯
+
+### Pattern 1: Reverse in Groups of K
+
+\`\`\`
+Input: 1→2→3→4→5, k=2
+Output: 2→1→4→3→5
+\`\`\`
+
+### Pattern 2: Merge K Sorted Lists
+
+<div style="background: #0f172a; border-radius: 12px; padding: 16px; margin: 16px 0;">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div style="background: #1e3a5f; padding: 12px; border-radius: 8px;">
+      <span style="color: #4ade80; font-weight: bold;">Approach 1</span>
+      <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 12px;">Min-Heap: O(n log k)</p>
+    </div>
+    <div style="color: #fbbf24; font-size: 24px;">→</div>
+    <div style="background: #1e3a5f; padding: 12px; border-radius: 8px;">
+      <span style="color: #60a5fa; font-weight: bold;">Approach 2</span>
+      <p style="color: #94a3b8; margin: 4px 0 0 0; font-size: 12px;">Divide & Conquer: O(n log k)</p>
+    </div>
+  </div>
+</div>
+
+### Pattern 3: Flatten Multilevel List
+
+DFS traversal, connecting next/child pointers.
+
+### Interview Decision Tree
+
+\`\`\`
+Need to reverse?
+├── Yes → Iterative with prev, curr, next
+│         └── In groups? → Track group boundaries
+│
+├── No → Need to find position?
+│        ├── Middle → Fast/Slow pointers
+│        ├── Nth from end → Two pointers, n apart
+│        └── Cycle → Floyd's algorithm
+│
+└── Merge/Sort?
+    ├── Two lists → Recursive or iterative merge
+    └── K lists → Heap or divide & conquer
+\`\`\`
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// REVERSE NODES IN K-GROUP (LeetCode #25 - Hard)
+// ═══════════════════════════════════════════════════════════
+
+function reverseKGroup(head, k) {
+    // Count total nodes
+    let count = 0;
+    let node = head;
+    while (node) {
+        count++;
+        node = node.next;
+    }
+    
+    const dummy = { next: head };
+    let prev = dummy;
+    let curr = head;
+    
+    while (count >= k) {
+        // Reverse k nodes
+        for (let i = 1; i < k; i++) {
+            const next = curr.next;
+            curr.next = next.next;
+            next.next = prev.next;
+            prev.next = next;
+        }
+        
+        prev = curr;
+        curr = curr.next;
+        count -= k;
+    }
+    
+    return dummy.next;
+}
+
+// Dry Run: 1→2→3→4→5, k=2
+// First iteration (reverse 1,2):
+//   Start: prev=dummy→1→2→3→4→5, curr=1
+//   i=1: Move 2 to front: dummy→2→1→3→4→5
+//   prev=1, curr=3
+// 
+// Second iteration (reverse 3,4):
+//   Move 4 to front: dummy→2→1→4→3→5
+//   prev=3, curr=5
+//
+// count=1 < k=2, stop
+// Result: 2→1→4→3→5
+
+
+// ═══════════════════════════════════════════════════════════
+// MERGE K SORTED LISTS (LeetCode #23 - Hard)
+// ═══════════════════════════════════════════════════════════
+
+// Approach 1: Divide and Conquer
+function mergeKLists(lists) {
+    if (!lists || lists.length === 0) return null;
+    
+    while (lists.length > 1) {
+        const mergedLists = [];
+        
+        for (let i = 0; i < lists.length; i += 2) {
+            const l1 = lists[i];
+            const l2 = i + 1 < lists.length ? lists[i + 1] : null;
+            mergedLists.push(mergeTwoLists(l1, l2));
+        }
+        
+        lists = mergedLists;
+    }
+    
+    return lists[0];
+}
+
+function mergeTwoLists(l1, l2) {
+    const dummy = { next: null };
+    let tail = dummy;
+    
+    while (l1 && l2) {
+        if (l1.val <= l2.val) {
+            tail.next = l1;
+            l1 = l1.next;
+        } else {
+            tail.next = l2;
+            l2 = l2.next;
+        }
+        tail = tail.next;
+    }
+    
+    tail.next = l1 || l2;
+    return dummy.next;
+}
+
+// Time: O(N log K) where N = total nodes, K = number of lists
+// Space: O(1) (ignoring recursion stack)
+
+
+// ═══════════════════════════════════════════════════════════
+// FLATTEN MULTILEVEL DOUBLY LINKED LIST (LeetCode #430)
+// ═══════════════════════════════════════════════════════════
+
+function flatten(head) {
+    if (!head) return null;
+    
+    let curr = head;
+    
+    while (curr) {
+        if (curr.child) {
+            const next = curr.next;
+            const child = curr.child;
+            
+            // Connect current to child
+            curr.next = child;
+            child.prev = curr;
+            curr.child = null;
+            
+            // Find tail of child list
+            let tail = child;
+            while (tail.next) {
+                tail = tail.next;
+            }
+            
+            // Connect tail to next
+            if (next) {
+                tail.next = next;
+                next.prev = tail;
+            }
+        }
+        
+        curr = curr.next;
+    }
+    
+    return head;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// COPY LIST WITH RANDOM POINTER (LeetCode #138)
+// ═══════════════════════════════════════════════════════════
+
+// O(1) space solution using interleaving
+function copyRandomList(head) {
+    if (!head) return null;
+    
+    // Step 1: Create interleaved copies
+    // A → A' → B → B' → C → C'
+    let curr = head;
+    while (curr) {
+        const copy = { val: curr.val, next: curr.next, random: null };
+        curr.next = copy;
+        curr = copy.next;
+    }
+    
+    // Step 2: Assign random pointers
+    curr = head;
+    while (curr) {
+        if (curr.random) {
+            curr.next.random = curr.random.next;
+        }
+        curr = curr.next.next;
+    }
+    
+    // Step 3: Separate lists
+    const dummy = { next: null };
+    let copyTail = dummy;
+    curr = head;
+    
+    while (curr) {
+        const copy = curr.next;
+        const next = copy.next;
+        
+        copyTail.next = copy;
+        copyTail = copy;
+        
+        curr.next = next;
+        curr = next;
+    }
+    
+    return dummy.next;
+}
+
+// Time: O(n), Space: O(1) (excluding output)`,
+    },
+    {
+      id: "interview-linked-list-summary",
+      title: "Linked List Interview Cheat Sheet",
+      type: "theory",
+      content: `
+## 🎯 Linked List Interview Quick Reference
+
+### Essential Techniques Summary
+
+<div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 24px; margin: 20px 0;">
+  <table style="width: 100%; border-collapse: collapse; color: #e2e8f0;">
+    <thead>
+      <tr style="border-bottom: 2px solid #4ade80;">
+        <th style="text-align: left; padding: 12px; color: #4ade80;">Problem Type</th>
+        <th style="text-align: left; padding: 12px; color: #4ade80;">Technique</th>
+        <th style="text-align: left; padding: 12px; color: #4ade80;">Key Pattern</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">Find middle</td>
+        <td style="padding: 12px;">Fast/Slow pointers</td>
+        <td style="padding: 12px; color: #60a5fa;">fast = 2x slow</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">Detect cycle</td>
+        <td style="padding: 12px;">Floyd's algorithm</td>
+        <td style="padding: 12px; color: #60a5fa;">Meet → cycle exists</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">Nth from end</td>
+        <td style="padding: 12px;">Two pointers</td>
+        <td style="padding: 12px; color: #60a5fa;">n nodes apart</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">Reverse</td>
+        <td style="padding: 12px;">3 pointers</td>
+        <td style="padding: 12px; color: #60a5fa;">prev, curr, next</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #334155;">
+        <td style="padding: 12px;">Merge sorted</td>
+        <td style="padding: 12px;">Dummy head</td>
+        <td style="padding: 12px; color: #60a5fa;">Compare & link</td>
+      </tr>
+      <tr>
+        <td style="padding: 12px;">Palindrome</td>
+        <td style="padding: 12px;">Find mid + reverse</td>
+        <td style="padding: 12px; color: #60a5fa;">Compare halves</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Common Interview Traps
+
+1. **Null checks**: Always handle empty list and single node
+2. **Losing head**: Use dummy node when head might change
+3. **Memory leaks**: In languages with manual memory, free removed nodes
+4. **Off-by-one**: Fast pointer stopping condition varies for odd/even
+
+### Time Complexity Reference
+
+| Operation | Singly Linked | Doubly Linked |
+|-----------|---------------|---------------|
+| Access by index | O(n) | O(n) |
+| Insert at head | O(1) | O(1) |
+| Insert at tail | O(n) / O(1)* | O(1) |
+| Delete head | O(1) | O(1) |
+| Delete tail | O(n) | O(1) |
+| Search | O(n) | O(n) |
+
+*O(1) if tail pointer maintained
+      `,
+      code: `// ═══════════════════════════════════════════════════════════
+// INTERVIEW TEMPLATE: LINKED LIST PROBLEMS
+// ═══════════════════════════════════════════════════════════
+
+// Template 1: Standard Traversal
+function traverse(head) {
+    let curr = head;
+    while (curr) {
+        // Process curr
+        curr = curr.next;
+    }
+}
+
+// Template 2: Two Pointers (Find Nth from end)
+function findNthFromEnd(head, n) {
+    let slow = head, fast = head;
+    
+    // Move fast n steps ahead
+    for (let i = 0; i < n; i++) {
+        if (!fast) return null;
+        fast = fast.next;
+    }
+    
+    // Move both until fast reaches end
+    while (fast) {
+        slow = slow.next;
+        fast = fast.next;
+    }
+    
+    return slow;
+}
+
+// Template 3: Reverse (Iterative)
+function reverse(head) {
+    let prev = null;
+    let curr = head;
+    
+    while (curr) {
+        const next = curr.next;
+        curr.next = prev;
+        prev = curr;
+        curr = next;
+    }
+    
+    return prev;
+}
+
+// Template 4: Dummy Node (When head might change)
+function insertAtPosition(head, val, pos) {
+    const dummy = { val: 0, next: head };
+    let prev = dummy;
+    
+    for (let i = 0; i < pos && prev.next; i++) {
+        prev = prev.next;
+    }
+    
+    const newNode = { val, next: prev.next };
+    prev.next = newNode;
+    
+    return dummy.next;
+}
+
+// Template 5: Merge Two Lists
+function merge(l1, l2) {
+    const dummy = { next: null };
+    let tail = dummy;
+    
+    while (l1 && l2) {
+        if (l1.val < l2.val) {
+            tail.next = l1;
+            l1 = l1.next;
+        } else {
+            tail.next = l2;
+            l2 = l2.next;
+        }
+        tail = tail.next;
+    }
+    
+    tail.next = l1 || l2;
+    return dummy.next;
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// BONUS: SORT LIST (LeetCode #148 - Medium)
+// ═══════════════════════════════════════════════════════════
+
+// Merge Sort for Linked List - O(n log n) time, O(log n) space
+function sortList(head) {
+    if (!head || !head.next) return head;
+    
+    // Find middle
+    let slow = head, fast = head.next;
+    while (fast && fast.next) {
+        slow = slow.next;
+        fast = fast.next.next;
+    }
+    
+    // Split
+    const mid = slow.next;
+    slow.next = null;
+    
+    // Recursive sort
+    const left = sortList(head);
+    const right = sortList(mid);
+    
+    // Merge
+    return merge(left, right);
+}
+
+// Why fast starts at head.next?
+// To get the left-middle for even-length lists
+// Example: 1→2→3→4
+// fast=2, slow=1 → fast=4, slow=2
+// Split after 2: [1,2] and [3,4]`,
+    },
   ],
 };
