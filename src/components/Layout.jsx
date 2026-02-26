@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
-import { Menu } from "lucide-react";
+import { Menu, Terminal } from "lucide-react";
 
 const Layout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -14,9 +14,7 @@ const Layout = () => {
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = isSidebarOpen ? "hidden" : previousOverflow;
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
+    return () => { document.body.style.overflow = previousOverflow; };
   }, [isSidebarOpen]);
 
   useEffect(() => {
@@ -30,11 +28,7 @@ const Layout = () => {
   return (
     <div className="layout">
       {isSidebarOpen && (
-        <div
-          className="sidebar-overlay"
-          onClick={() => setIsSidebarOpen(false)}
-          aria-hidden="true"
-        />
+        <div className="sidebar-overlay" onClick={() => setIsSidebarOpen(false)} aria-hidden="true" />
       )}
 
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
@@ -49,11 +43,14 @@ const Layout = () => {
             >
               <Menu size={20} />
             </button>
-            <div className="mobile-header-title">CodeBuzz</div>
+            <div className="mobile-header-title">
+              <Terminal size={14} style={{ display: "inline", marginRight: "0.4rem", verticalAlign: "middle" }} />
+              CodeBuzz
+            </div>
             <div className="mobile-header-spacer" aria-hidden="true" />
           </div>
         </header>
-        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "820px", margin: "0 auto" }}>
           <Outlet />
         </div>
       </main>

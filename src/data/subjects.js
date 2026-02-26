@@ -18,6 +18,7 @@ import { topics as designTopics } from "./ai_system_design";
 import { topics as advancedAiTopics } from "./advanced_ai";
 import { dsaTopics } from "./dsa/index.js";
 import { topics as n8nTopics } from "./n8n";
+import { golangTopics } from "./golang_index.js";
 
 import {
   Code,
@@ -38,6 +39,7 @@ import {
   Activity,
   Cpu,
   Zap,
+  Hexagon,
 } from "lucide-react";
 
 export const subjects = [
@@ -191,6 +193,16 @@ export const subjects = [
   },
 
   // --- Backend & Architecture ---
+  {
+    id: "golang",
+    category: "Backend & Architecture",
+    title: "Go Backend Engineering",
+    description:
+      "Complete Go & GIN framework guide. From basics to microservices with PostgreSQL.",
+    icon: Hexagon,
+    color: "from-cyan-400 to-blue-600",
+    topics: golangTopics,
+  },
   {
     id: "kafka",
     category: "Backend & Architecture",

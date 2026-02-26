@@ -5,14 +5,14 @@ mermaid.initialize({
   startOnLoad: true,
   theme: 'dark',
   securityLevel: 'loose',
-  fontFamily: 'var(--font-sans)',
+  fontFamily: '"DM Sans", sans-serif',
   themeVariables: {
-    primaryColor: '#0a0a0a',
-    primaryTextColor: '#ededed',
-    primaryBorderColor: '#8b5cf6',
-    lineColor: '#52525b',
-    secondaryColor: '#171717',
-    tertiaryColor: '#0f0f0f',
+    primaryColor: '#111922',
+    primaryTextColor: '#e6edf3',
+    primaryBorderColor: '#00d4ff',
+    lineColor: '#484f58',
+    secondaryColor: '#161f2b',
+    tertiaryColor: '#111922',
   }
 });
 
@@ -22,31 +22,30 @@ const MermaidDiagram = ({ chart }) => {
   useEffect(() => {
     if (ref.current) {
       mermaid.contentLoaded();
-      // Force re-render of diagrams
       const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
       ref.current.innerHTML = '';
       mermaid.render(id, chart).then((result) => {
         if (ref.current) ref.current.innerHTML = result.svg;
       }).catch(error => {
         console.error("Mermaid error:", error);
-        if (ref.current) ref.current.innerHTML = `<div style="color: red; padding: 1rem; border: 1px solid red;">Diagram Syntax Error: ${error.message}</div>`;
+        if (ref.current) ref.current.innerHTML = `<div style="color: var(--accent-warm); padding: 1rem; border: 1px solid var(--accent-warm); border-radius: 8px; font-family: var(--font-mono); font-size: 0.85rem;">Diagram Error: ${error.message}</div>`;
       });
     }
   }, [chart]);
 
   return (
-    <div 
-      ref={ref} 
-      className="mermaid-wrapper" 
-      style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        background: 'var(--bg-tertiary)', 
-        padding: '2rem', 
-        borderRadius: '8px', 
+    <div
+      ref={ref}
+      className="mermaid-wrapper"
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        background: 'var(--bg-secondary)',
+        padding: '1.5rem',
+        borderRadius: 'var(--radius-md)',
         margin: '1.5rem 0',
         border: '1px solid var(--border)',
-        overflowX: 'auto'
+        overflowX: 'auto',
       }}
     />
   );

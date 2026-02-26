@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { subjects } from "../data/subjects";
 import CodeBlock from "../components/CodeBlock";
 import MermaidDiagram from "../components/MermaidDiagram";
@@ -10,84 +10,75 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
+import { ArrowLeft, ArrowRight, BookOpen } from "lucide-react";
 
 const processContent = (str) => {
   if (!str) return str;
   const lines = str.split("\n");
-
-  // Find minimum indent, ignoring empty lines
   let minIndent = Infinity;
   for (const line of lines) {
     if (line.trim().length === 0) continue;
     const indent = line.search(/\S/);
-    if (indent !== -1 && indent < minIndent) {
-      minIndent = indent;
-    }
+    if (indent !== -1 && indent < minIndent) minIndent = indent;
   }
-
   if (minIndent === Infinity) return str;
-
-  // Remove indent from all lines
   const unindented = lines
-    .map((line) => {
-      if (line.trim().length === 0) return "";
-      return line.slice(minIndent);
-    })
+    .map((line) => (line.trim().length === 0 ? "" : line.slice(minIndent)))
     .join("\n");
-
-  // Collapse blank lines between HTML tags to prevent them from being interpreted as code blocks
   return unindented.replace(/>\s*[\r\n]+\s*</g, ">\n<");
 };
 
 const TopicPage = () => {
   const { subjectId, topicId, sectionId } = useParams();
+  const navigate = useNavigate();
 
   const subject = subjects.find((s) => s.id === subjectId);
   const topic = subject?.topics.find((t) => t.id === topicId);
   const section = topic?.sections.find((s) => s.id === sectionId);
 
+  // Navigation helpers
+  const allSections = [];
+  subject?.topics.forEach((t) => {
+    t.sections.forEach((s) => {
+      allSections.push({ topicId: t.id, sectionId: s.id, title: s.title });
+    });
+  });
+  const currentIdx = allSections.findIndex(
+    (s) => s.topicId === topicId && s.sectionId === sectionId
+  );
+  const prevSection = currentIdx > 0 ? allSections[currentIdx - 1] : null;
+  const nextSection = currentIdx < allSections.length - 1 ? allSections[currentIdx + 1] : null;
+
   if (!subject || !topic || !section)
     return (
-      <div style={{ padding: "2rem" }}>Select a topic from the sidebar.</div>
+      <div style={{ padding: "2rem", textAlign: "center" }}>
+        <p>Select a topic from the sidebar.</p>
+      </div>
     );
 
   const MarkdownComponents = {
     table: ({ node, ...props }) => (
       <div style={{ overflowX: "auto", margin: "1.5rem 0" }}>
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontSize: "0.95rem",
-            color: "var(--text-secondary)",
-          }}
-          {...props}
-        />
+        <table style={{
+          width: "100%", borderCollapse: "collapse",
+          fontSize: "0.9rem", color: "var(--text-secondary)",
+        }} {...props} />
       </div>
     ),
     thead: ({ node, ...props }) => (
       <thead style={{ background: "var(--bg-hover)" }} {...props} />
     ),
     th: ({ node, ...props }) => (
-      <th
-        style={{
-          padding: "0.75rem 1rem",
-          border: "1px solid var(--border)",
-          textAlign: "left",
-          color: "var(--text-primary)",
-          fontWeight: 600,
-        }}
-        {...props}
-      />
+      <th style={{
+        padding: "0.6rem 0.85rem", border: "1px solid var(--border)",
+        textAlign: "left", color: "var(--accent)", fontWeight: 600,
+        fontFamily: "var(--font-mono)", fontSize: "0.85rem",
+      }} {...props} />
     ),
     td: ({ node, ...props }) => (
-      <td
-        style={{
-          padding: "0.75rem 1rem",
-          border: "1px solid var(--border)",
-        }}
-        {...props}
-      />
+      <td style={{
+        padding: "0.6rem 0.85rem", border: "1px solid var(--border)",
+      }} {...props} />
     ),
     ul: ({ node, ...props }) => (
       <ul style={{ paddingLeft: "1.5rem", marginBottom: "1rem" }} {...props} />
@@ -96,28 +87,27 @@ const TopicPage = () => {
       <ol style={{ paddingLeft: "1.5rem", marginBottom: "1rem" }} {...props} />
     ),
     li: ({ node, ...props }) => (
-      <li style={{ marginBottom: "0.25rem" }} {...props} />
+      <li style={{ marginBottom: "0.3rem" }} {...props} />
+    ),
+    blockquote: ({ node, ...props }) => (
+      <blockquote style={{
+        borderLeft: "3px solid var(--accent)",
+        padding: "0.75rem 1rem", margin: "1rem 0",
+        background: "var(--accent-glow)", borderRadius: "0 var(--radius-sm) var(--radius-sm) 0",
+        color: "var(--text-secondary)", fontStyle: "italic",
+      }} {...props} />
     ),
     code({ node, inline, className, children, ...props }) {
       const match = /language-(\w+)/.exec(className || "");
       return !inline && match ? (
-        <CodeBlock
-          code={String(children).replace(/\n$/, "")}
-          language={match[1]}
-        />
+        <CodeBlock code={String(children).replace(/\n$/, "")} language={match[1]} />
       ) : (
-        <code
-          className={className}
-          style={{
-            background: "var(--bg-hover)",
-            padding: "0.2rem 0.4rem",
-            borderRadius: "4px",
-            fontFamily: "var(--font-mono)",
-            fontSize: "0.9em",
-            color: "var(--accent)",
-          }}
-          {...props}
-        >
+        <code className={className} style={{
+          background: "var(--bg-hover)", padding: "0.15rem 0.4rem",
+          borderRadius: "4px", fontFamily: "var(--font-mono)",
+          fontSize: "0.88em", color: "var(--accent)",
+          border: "1px solid var(--border)",
+        }} {...props}>
           {children}
         </code>
       );
@@ -127,51 +117,34 @@ const TopicPage = () => {
   return (
     <motion.div
       key={section.id}
-      initial={{ opacity: 0, x: 20 }}
+      initial={{ opacity: 0, x: 15 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.3 }}
       style={{ paddingBottom: "4rem" }}
     >
-      <div style={{ marginBottom: "2rem" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            marginBottom: "0.5rem",
-          }}
-        >
-          <span
-            style={{
-              color: "var(--accent)",
-              fontWeight: 600,
-              fontSize: "0.8rem",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              background: "var(--accent-glow)",
-              padding: "0.25rem 0.5rem",
-              borderRadius: "4px",
-            }}
-          >
+      {/* Breadcrumb */}
+      <div style={{ marginBottom: "1.5rem" }}>
+        <div style={{
+          display: "flex", alignItems: "center", gap: "0.5rem",
+          marginBottom: "0.75rem", flexWrap: "wrap",
+        }}>
+          <span className="glow-badge" style={{ fontSize: "0.75rem", padding: "0.25rem 0.6rem" }}>
             {topic.title}
           </span>
+          {currentIdx >= 0 && (
+            <span style={{
+              fontFamily: "var(--font-mono)", fontSize: "0.75rem",
+              color: "var(--text-muted)",
+            }}>
+              {currentIdx + 1} / {allSections.length}
+            </span>
+          )}
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: "1rem",
-          }}
-        >
-          <h1>{section.title}</h1>
-        </div>
+        <h1 style={{ marginBottom: "0.25rem" }}>{section.title}</h1>
       </div>
 
       <div>
-        {/* Main Description */}
-        <div className="card" style={{ lineHeight: "1.7" }}>
+        <div className="card" style={{ lineHeight: "1.75" }}>
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath]}
             rehypePlugins={[rehypeRaw, rehypeKatex]}
@@ -181,72 +154,47 @@ const TopicPage = () => {
           </ReactMarkdown>
         </div>
 
-        {/* Visual Diagram */}
         {section.diagram && (
-          <div style={{ margin: "3rem 0" }}>
-            <h3 style={{ marginBottom: "1rem" }}>Visual Representation</h3>
-            <div
-              className="card"
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                padding: "2rem",
-                background: "var(--bg-secondary)",
-              }}
-            >
+          <div style={{ margin: "2.5rem 0" }}>
+            <h3 style={{ marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span style={{ color: "var(--accent)" }}>◈</span> Visual Representation
+            </h3>
+            <div className="card" style={{
+              display: "flex", justifyContent: "center",
+              padding: "1.5rem", background: "var(--bg-secondary)",
+            }}>
               <MermaidDiagram chart={section.diagram} />
             </div>
           </div>
         )}
 
-        {/* Illustrative Image */}
         {section.image && (
-          <div style={{ margin: "3rem 0" }}>
-            <h3 style={{ marginBottom: "1rem" }}>Illustration</h3>
-            <div
-              className="card"
-              style={{
-                borderRadius: "12px",
-                overflow: "hidden",
-                padding: "1rem",
-              }}
-            >
-              <img
-                src={section.image}
-                alt={section.title}
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  display: "block",
-                  borderRadius: "8px",
-                }}
-              />
+          <div style={{ margin: "2.5rem 0" }}>
+            <h3 style={{ marginBottom: "0.75rem" }}>
+              <span style={{ color: "var(--accent)" }}>◈</span> Illustration
+            </h3>
+            <div className="card" style={{ borderRadius: "var(--radius-lg)", overflow: "hidden", padding: "0.75rem" }}>
+              <img src={section.image} alt={section.title}
+                style={{ width: "100%", height: "auto", display: "block", borderRadius: "var(--radius-md)" }} />
             </div>
           </div>
         )}
 
-        {/* Implementation Code */}
         {section.code && (
           <div style={{ marginTop: "2rem" }}>
-            <h3 style={{ marginBottom: "1rem" }}>Example Implementation</h3>
+            <h3 style={{ marginBottom: "0.75rem" }}>
+              <span style={{ color: "var(--accent-secondary)" }}>⟩</span> Implementation
+            </h3>
             <CodeBlock code={section.code} />
           </div>
         )}
 
-        {/* Problems Section */}
         {section.problems && (
-          <div style={{ marginTop: "4rem" }}>
-            <h2
-              style={{
-                marginBottom: "1.5rem",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.75rem",
-              }}
-            >
-              <span style={{ fontSize: "1.5rem" }}>🎯</span> Interview Problems
+          <div style={{ marginTop: "3rem" }}>
+            <h2 style={{ marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              🎯 Interview Problems
             </h2>
-            <div className="card" style={{ lineHeight: "1.7" }}>
+            <div className="card" style={{ lineHeight: "1.75" }}>
               <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[rehypeRaw, rehypeKatex]}
@@ -257,6 +205,39 @@ const TopicPage = () => {
             </div>
           </div>
         )}
+
+        {/* Navigation */}
+        <div style={{
+          display: "flex", justifyContent: "space-between",
+          marginTop: "3rem", paddingTop: "1.5rem",
+          borderTop: "1px solid var(--border)", gap: "1rem", flexWrap: "wrap",
+        }}>
+          {prevSection ? (
+            <button
+              onClick={() => navigate(`/${subjectId}/topic/${prevSection.topicId}/${prevSection.sectionId}`)}
+              style={{
+                display: "flex", alignItems: "center", gap: "0.5rem",
+                background: "var(--bg-tertiary)", border: "1px solid var(--border)",
+                borderRadius: "var(--radius-md)", padding: "0.6rem 1rem",
+                color: "var(--text-secondary)", cursor: "pointer", fontSize: "0.85rem",
+                fontFamily: "var(--font-sans)", transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => { e.target.style.borderColor = "var(--accent)"; e.target.style.color = "var(--accent)"; }}
+              onMouseLeave={(e) => { e.target.style.borderColor = "var(--border)"; e.target.style.color = "var(--text-secondary)"; }}
+            >
+              <ArrowLeft size={14} /> {prevSection.title}
+            </button>
+          ) : <div />}
+          {nextSection && (
+            <button
+              onClick={() => navigate(`/${subjectId}/topic/${nextSection.topicId}/${nextSection.sectionId}`)}
+              className="btn"
+              style={{ fontSize: "0.85rem", padding: "0.6rem 1rem" }}
+            >
+              {nextSection.title} <ArrowRight size={14} />
+            </button>
+          )}
+        </div>
       </div>
     </motion.div>
   );
