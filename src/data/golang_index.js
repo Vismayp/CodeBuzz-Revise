@@ -9,6 +9,7 @@ import { topicsPart3 } from "./golang_part3.js";
 import { topicsPart4 } from "./golang_part4.js";
 import { topicsPart5 } from "./golang_part5.js";
 import { topicsPart6 } from "./golang_part6.js";
+import { topicsPart7 } from "./golang_part7.js";
 
 export const golangTopics = [
   ...part1,
@@ -17,4 +18,5 @@ export const golangTopics = [
   ...topicsPart4,
   ...topicsPart5,
   ...topicsPart6,
+  ...topicsPart7,
 ];

@@ -58,6 +58,30 @@ Go was designed to solve these problems:
         `,
       },
       {
+        id: "why-go-vs-python",
+        title: "Why Go? Why Not Python or FastAPI?",
+        content: `
+## The Python / FastAPI Problem
+
+Python (and frameworks like FastAPI) is fantastic for fast prototyping and AI, but it struggles at massive scale for a few core reasons:
+
+1. **The GIL (Global Interpreter Lock):** Python can generally only execute one thread of Python code at a time per process. It cannot utilize true multi-core concurrency easily without spinning up heavy, completely separate OS processes.
+2. **Speed & Memory Overhead:** Python is an interpreted language. While FastAPI is fast *for Python*, it is still fundamentally bound by Python's runtime execution speed and high memory footprint. 
+3. **Deployment Constraints:** Python projects require managing virtual environments, \`requirements.txt\`, Poetry, etc. Deploying to a server often causes "it works on my machine" dependency conflicts.
+
+## The Go Solution
+
+Go was built specifically for modern, distributed cloud systems:
+
+1. **True Concurrency (Goroutines):** Goroutines are incredibly lightweight (starting at ~2KB). You can spin up **hundreds of thousands** of them simultaneously. Go automatically multiplexes them across all your CPU cores.
+2. **Blistering Performance:** Go compiles directly to raw machine code. It regularly benchmarks 10x to 40x faster than Python for network and compute tasks.
+3. **Single Static Binary:** Go compiles your entire application (and all its dependencies) into a single executable file. You don't even need to install Go on your production server. Just copy the binary and run it. Docker images are often single-digit megabytes.
+4. **Static Typing & Predictability:** Python's dynamic typing allows bugs to sneak into production. Go's strict static typing and explicit error handling ensures the majority of issues are caught at compile time.
+
+> 💡 **TL;DR:** Use Python for Data Science, AI, and quick scripting. Use Go for network services, cloud microservices, and high-performance backend APIs.
+        `,
+      },
+      {
         id: "go-installation",
         title: "Installation & Setup",
         content: `
