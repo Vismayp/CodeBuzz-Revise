@@ -19,6 +19,10 @@ import { topics as advancedAiTopics } from "./advanced_ai";
 import { dsaTopics } from "./dsa/index.js";
 import { topics as n8nTopics } from "./n8n";
 import { golangTopics } from "./golang_index.js";
+import { topics as k8sTopics } from "./kubernetes";
+import { topics as okdTopics } from "./okd";
+import { topics as podmanTopics } from "./podman";
+import { systemDesignTopics } from "./system_design_index.js";
 
 import {
   Code,
@@ -40,6 +44,10 @@ import {
   Cpu,
   Zap,
   Hexagon,
+  Container,
+  Cloud,
+  Layers,
+  LayoutDashboard,
 } from "lucide-react";
 
 export const subjects = [
@@ -241,6 +249,50 @@ export const subjects = [
     icon: Box,
     color: "from-amber-500 to-orange-600",
     topics: oopTopics,
+  },
+
+  // --- DevOps & Containers ---
+  {
+    id: "kubernetes",
+    category: "DevOps & Containers",
+    title: "Kubernetes",
+    description:
+      "Complete K8s guide. Pods, Services, Deployments, Networking, Storage & Security.",
+    icon: Cloud,
+    color: "from-blue-500 to-indigo-600",
+    topics: k8sTopics,
+  },
+  {
+    id: "okd",
+    category: "DevOps & Containers",
+    title: "OKD (OpenShift Community)",
+    description:
+      "Routes, S2I builds, SCCs, OperatorHub — the open-source Kubernetes distribution.",
+    icon: Layers,
+    color: "from-red-500 to-red-700",
+    topics: okdTopics,
+  },
+  {
+    id: "podman",
+    category: "DevOps & Containers",
+    title: "Podman",
+    description:
+      "Daemonless, rootless container engine. Docker alternative with pod support.",
+    icon: Container,
+    color: "from-purple-600 to-violet-700",
+    topics: podmanTopics,
+  },
+
+  // --- System Design ---
+  {
+    id: "system-design",
+    category: "System Design",
+    title: "System Design",
+    description:
+      "Scalability, databases, caching, load balancing & real-world design examples.",
+    icon: LayoutDashboard,
+    color: "from-emerald-500 to-teal-700",
+    topics: systemDesignTopics,
   },
 
   // --- Algorithms & Core CS ---

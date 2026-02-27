@@ -1,4 +1,5 @@
 // DSA Topic Aggregation
+import { roadmapTopic } from "./roadmap.js";
 import { complexityTopic } from "./complexity.js";
 import { arraysTopic } from "./arrays.js";
 import { stringsTopic } from "./strings.js";
@@ -13,6 +14,7 @@ import { greedyTopic } from "./greedy.js";
 import { advancedTopic } from "./advanced.js";
 
 export const dsaTopics = [
+  roadmapTopic,
   complexityTopic,
   arraysTopic,
   stringsTopic,
@@ -37,6 +39,7 @@ export const dsaSubject = {
 };
 
 export {
+  roadmapTopic,
   complexityTopic,
   arraysTopic,
   stringsTopic,
