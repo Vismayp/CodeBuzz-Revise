@@ -185,7 +185,16 @@ const TopicPage = () => {
             <h3 style={{ marginBottom: "0.75rem" }}>
               <span style={{ color: "var(--accent-secondary)" }}>⟩</span> Implementation
             </h3>
-            <CodeBlock code={section.code} />
+            <CodeBlock 
+              code={section.code} 
+              language={section.language || (
+                subjectId === "sql" ? "sql" : 
+                subjectId === "dotnet" ? "csharp" : 
+                subjectId === "python" ? "python" : 
+                subjectId === "golang" ? "go" : 
+                "javascript"
+              )} 
+            />
           </div>
         )}
 
