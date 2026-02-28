@@ -23,6 +23,8 @@ import { topics as k8sTopics } from "./kubernetes";
 import { topics as okdTopics } from "./okd";
 import { topics as podmanTopics } from "./podman";
 import { systemDesignTopics } from "./system_design_index.js";
+import { sqlTopics } from "./sql/index.js";
+import { dotnetTopics } from "./dotnet/index.js";
 
 import {
   Code,
@@ -48,6 +50,8 @@ import {
   Cloud,
   Layers,
   LayoutDashboard,
+  TableProperties,
+  Monitor,
 } from "lucide-react";
 
 export const subjects = [
@@ -293,6 +297,30 @@ export const subjects = [
     icon: LayoutDashboard,
     color: "from-emerald-500 to-teal-700",
     topics: systemDesignTopics,
+  },
+
+  // --- Databases ---
+  {
+    id: "sql",
+    category: "Databases",
+    title: "SQL Mastery",
+    description:
+      "Complete SQL guide — from basics to advanced queries, optimization, transactions & interview problems.",
+    icon: TableProperties,
+    color: "from-blue-500 to-cyan-600",
+    topics: sqlTopics,
+  },
+
+  // --- .NET & C# ---
+  {
+    id: "dotnet",
+    category: ".NET & C#",
+    title: ".NET 10 & C# Mastery",
+    description:
+      "From C# fundamentals to ASP.NET Core, EF Core, design patterns, and production-ready APIs.",
+    icon: Monitor,
+    color: "from-violet-500 to-purple-700",
+    topics: dotnetTopics,
   },
 
   // --- Algorithms & Core CS ---

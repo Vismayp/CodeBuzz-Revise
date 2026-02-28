@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { subjects } from "../data/subjects";
 import { ArrowRight, Sparkles, BookOpen, Terminal, Zap } from "lucide-react";
 
-const TYPING_WORDS = ["Backend Engineering", "Go & GIN", "Microservices", "System Design", "AI & ML", "React.js", "DSA"];
+const TYPING_WORDS = ["Backend Engineering", "Go & GIN", "Microservices", "System Design", "AI & ML", "React.js", "DSA", "SQL Mastery", ".NET & C#"];
 
 const TypingEffect = () => {
   const [wordIndex, setWordIndex] = useState(0);
@@ -67,6 +67,10 @@ const Home = () => {
     "Python & Data Science": { accent: "#39ff14", glow: "rgba(57,255,20,0.12)" },
     "Web Development": { accent: "#00d4ff", glow: "rgba(0,212,255,0.12)" },
     "Backend & Architecture": { accent: "#ffb300", glow: "rgba(255,179,0,0.12)" },
+    "DevOps & Containers": { accent: "#61dafb", glow: "rgba(97,218,251,0.12)" },
+    "System Design": { accent: "#2dd4bf", glow: "rgba(45,212,191,0.12)" },
+    "Databases": { accent: "#38bdf8", glow: "rgba(56,189,248,0.12)" },
+    ".NET & C#": { accent: "#a78bfa", glow: "rgba(167,139,250,0.12)" },
     "Algorithms & Core CS": { accent: "#ff5252", glow: "rgba(255,82,82,0.12)" },
   };
 
