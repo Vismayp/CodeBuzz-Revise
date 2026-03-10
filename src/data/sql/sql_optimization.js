@@ -221,7 +221,9 @@ LIMIT 10;
 
 **Normalization** is the process of organizing tables to reduce data redundancy and improve integrity.
 
-### Normal Forms
+---
+
+### Normal Forms — Quick Reference
 
 | Form | Rule | Example Violation |
 |------|------|-------------------|
@@ -229,6 +231,137 @@ LIMIT 10;
 | **2NF** | 1NF + No partial dependencies | Non-key column depends on part of composite key |
 | **3NF** | 2NF + No transitive dependencies | Column depends on another non-key column |
 | **BCNF** | Every determinant is a candidate key | Rare edge cases beyond 3NF |
+
+---
+
+### 🧪 Step-by-Step Example — Employee Projects
+
+We'll use **one messy table** and clean it up step by step through each normal form.
+
+---
+
+#### 🔴 Unnormalized Table (UNF)
+
+| emp_id | emp_name | dept | dept_head | project_ids      | project_names             |
+|--------|----------|------|-----------|------------------|---------------------------|
+| 1      | Alice    | IT   | Bob       | 101, 102         | CRM, Analytics            |
+| 2      | Charlie  | HR   | Diana     | 103              | Onboarding                |
+
+**Problems:**
+- \`project_ids\` and \`project_names\` store multiple values in one column (not atomic)
+- Repeating groups make querying and updating very hard
+
+---
+
+#### ✅ 1NF — First Normal Form
+**Rule:** Each cell must hold **one atomic value**. No repeating groups.
+
+**Fix:** Split multi-value columns into separate rows.
+
+| emp_id | emp_name | dept | dept_head | project_id | project_name |
+|--------|----------|------|-----------|------------|--------------|
+| 1      | Alice    | IT   | Bob       | 101        | CRM          |
+| 1      | Alice    | IT   | Bob       | 102        | Analytics    |
+| 2      | Charlie  | HR   | Diana     | 103        | Onboarding   |
+
+**Primary Key:** \`(emp_id, project_id)\` — composite key
+
+✅ No multi-value cells  
+❌ Still has partial dependency: \`emp_name\`, \`dept\` depend only on \`emp_id\`, not the full composite key
+
+---
+
+#### ✅ 2NF — Second Normal Form
+**Rule:** 1NF + Every **non-key column must depend on the WHOLE primary key** (not just part of it).
+
+**Problem (Partial Dependency):** In our 1NF table, \`emp_name\` and \`dept\` only depend on \`emp_id\`, not \`(emp_id, project_id)\`. \`project_name\` depends only on \`project_id\`.
+
+**Fix:** Split into separate tables — one for employees, one for projects, one for the relationship.
+
+**employees** table:
+| emp_id | emp_name | dept | dept_head |
+|--------|----------|------|-----------|
+| 1      | Alice    | IT   | Bob       |
+| 2      | Charlie  | HR   | Diana     |
+
+**projects** table:
+| project_id | project_name |
+|------------|--------------|
+| 101        | CRM          |
+| 102        | Analytics    |
+| 103        | Onboarding   |
+
+**emp_projects** (junction):
+| emp_id | project_id |
+|--------|------------|
+| 1      | 101        |
+| 1      | 102        |
+| 2      | 103        |
+
+✅ No partial dependencies  
+❌ Still has transitive dependency: \`dept_head\` depends on \`dept\`, not directly on \`emp_id\`
+
+---
+
+#### ✅ 3NF — Third Normal Form
+**Rule:** 2NF + No **transitive dependencies** (non-key column depending on another non-key column).
+
+**Problem (Transitive Dependency):** \`dept_head\` depends on \`dept\`, and \`dept\` depends on \`emp_id\`. So \`dept_head\` transitively depends on \`emp_id\` via \`dept\`.
+
+\`emp_id → dept → dept_head\`
+
+**Fix:** Move \`dept_head\` to a departments table.
+
+**employees** table:
+| emp_id | emp_name | dept_id |
+|--------|----------|---------|
+| 1      | Alice    | D1      |
+| 2      | Charlie  | D2      |
+
+**departments** table:
+| dept_id | dept_name | dept_head |
+|---------|-----------|-----------|
+| D1      | IT        | Bob       |
+| D2      | HR        | Diana     |
+
+✅ No transitive dependencies  
+✅ Suitable for most production databases (OLTP)
+
+---
+
+#### ✅ BCNF — Boyce-Codd Normal Form
+**Rule:** Every **determinant must be a candidate key**. Stronger version of 3NF.
+
+**Example (BCNF Violation):** Suppose a course can be taught by multiple professors, and a professor teaches only one subject.
+
+| student | subject | professor |
+|---------|---------|-----------|
+| Alice   | Math    | Dr. Smith |
+| Bob     | Math    | Dr. Jones |
+| Alice   | Physics | Dr. Brown |
+
+- Composite key: \`(student, subject)\`
+- But \`professor → subject\` (professor determines subject, yet professor is not a key!)
+
+**Fix:** Split to remove the non-key determinant.
+
+**professor_subjects**:
+| professor  | subject |
+|------------|---------|
+| Dr. Smith  | Math    |
+| Dr. Jones  | Math    |
+| Dr. Brown  | Physics |
+
+**student_professors**:
+| student | professor  |
+|---------|------------|
+| Alice   | Dr. Smith  |
+| Bob     | Dr. Jones  |
+| Alice   | Dr. Brown  |
+
+> 💡 BCNF violations are rare. Most 3NF tables are already in BCNF.
+
+---
 
 ### Denormalization
 Intentionally adding redundancy for **read performance**.
@@ -245,43 +378,113 @@ Intentionally adding redundancy for **read performance**.
 > "Normalize for correctness, denormalize for performance."
 > Start with 3NF, then denormalize specific tables only when you have proven performance bottlenecks.
       `,
-      code: `-- ═══ 1NF VIOLATION & FIX ═══
--- ❌ BAD: Comma-separated values (not atomic)
--- CREATE TABLE users (
---     id INT, name TEXT, skills TEXT  -- 'Java, Python, Go'
--- );
+      code: `-- ════════════════════════════════════════════
+-- NORMALIZATION — Full SQL Walkthrough
+-- ════════════════════════════════════════════
 
--- ✅ GOOD: Separate table
--- CREATE TABLE users (id INT, name TEXT);
--- CREATE TABLE user_skills (user_id INT, skill VARCHAR(50));
--- INSERT INTO user_skills VALUES (1, 'Java'), (1, 'Python'), (1, 'Go');
+-- ═══ UNF — Unnormalized (BAD) ═══
+-- ❌ Multi-value columns — can't query or index efficiently
+CREATE TABLE emp_projects_bad (
+  emp_id       INT,
+  emp_name     VARCHAR(100),
+  dept         VARCHAR(50),
+  dept_head    VARCHAR(100),
+  project_ids  TEXT,   -- '101, 102'  ← violates atomicity
+  project_names TEXT   -- 'CRM, Analytics' ← violates atomicity
+);
 
--- ═══ DENORMALIZATION EXAMPLE ═══
--- Normalized (3NF): Requires JOINs for every query
--- SELECT c.name, SUM(oi.quantity * oi.unit_price)
--- FROM customers c
--- JOIN orders o ...
--- JOIN order_items oi ...
--- (This is slow with millions of rows)
+-- ═══ 1NF FIX — One value per cell ═══
+-- ✅ Explode multi-values into separate rows
+CREATE TABLE emp_projects_1nf (
+  emp_id       INT,
+  emp_name     VARCHAR(100),
+  dept         VARCHAR(50),
+  dept_head    VARCHAR(100),
+  project_id   INT,           -- atomic
+  project_name VARCHAR(100),  -- atomic
+  PRIMARY KEY (emp_id, project_id)  -- composite key
+);
+INSERT INTO emp_projects_1nf VALUES
+  (1, 'Alice',   'IT', 'Bob',   101, 'CRM'),
+  (1, 'Alice',   'IT', 'Bob',   102, 'Analytics'),
+  (2, 'Charlie', 'HR', 'Diana', 103, 'Onboarding');
+-- ❌ Problem: emp_name/dept depend on emp_id ONLY (partial dependency)
+-- ❌ Problem: project_name depends on project_id ONLY (partial dependency)
 
--- Denormalized: Add redundant column for fast reads
--- ALTER TABLE orders ADD COLUMN customer_name VARCHAR(100);
--- UPDATE orders o SET customer_name = (
---     SELECT first_name || ' ' || last_name 
---     FROM customers c 
---     WHERE c.customer_id = o.customer_id
--- );
--- Now: SELECT customer_name, total_amount FROM orders;  -- No JOIN!
+-- ═══ 2NF FIX — Remove partial dependencies ═══
+-- ✅ Split columns that depend on only PART of the composite key
+
+CREATE TABLE employees (        -- columns that depend on emp_id only
+  emp_id    INT PRIMARY KEY,
+  emp_name  VARCHAR(100),
+  dept      VARCHAR(50),
+  dept_head VARCHAR(100)
+);
+CREATE TABLE projects (         -- columns that depend on project_id only
+  project_id   INT PRIMARY KEY,
+  project_name VARCHAR(100)
+);
+CREATE TABLE emp_projects (     -- junction table: only the relationship
+  emp_id     INT REFERENCES employees(emp_id),
+  project_id INT REFERENCES projects(project_id),
+  PRIMARY KEY (emp_id, project_id)
+);
+
+INSERT INTO employees VALUES (1, 'Alice', 'IT', 'Bob'), (2, 'Charlie', 'HR', 'Diana');
+INSERT INTO projects VALUES (101, 'CRM'), (102, 'Analytics'), (103, 'Onboarding');
+INSERT INTO emp_projects VALUES (1, 101), (1, 102), (2, 103);
+-- ❌ Problem: dept_head depends on dept (not on emp_id directly) — transitive dependency
+
+-- ═══ 3NF FIX — Remove transitive dependencies ═══
+-- ✅ emp_id → dept → dept_head   (transitive chain, fix it!)
+
+CREATE TABLE departments (
+  dept_id    CHAR(2) PRIMARY KEY,
+  dept_name  VARCHAR(50),
+  dept_head  VARCHAR(100)   -- now lives here, not in employees
+);
+ALTER TABLE employees
+  DROP COLUMN dept,
+  DROP COLUMN dept_head,
+  ADD COLUMN dept_id CHAR(2) REFERENCES departments(dept_id);
+
+INSERT INTO departments VALUES ('D1', 'IT', 'Bob'), ('D2', 'HR', 'Diana');
+UPDATE employees SET dept_id = 'D1' WHERE emp_id = 1;
+UPDATE employees SET dept_id = 'D2' WHERE emp_id = 2;
+-- ✅ No partial deps, no transitive deps — ready for OLTP production!
+
+-- ═══ BCNF FIX — Every determinant must be a candidate key ═══
+-- ❌ Violation: professor → subject, but professor is NOT a key
+-- CREATE TABLE student_course (student, subject, professor)  -- BCNF violation
+
+-- ✅ Fix: Separate the functional dependency
+CREATE TABLE professor_subjects (
+  professor VARCHAR(100) PRIMARY KEY,  -- professor IS the key here
+  subject   VARCHAR(100)
+);
+CREATE TABLE student_professors (
+  student   VARCHAR(100),
+  professor VARCHAR(100) REFERENCES professor_subjects(professor),
+  PRIMARY KEY (student, professor)
+);
+
+-- ════════════════════════════════════════════
+-- DENORMALIZATION EXAMPLE (for read perf)
+-- ════════════════════════════════════════════
+-- ✅ Add redundant column to avoid a JOIN on hot read path
+ALTER TABLE emp_projects ADD COLUMN project_name_cache VARCHAR(100);
+UPDATE ep
+SET project_name_cache = p.project_name
+FROM emp_projects ep
+JOIN projects p ON ep.project_id = p.project_id;
+-- Now: SELECT emp_id, project_name_cache FROM emp_projects;  -- No JOIN!
 
 -- ═══ TABLE PARTITIONING (Production) ═══
 -- Partition orders by year for faster queries
 -- CREATE TABLE orders (
---     order_id SERIAL,
---     customer_id INT,
---     order_date TIMESTAMP,
---     total_amount DECIMAL(12,2)
+--     order_id SERIAL, customer_id INT,
+--     order_date TIMESTAMP, total_amount DECIMAL(12,2)
 -- ) PARTITION BY RANGE (order_date);
--- 
 -- CREATE TABLE orders_2024 PARTITION OF orders
 --     FOR VALUES FROM ('2024-01-01') TO ('2025-01-01');
 -- CREATE TABLE orders_2025 PARTITION OF orders
