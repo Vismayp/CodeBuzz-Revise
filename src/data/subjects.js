@@ -26,6 +26,7 @@ import { topics as podmanTopics } from "./podman";
 import { systemDesignTopics } from "./system_design_index.js";
 import { sqlTopics } from "./sql/index.js";
 import { dotnetTopics } from "./dotnet/index.js";
+import { topics as cueTopics } from "./cue";
 
 import {
   Code,
@@ -296,6 +297,17 @@ export const subjects = [
     icon: Container,
     color: "from-purple-600 to-violet-700",
     topics: podmanTopics,
+  },
+
+  {
+    id: "cue-language",
+    category: "DevOps & Containers",
+    title: "CUE Language",
+    description:
+      "Configure, Unify, Execute — the language for validating, generating, and managing YAML configs at scale.",
+    icon: FileCode,
+    color: "from-amber-400 to-orange-600",
+    topics: cueTopics,
   },
 
   // --- System Design ---
