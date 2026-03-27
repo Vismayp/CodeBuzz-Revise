@@ -4,6 +4,7 @@ import { topics as reactTopics } from "./react";
 import { topics as redisTopics } from "./redis";
 import { topics as pythonTopics } from "./python";
 import { topics as langchainTopics } from "./langchain";
+import { topics as litellmTopics } from "./litellm";
 import { topics as aiTopics } from "./ai";
 import { topics as oopTopics } from "./oop";
 import { topics as graphqlTopics } from "./graphql";
@@ -100,6 +101,16 @@ export const subjects = [
     icon: Network,
     color: "from-green-500 to-lime-600",
     topics: langchainTopics,
+  },
+  {
+    id: "litellm",
+    category: "Generative AI & LLMs",
+    title: "LiteLLM",
+    description:
+      "Unified Python SDK and AI Gateway to call 100+ LLM APIs with one interface.",
+    icon: Cpu,
+    color: "from-sky-400 to-indigo-600",
+    topics: litellmTopics,
   },
 
   // --- Python & Data Science ---
