@@ -27,6 +27,7 @@ import { systemDesignTopics } from "./system_design_index.js";
 import { sqlTopics } from "./sql/index.js";
 import { dotnetTopics } from "./dotnet/index.js";
 import { topics as cueTopics } from "./cue";
+import { topics as gitGithubTopics } from "./git_github";
 
 import {
   Code,
@@ -54,6 +55,7 @@ import {
   LayoutDashboard,
   TableProperties,
   Monitor,
+  GitBranch,
 } from "lucide-react";
 
 export const subjects = [
@@ -308,6 +310,16 @@ export const subjects = [
     icon: FileCode,
     color: "from-amber-400 to-orange-600",
     topics: cueTopics,
+  },
+  {
+    id: "git-github",
+    category: "DevOps & Containers",
+    title: "Git & GitHub Mastery",
+    description:
+      "Complete interactive guide to Git, GitHub, workflows, CI, security, and recovery.",
+    icon: GitBranch,
+    color: "from-orange-500 to-rose-600",
+    topics: gitGithubTopics,
   },
 
   // --- System Design ---
