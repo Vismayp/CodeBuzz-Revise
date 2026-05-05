@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { subjects } from "../data/subjects";
-import { ArrowRight, Sparkles, BookOpen, Terminal, Zap } from "lucide-react";
+import { ArrowRight, Sparkles, BookOpen, Terminal, Zap, Search, X } from "lucide-react";
 
 const TYPING_WORDS = ["Backend Engineering", "Go & GIN", "Microservices", "System Design", "AI & ML", "React.js", "DSA", "SQL Mastery", ".NET & C#"];
 
@@ -38,13 +38,13 @@ const TypingEffect = () => {
   );
 };
 
-const StatBadge = ({ icon: Icon, label, value }) => (
+const StatBadge = ({ icon, label, value }) => (
   <div style={{
     display: "flex", alignItems: "center", gap: "0.6rem",
     padding: "0.5rem 1rem", borderRadius: "var(--radius-md)",
     background: "var(--bg-tertiary)", border: "1px solid var(--border)",
   }}>
-    <Icon size={16} style={{ color: "var(--accent)" }} />
+    {React.createElement(icon, { size: 16, style: { color: "var(--accent)" } })}
     <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>{label}</span>
     <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--accent-secondary)", fontSize: "0.9rem" }}>{value}</span>
   </div>
@@ -52,9 +52,32 @@ const StatBadge = ({ icon: Icon, label, value }) => (
 
 const Home = () => {
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredSubjects = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return subjects;
+
+    return subjects.filter((subject) => {
+      const topicText = subject.topics
+        ?.map((topic) => `${topic.title} ${topic.description || ""}`)
+        .join(" ");
+      const searchableText = [
+        subject.title,
+        subject.description,
+        subject.category,
+        topicText,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return searchableText.includes(query);
+    });
+  }, [searchQuery]);
 
   const categories = {};
-  subjects.forEach((subject) => {
+  filteredSubjects.forEach((subject) => {
     const cat = subject.category || "Other";
     if (!categories[cat]) categories[cat] = [];
     categories[cat].push(subject);
@@ -77,7 +100,7 @@ const Home = () => {
   return (
     <div style={{ padding: "2rem 0 4rem" }}>
       {/* Hero */}
-      <motion.div
+      <Motion.div
         initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
@@ -115,14 +138,81 @@ const Home = () => {
           <StatBadge icon={Terminal} label="Topics" value={totalTopics} />
           <StatBadge icon={Zap} label="Examples" value="500+" />
         </div>
-      </motion.div>
+
+        <div style={{
+          maxWidth: 620,
+          margin: "1.75rem auto 0",
+          position: "relative",
+        }}>
+          <Search
+            size={18}
+            style={{
+              position: "absolute",
+              left: "1rem",
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "var(--accent)",
+              pointerEvents: "none",
+            }}
+          />
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search subjects, topics, or concepts..."
+            aria-label="Search subjects and topics"
+            style={{
+              width: "100%",
+              minHeight: 52,
+              padding: "0.8rem 3rem 0.8rem 2.9rem",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--border-bright)",
+              background: "var(--bg-tertiary)",
+              color: "var(--text-primary)",
+              boxShadow: "0 12px 36px rgba(0, 0, 0, 0.18)",
+              outline: "none",
+              fontFamily: "var(--font-sans)",
+              fontSize: "0.95rem",
+            }}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              aria-label="Clear search"
+              title="Clear search"
+              className="icon-button"
+              style={{
+                position: "absolute",
+                right: "0.5rem",
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: 34,
+                height: 34,
+                flexBasis: 34,
+              }}
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+      </Motion.div>
 
       {/* Categories */}
       <div style={{ marginBottom: "5rem" }}>
-        {Object.entries(categories).map(([categoryName, categorySubjects], categoryIndex) => {
+        {filteredSubjects.length === 0 ? (
+          <div className="card" style={{
+            textAlign: "center",
+            maxWidth: 620,
+            margin: "0 auto",
+            color: "var(--text-secondary)",
+          }}>
+            No subjects found for "{searchQuery.trim()}".
+          </div>
+        ) : Object.entries(categories).map(([categoryName, categorySubjects], categoryIndex) => {
           const colors = categoryColors[categoryName] || { accent: "var(--accent)", glow: "var(--accent-glow)" };
           return (
-            <motion.div
+            <Motion.div
               key={categoryName}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -161,7 +251,7 @@ const Home = () => {
                 {categorySubjects.map((subject, index) => {
                   const Icon = subject.icon;
                   return (
-                    <motion.div
+                    <Motion.div
                       key={subject.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -197,11 +287,11 @@ const Home = () => {
                         <span>{subject.topics?.length || 0} topics</span>
                         <ArrowRight size={14} />
                       </div>
-                    </motion.div>
+                    </Motion.div>
                   );
                 })}
               </div>
-            </motion.div>
+            </Motion.div>
           );
         })}
       </div>
