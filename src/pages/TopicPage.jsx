@@ -3,14 +3,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import { subjects } from "../data/subjects";
 import CodeBlock from "../components/CodeBlock";
 import MermaidDiagram from "../components/MermaidDiagram";
-import { motion } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
-import { ArrowLeft, ArrowRight, BookOpen } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 const processContent = (str) => {
   if (!str) return str;
@@ -26,6 +26,12 @@ const processContent = (str) => {
     .map((line) => (line.trim().length === 0 ? "" : line.slice(minIndent)))
     .join("\n");
   return unindented.replace(/>\s*[\r\n]+\s*</g, ">\n<");
+};
+
+const markdownProps = (props) => {
+  const cleanProps = { ...props };
+  delete cleanProps.node;
+  return cleanProps;
 };
 
 const TopicPage = () => {
@@ -57,47 +63,47 @@ const TopicPage = () => {
     );
 
   const MarkdownComponents = {
-    table: ({ node, ...props }) => (
+    table: (props) => (
       <div style={{ overflowX: "auto", margin: "1.5rem 0" }}>
         <table style={{
           width: "100%", borderCollapse: "collapse",
           fontSize: "0.9rem", color: "var(--text-secondary)",
-        }} {...props} />
+        }} {...markdownProps(props)} />
       </div>
     ),
-    thead: ({ node, ...props }) => (
-      <thead style={{ background: "var(--bg-hover)" }} {...props} />
+    thead: (props) => (
+      <thead style={{ background: "var(--bg-hover)" }} {...markdownProps(props)} />
     ),
-    th: ({ node, ...props }) => (
+    th: (props) => (
       <th style={{
         padding: "0.6rem 0.85rem", border: "1px solid var(--border)",
         textAlign: "left", color: "var(--accent)", fontWeight: 600,
         fontFamily: "var(--font-mono)", fontSize: "0.85rem",
-      }} {...props} />
+      }} {...markdownProps(props)} />
     ),
-    td: ({ node, ...props }) => (
+    td: (props) => (
       <td style={{
         padding: "0.6rem 0.85rem", border: "1px solid var(--border)",
-      }} {...props} />
+      }} {...markdownProps(props)} />
     ),
-    ul: ({ node, ...props }) => (
-      <ul style={{ paddingLeft: "1.5rem", marginBottom: "1rem" }} {...props} />
+    ul: (props) => (
+      <ul style={{ paddingLeft: "1.5rem", marginBottom: "1rem" }} {...markdownProps(props)} />
     ),
-    ol: ({ node, ...props }) => (
-      <ol style={{ paddingLeft: "1.5rem", marginBottom: "1rem" }} {...props} />
+    ol: (props) => (
+      <ol style={{ paddingLeft: "1.5rem", marginBottom: "1rem" }} {...markdownProps(props)} />
     ),
-    li: ({ node, ...props }) => (
-      <li style={{ marginBottom: "0.3rem" }} {...props} />
+    li: (props) => (
+      <li style={{ marginBottom: "0.3rem" }} {...markdownProps(props)} />
     ),
-    blockquote: ({ node, ...props }) => (
+    blockquote: (props) => (
       <blockquote style={{
         borderLeft: "3px solid var(--accent)",
         padding: "0.75rem 1rem", margin: "1rem 0",
         background: "var(--accent-glow)", borderRadius: "0 var(--radius-sm) var(--radius-sm) 0",
         color: "var(--text-secondary)", fontStyle: "italic",
-      }} {...props} />
+      }} {...markdownProps(props)} />
     ),
-    code({ node, inline, className, children, ...props }) {
+    code({ inline, className, children, ...props }) {
       const match = /language-(\w+)/.exec(className || "");
       return !inline && match ? (
         <CodeBlock code={String(children).replace(/\n$/, "")} language={match[1]} />
@@ -107,7 +113,7 @@ const TopicPage = () => {
           borderRadius: "4px", fontFamily: "var(--font-mono)",
           fontSize: "0.88em", color: "var(--accent)",
           border: "1px solid var(--border)",
-        }} {...props}>
+        }} {...markdownProps(props)}>
           {children}
         </code>
       );
@@ -115,7 +121,7 @@ const TopicPage = () => {
   };
 
   return (
-    <motion.div
+    <Motion.div
       key={section.id}
       initial={{ opacity: 0, x: 15 }}
       animate={{ opacity: 1, x: 0 }}
@@ -159,11 +165,8 @@ const TopicPage = () => {
             <h3 style={{ marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <span style={{ color: "var(--accent)" }}>◈</span> Visual Representation
             </h3>
-            <div className="card" style={{
-              display: "flex", justifyContent: "center",
-              padding: "1.5rem", background: "var(--bg-secondary)",
-            }}>
-              <MermaidDiagram chart={section.diagram} />
+            <div className="diagram-panel">
+              <MermaidDiagram chart={section.diagram} title={section.title} />
             </div>
           </div>
         )}
@@ -248,7 +251,7 @@ const TopicPage = () => {
           )}
         </div>
       </div>
-    </motion.div>
+    </Motion.div>
   );
 };
 
