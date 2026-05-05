@@ -1,4 +1,4 @@
-export const topics = [
+const baseTopics = [
   {
     id: "orientation",
     title: "Orientation",
@@ -10,6 +10,16 @@ export const topics = [
         title: "Git Mental Model",
         content: String.raw`
 Git is a distributed version-control system. Your local repository contains the working tree, the staging area, local commits, branch names, tags, and remote-tracking references.
+
+Beginner translation: Git watches a project folder. When you edit files, Git can compare the current folder against the last saved snapshot. You choose which file changes should go into the next snapshot, then you commit that snapshot with a message.
+
+Imagine a folder:
+
+| File | What you do | What Git notices |
+|---|---|---|
+| README.md | Add setup notes | Modified file |
+| todo.txt | Create a task list | New untracked file |
+| old-notes.txt | Delete old notes | Deleted file |
 
 Think in four places:
 
@@ -132,6 +142,300 @@ git config --global pull.ff only
 git config --global core.editor "code --wait"
 git config --global --list
 git help status`,
+        language: "bash",
+      },
+    ],
+  },
+  {
+    id: "beginner-start",
+    title: "Beginner Start",
+    description: "Git explained with tiny files, simple folders, and visual examples.",
+    icon: "BookOpen",
+    sections: [
+      {
+        id: "what-git-sees",
+        title: "What Git Sees in a Folder",
+        content: String.raw`
+Git does not care whether your project is a website, backend API, notes folder, or mobile app. Git sees files and snapshots.
+
+Start with this simple folder:
+
+| File | Content |
+|---|---|
+| README.md | Project title |
+| todo.txt | Three tasks |
+| app.js | One console.log line |
+
+When you run git status, Git answers three beginner questions:
+
+1. Which files changed?
+2. Which files are ready for the next commit?
+3. Which files are new and not tracked yet?
+
+Simple meaning of common words:
+
+| Word | Beginner meaning |
+|---|---|
+| Repository | A project folder with Git history |
+| Commit | A named snapshot of selected file changes |
+| Stage | Put this change in the next snapshot |
+| Branch | A separate line of work |
+| Remote | A copy of the repo somewhere else, often GitHub |
+
+<details>
+<summary>Try it mentally</summary>
+
+You create notes.txt but do not stage it. Git calls it untracked.
+
+You edit README.md but do not stage it. Git calls it modified.
+
+You run git add README.md. Git says README.md is staged.
+
+You run git commit. Git saves the staged README.md change into history.
+
+</details>
+        `,
+        diagram: String.raw`
+graph TD
+  Folder[Project Folder] --> Readme[README.md]
+  Folder --> Todo[todo.txt]
+  Folder --> App[app.js]
+  Readme --> Status[git status tells what changed]
+  Todo --> Status
+  App --> Status
+        `,
+        code: String.raw`mkdir beginner-git-demo
+cd beginner-git-demo
+git init
+
+echo "# Beginner Git Demo" > README.md
+echo "Learn git status" > todo.txt
+echo "console.log('hello git')" > app.js
+
+git status`,
+        language: "bash",
+      },
+      {
+        id: "first-snapshot-file-example",
+        title: "Your First Snapshot",
+        content: String.raw`
+A commit is like saying: "Save exactly these selected file changes with this message."
+
+Suppose README.md contains:
+
+~~~md
+# Beginner Git Demo
+This project helps me learn Git.
+~~~
+
+Before staging:
+
+| Area | README.md state |
+|---|---|
+| Working tree | File exists |
+| Staging area | Empty |
+| Commit history | Empty |
+
+After git add README.md:
+
+| Area | README.md state |
+|---|---|
+| Working tree | File exists |
+| Staging area | README.md is ready |
+| Commit history | Empty |
+
+After git commit:
+
+| Area | README.md state |
+|---|---|
+| Working tree | File exists |
+| Staging area | Empty again |
+| Commit history | README.md snapshot saved |
+
+<details>
+<summary>Beginner check</summary>
+
+git add does not permanently save history. It only prepares the next commit.
+
+git commit saves the prepared snapshot into history.
+
+</details>
+        `,
+        code: String.raw`git add README.md
+git status
+git commit -m "Add project README"
+git log --oneline
+
+# Now change the same file again
+echo "Second line: Git saves snapshots." >> README.md
+git diff
+git add README.md
+git commit -m "Explain Git snapshots"`,
+        language: "bash",
+      },
+      {
+        id: "diff-with-real-file",
+        title: "Reading Diff with a File",
+        content: String.raw`
+git diff shows what changed before you stage or commit.
+
+Example file before:
+
+~~~txt
+Buy milk
+Learn Git
+Push to GitHub
+~~~
+
+Example file after:
+
+~~~txt
+Buy milk
+Learn Git branches
+Push to GitHub
+Open a pull request
+~~~
+
+Git diff will show:
+
+| Symbol | Meaning |
+|---|---|
+| - | This line was removed |
+| + | This line was added |
+| No symbol | Context line, unchanged |
+
+Diffs look scary at first, but they are just before-and-after text comparisons.
+
+<details>
+<summary>Read this diff</summary>
+
+- Learn Git
++ Learn Git branches
++ Open a pull request
+
+Meaning: one line changed, and one new line was added.
+
+</details>
+        `,
+        code: String.raw`echo "Buy milk" > todo.txt
+echo "Learn Git" >> todo.txt
+echo "Push to GitHub" >> todo.txt
+git add todo.txt
+git commit -m "Add todo list"
+
+# Edit the file
+echo "Open a pull request" >> todo.txt
+
+# See what changed
+git diff todo.txt
+git add todo.txt
+git diff --cached todo.txt
+git commit -m "Add pull request task"`,
+        language: "bash",
+      },
+      {
+        id: "branch-file-story",
+        title: "Branch Story with app.js",
+        content: String.raw`
+A branch lets you try changes without disturbing the main line.
+
+Imagine app.js on main:
+
+~~~js
+console.log("Home page");
+~~~
+
+You create a branch named feature/login-message and change app.js:
+
+~~~js
+console.log("Home page");
+console.log("Login page coming soon");
+~~~
+
+Now the branch has the new line, but main does not. Switching branches changes the files in your folder to match that branch.
+
+Beginner mental picture:
+
+| Branch | app.js content |
+|---|---|
+| main | Home page only |
+| feature/login-message | Home page plus login message |
+
+<details>
+<summary>Why did my file change when I switched branches?</summary>
+
+Because Git updates your working folder to match the commit pointed to by the branch you switched to. This is normal. Commit or stash work before switching if Git warns you.
+
+</details>
+        `,
+        diagram: String.raw`
+gitGraph
+  commit id: "app.js: Home"
+  branch feature/login-message
+  checkout feature/login-message
+  commit id: "app.js: Add login message"
+  checkout main
+        `,
+        code: String.raw`echo "console.log('Home page')" > app.js
+git add app.js
+git commit -m "Add home page message"
+
+git switch -c feature/login-message
+echo "console.log('Login page coming soon')" >> app.js
+git add app.js
+git commit -m "Add login page message"
+
+git switch main
+cat app.js
+
+git switch feature/login-message
+cat app.js`,
+        language: "bash",
+      },
+      {
+        id: "github-file-story",
+        title: "GitHub with the Same Files",
+        content: String.raw`
+GitHub is where your Git repository can live online so other people can see it, review it, and collaborate.
+
+Local-only story:
+
+| Place | What exists |
+|---|---|
+| Your laptop | README.md, todo.txt, app.js, commits |
+| GitHub | Nothing yet |
+
+After pushing:
+
+| Place | What exists |
+|---|---|
+| Your laptop | README.md, todo.txt, app.js, commits |
+| GitHub | A copy of those commits |
+
+After opening a pull request:
+
+| Thing | Beginner meaning |
+|---|---|
+| Branch | Your proposed work |
+| Pull request | Please review and merge my branch |
+| Review | Teammates comment or approve |
+| Merge | GitHub adds your branch changes into main |
+
+<details>
+<summary>Beginner PR example</summary>
+
+You changed app.js to add a login message. You push feature/login-message. Then you open a PR called "Add login page message". A teammate checks it, comments, and approves. When merged, main gets the app.js change.
+
+</details>
+        `,
+        code: String.raw`git remote add origin https://github.com/YOUR_NAME/beginner-git-demo.git
+git push -u origin main
+
+git switch feature/login-message
+git push -u origin feature/login-message
+
+# If GitHub CLI is installed
+gh pr create --title "Add login page message" --body "Adds a simple login message to app.js."`,
         language: "bash",
       },
     ],
@@ -1647,3 +1951,776 @@ git help gitignore`,
     ],
   },
 ];
+
+const beginnerFileExamples = {
+  "mental-model": String.raw`
+
+### Beginner File Example
+
+Create one file named notes.txt:
+
+~~~txt
+Day 1: I learned that Git saves snapshots.
+~~~
+
+Flow:
+
+| Step | Command | What happens to notes.txt |
+|---|---|---|
+| 1 | git status | Git sees notes.txt as untracked |
+| 2 | git add notes.txt | Git prepares notes.txt for the next snapshot |
+| 3 | git commit -m "Add learning notes" | Git saves notes.txt into history |
+
+~~~bash
+echo "Day 1: I learned that Git saves snapshots." > notes.txt
+git status
+git add notes.txt
+git commit -m "Add learning notes"
+~~~
+`,
+  "git-vs-github": String.raw`
+
+### Beginner File Example
+
+Use README.md to see the difference.
+
+| Action | Tool | Result |
+|---|---|---|
+| Save README.md in local history | Git | Commit exists on your laptop |
+| Upload that commit online | Git plus GitHub | Commit appears on GitHub |
+| Ask a teammate to review it | GitHub | Pull request conversation starts |
+
+~~~bash
+echo "# My Practice Project" > README.md
+git add README.md
+git commit -m "Add README"
+git push -u origin main
+~~~
+`,
+  setup: String.raw`
+
+### Beginner File Example
+
+Before editing files, Git needs to know who is making commits.
+
+If you commit README.md without setting your name/email, your history may show the wrong identity. Configure once, then make a tiny file commit.
+
+~~~bash
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+echo "# Setup Check" > README.md
+git add README.md
+git commit -m "Check Git setup"
+~~~
+`,
+  "what-git-sees": String.raw`
+
+### Extra Tiny Example
+
+After creating files, run git status after each change. This trains your eyes.
+
+~~~bash
+echo "first task" > todo.txt
+git status
+git add todo.txt
+git status
+git commit -m "Add todo file"
+git status
+~~~
+`,
+  "first-snapshot-file-example": String.raw`
+
+### Extra Tiny Example
+
+Think of the commit as a photo of selected files, not the whole messy desk.
+
+~~~bash
+echo "public note" > public.txt
+echo "private note" > private.txt
+git add public.txt
+git commit -m "Add public note"
+git status
+~~~
+
+Only public.txt is in the commit. private.txt is still just in your folder.
+`,
+  "diff-with-real-file": String.raw`
+
+### Extra Tiny Example
+
+Use diff before every commit until it becomes automatic.
+
+~~~bash
+echo "version=1" > config.txt
+git add config.txt
+git commit -m "Add config"
+echo "version=2" > config.txt
+git diff config.txt
+~~~
+
+The removed line is version=1. The added line is version=2.
+`,
+  "branch-file-story": String.raw`
+
+### Extra Tiny Example
+
+Branches can hold different versions of the same file.
+
+| Branch | file: message.txt |
+|---|---|
+| main | Hello from main |
+| feature/greeting | Hello from feature |
+
+~~~bash
+echo "Hello from main" > message.txt
+git add message.txt
+git commit -m "Add main greeting"
+git switch -c feature/greeting
+echo "Hello from feature" > message.txt
+git commit -am "Change greeting on feature branch"
+~~~
+`,
+  "github-file-story": String.raw`
+
+### Extra Tiny Example
+
+When you push, GitHub receives your commits, not random loose files.
+
+~~~bash
+echo "My GitHub practice" > README.md
+git add README.md
+git commit -m "Add GitHub practice README"
+git push -u origin main
+~~~
+
+Open the GitHub repository page and you should see README.md.
+`,
+  "status-diff-add": String.raw`
+
+### Beginner File Example
+
+Use two files so staging makes sense.
+
+~~~bash
+echo "Homepage notes" > home.txt
+echo "Login notes" > login.txt
+git status --short
+git add home.txt
+git status --short
+git diff --cached
+git commit -m "Add homepage notes"
+~~~
+
+home.txt is committed. login.txt is still waiting.
+`,
+  "commit-messages": String.raw`
+
+### Beginner File Example
+
+Bad message:
+
+~~~txt
+update
+~~~
+
+Better message for a README.md change:
+
+~~~txt
+Add setup steps to README
+~~~
+
+~~~bash
+echo "Run npm install before starting." >> README.md
+git add README.md
+git commit -m "Add setup steps to README"
+~~~
+`,
+  "restore-reset-clean": String.raw`
+
+### Beginner File Example
+
+You accidentally edit config.txt:
+
+~~~txt
+debug=true
+~~~
+
+If you want to throw away only that local edit:
+
+~~~bash
+git diff config.txt
+git restore config.txt
+git status
+~~~
+
+If you staged it by mistake but want to keep the edit:
+
+~~~bash
+git restore --staged config.txt
+~~~
+`,
+  "ignore-attributes": String.raw`
+
+### Beginner File Example
+
+Never commit local secrets.
+
+~~~bash
+echo "API_KEY=secret-value" > .env
+echo ".env" >> .gitignore
+git add .gitignore
+git commit -m "Ignore local environment files"
+git status
+~~~
+
+.env stays on your machine. .gitignore is committed so teammates also ignore .env.
+`,
+  "branch-basics": String.raw`
+
+### Beginner File Example
+
+Make a branch just for changing page-title.txt.
+
+~~~bash
+echo "Old title" > page-title.txt
+git add page-title.txt
+git commit -m "Add page title"
+git switch -c feature/new-title
+echo "New title" > page-title.txt
+git commit -am "Update page title"
+git switch main
+cat page-title.txt
+~~~
+
+main still has Old title until you merge the feature branch.
+`,
+  merge: String.raw`
+
+### Beginner File Example
+
+main has menu.txt. A feature branch adds a new menu item.
+
+~~~bash
+git switch -c feature/menu
+echo "Pricing" >> menu.txt
+git add menu.txt
+git commit -m "Add pricing menu item"
+git switch main
+git merge feature/menu
+cat menu.txt
+~~~
+
+After merge, main includes the Pricing line.
+`,
+  rebase: String.raw`
+
+### Beginner File Example
+
+Imagine main moved forward while your branch edited footer.txt.
+
+~~~bash
+git switch feature/footer
+git fetch origin
+git rebase origin/main
+~~~
+
+Git takes your footer.txt commit and replays it after the newest main commits. Your branch looks freshly based on main.
+`,
+  conflicts: String.raw`
+
+### Beginner File Example
+
+Conflict in title.txt:
+
+~~~txt
+<<<<<<< HEAD
+Welcome to CodeBuzz
+=======
+Welcome to Git Mastery
+>>>>>>> feature/title
+~~~
+
+Choose the final line:
+
+~~~txt
+Welcome to Git Mastery
+~~~
+
+Then:
+
+~~~bash
+git add title.txt
+git commit
+~~~
+`,
+  "clone-fetch-pull": String.raw`
+
+### Beginner File Example
+
+Your teammate changed README.md on GitHub. Your laptop does not know yet.
+
+~~~bash
+git fetch origin
+git log --oneline HEAD..origin/main
+git pull --ff-only
+cat README.md
+~~~
+
+fetch checks what is new. pull brings it into your current branch.
+`,
+  "push-upstream": String.raw`
+
+### Beginner File Example
+
+You create contact.txt on a new branch.
+
+~~~bash
+git switch -c feature/contact-page
+echo "Contact us at support@example.com" > contact.txt
+git add contact.txt
+git commit -m "Add contact page text"
+git push -u origin feature/contact-page
+~~~
+
+The -u connects your local branch to the GitHub branch.
+`,
+  forks: String.raw`
+
+### Beginner File Example
+
+In a fork workflow, README.md changes start in your copy.
+
+~~~bash
+git remote -v
+git remote add upstream https://github.com/original-owner/project.git
+git fetch upstream
+git switch main
+git merge --ff-only upstream/main
+echo "Fix typo" >> README.md
+git switch -c fix/readme-typo
+git commit -am "Fix README typo"
+git push -u origin fix/readme-typo
+~~~
+`,
+  "amend-reset-revert": String.raw`
+
+### Beginner File Example
+
+You commit README.md but forgot todo.txt.
+
+~~~bash
+echo "Setup docs" >> README.md
+git add README.md
+git commit -m "Add setup docs"
+echo "Review docs" > todo.txt
+git add todo.txt
+git commit --amend
+~~~
+
+The latest commit is replaced with a better version that includes both files.
+`,
+  "cherry-pick": String.raw`
+
+### Beginner File Example
+
+main has one useful fix in config.txt. release/1.0 needs only that fix.
+
+~~~bash
+git log --oneline main -- config.txt
+git switch release/1.0
+git cherry-pick <fix-commit-sha>
+cat config.txt
+~~~
+
+Cherry-pick copies that one commit onto the release branch.
+`,
+  "reflog-bisect-blame": String.raw`
+
+### Beginner File Example
+
+You accidentally reset away a commit that changed notes.txt.
+
+~~~bash
+git reflog
+git switch -c recover-notes HEAD@{1}
+cat notes.txt
+~~~
+
+reflog is your local movement history. It often helps recover commits you thought were lost.
+`,
+  "stash-worktree": String.raw`
+
+### Beginner File Example
+
+You are halfway through profile.txt, but need to fix hotfix.txt.
+
+~~~bash
+echo "unfinished profile notes" > profile.txt
+git stash push -m "WIP profile notes"
+echo "urgent fix" > hotfix.txt
+git add hotfix.txt
+git commit -m "Add urgent hotfix note"
+git stash pop
+~~~
+
+stash hides unfinished work, then brings it back.
+`,
+  "tags-releases": String.raw`
+
+### Beginner File Example
+
+After README.md and app.js are ready, mark the commit as version v1.0.0.
+
+~~~bash
+git log --oneline -1
+git tag -a v1.0.0 -m "Release v1.0.0"
+git show v1.0.0
+git push origin v1.0.0
+~~~
+
+The tag is a named release point in history.
+`,
+  "submodules-sparse": String.raw`
+
+### Beginner File Example
+
+A parent project can point to another repo inside vendor/theme.
+
+~~~bash
+git submodule add https://github.com/example/theme.git vendor/theme
+git status
+git add .gitmodules vendor/theme
+git commit -m "Add theme submodule"
+~~~
+
+The parent repo stores a pointer to a commit in the theme repo.
+`,
+  "hooks-internals": String.raw`
+
+### Beginner File Example
+
+A pre-commit hook can check files before Git accepts a commit.
+
+~~~bash
+mkdir -p .git/hooks
+echo "echo Checking files before commit" > .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+echo "Hook demo" > hook-demo.txt
+git add hook-demo.txt
+git commit -m "Test pre-commit hook"
+~~~
+
+On Windows without chmod, Git Bash can run this example more naturally.
+`,
+  "github-flow": String.raw`
+
+### Beginner File Example
+
+One small GitHub Flow change:
+
+~~~bash
+git switch main
+git pull --ff-only
+git switch -c feature/about-text
+echo "About this project" > about.txt
+git add about.txt
+git commit -m "Add about page text"
+git push -u origin feature/about-text
+~~~
+
+Then open a pull request from feature/about-text into main.
+`,
+  "pull-requests": String.raw`
+
+### Beginner File Example
+
+PR for about.txt:
+
+| PR field | Example |
+|---|---|
+| Title | Add about page text |
+| Summary | Adds about.txt with a short project description |
+| Test plan | Opened file locally and checked spelling |
+| Risk | Low; text-only change |
+
+~~~bash
+gh pr create --title "Add about page text" --body "Adds about.txt with a short project description."
+~~~
+`,
+  "issues-projects": String.raw`
+
+### Beginner File Example
+
+Turn a vague problem into a useful issue.
+
+Bad:
+
+~~~txt
+README is confusing
+~~~
+
+Good:
+
+~~~txt
+README missing install command for npm dependencies
+Steps: Open README.md and follow setup.
+Expected: It tells me to run npm install.
+Actual: It jumps directly to npm run dev.
+~~~
+`,
+  "actions-ci": String.raw`
+
+### Beginner File Example
+
+CI can check app.js every time a PR opens.
+
+~~~yaml
+name: Check App
+on: [pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: node app.js
+~~~
+
+If app.js has a syntax error, the PR shows a failing check.
+`,
+  "branch-protection": String.raw`
+
+### Beginner File Example
+
+Protect main so README.md changes need review.
+
+| Rule | Beginner meaning |
+|---|---|
+| Require pull request | No direct pushes to main |
+| Require approval | Someone checks README.md before merge |
+| Require status checks | CI must pass first |
+
+This turns main into a protected team branch.
+`,
+  "dependabot-codeowners": String.raw`
+
+### Beginner File Example
+
+CODEOWNERS for important files:
+
+~~~txt
+README.md @docs-team
+package.json @frontend-team
+.github/workflows/ @devops-team
+~~~
+
+If a PR edits package.json, GitHub asks @frontend-team to review.
+`,
+  "security-features": String.raw`
+
+### Beginner File Example
+
+Bad secret file:
+
+~~~txt
+API_KEY=real-secret-value
+~~~
+
+Safer pattern:
+
+~~~bash
+echo ".env" >> .gitignore
+echo "API_KEY=replace-me" > .env.example
+git add .gitignore .env.example
+git commit -m "Document environment variables safely"
+~~~
+
+Commit examples, not real secrets.
+`,
+  "workflow-models": String.raw`
+
+### Beginner File Example
+
+Same file, different workflow:
+
+| Workflow | README.md change path |
+|---|---|
+| GitHub Flow | branch -> PR -> main |
+| Trunk-based | tiny branch -> fast PR -> main |
+| GitFlow | branch -> develop -> release -> main |
+| Fork | your fork branch -> upstream PR |
+
+The file is simple; the team process changes.
+`,
+  "release-hotfix": String.raw`
+
+### Beginner File Example
+
+Patch release for config.txt:
+
+~~~bash
+git switch -c hotfix/config-v1.0 v1.0.0
+echo "timeout=30" > config.txt
+git add config.txt
+git commit -m "Fix timeout for v1.0 patch"
+git tag -a v1.0.1 -m "Release v1.0.1"
+~~~
+
+Then bring the config.txt fix back to main.
+`,
+  "large-repo-hygiene": String.raw`
+
+### Beginner File Example
+
+Do not commit generated folders.
+
+~~~bash
+echo "dist/" >> .gitignore
+echo "coverage/" >> .gitignore
+git add .gitignore
+git commit -m "Ignore generated output folders"
+~~~
+
+Git history stays smaller and easier to clone.
+`,
+  "lab-first-repo": String.raw`
+
+### Beginner File Example
+
+After the lab, your folder should look like:
+
+~~~txt
+git-lab/
+  README.md
+  notes.txt
+~~~
+
+And git log should show two commits: Add README, then Add notes.
+`,
+  "lab-branch-conflict": String.raw`
+
+### Beginner File Example
+
+The conflict is intentionally in settings.txt.
+
+Final clean file should contain one line only:
+
+~~~txt
+color=blue
+~~~
+
+or:
+
+~~~txt
+color=green
+~~~
+
+The correct answer is whatever your product needs, not whatever Git guesses.
+`,
+  "lab-rebase-cleanup": String.raw`
+
+### Beginner File Example
+
+Before cleanup:
+
+~~~txt
+wip
+fix
+final maybe
+~~~
+
+After interactive rebase, aim for one clear commit:
+
+~~~txt
+Add cleanup practice notes
+~~~
+
+The file can stay the same while the commit history becomes clearer.
+`,
+  "lab-bisect": String.raw`
+
+### Beginner File Example
+
+Use test-result.txt as the simple bug signal.
+
+~~~bash
+cat test-result.txt
+git bisect good
+# or
+git bisect bad
+~~~
+
+In real projects, npm test or another command replaces the manual file check.
+`,
+  "command-map": String.raw`
+
+### Beginner File Example
+
+Map commands to files:
+
+| Command | File example |
+|---|---|
+| git diff README.md | What changed in README.md? |
+| git add todo.txt | Put todo.txt in next commit |
+| git restore app.js | Undo local edits in app.js |
+| git log -- app.js | Show commits that touched app.js |
+`,
+  "scenario-recipes": String.raw`
+
+### Beginner File Example
+
+Need one file from another branch?
+
+~~~bash
+git restore --source feature/new-copy -- copy.txt
+git status
+git add copy.txt
+git commit -m "Bring copy text from feature branch"
+~~~
+
+This copies copy.txt from that branch into your current branch.
+`,
+  "anti-patterns": String.raw`
+
+### Beginner File Example
+
+Avoid this:
+
+~~~bash
+git add .
+git commit -m "stuff"
+~~~
+
+Prefer this:
+
+~~~bash
+git status --short
+git diff README.md
+git add README.md
+git commit -m "Clarify README setup steps"
+~~~
+
+You know exactly what file and purpose entered history.
+`,
+  "research-sources": String.raw`
+
+### Beginner File Example
+
+When confused about a command, ask Git directly.
+
+~~~bash
+git help status
+git help add
+git help commit
+~~~
+
+Then practice the command on a small file like practice.txt before using it on serious project work.
+`,
+};
+
+export const topics = baseTopics.map((topic) => ({
+  ...topic,
+  sections: topic.sections.map((section) => ({
+    ...section,
+    content: `${section.content}${beginnerFileExamples[section.id] || ""}`,
+  })),
+}));
