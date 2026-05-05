@@ -4,7 +4,7 @@ import { motion as Motion } from "framer-motion";
 import { subjects } from "../data/subjects";
 import { ArrowRight, Sparkles, BookOpen, Terminal, Zap, Search, X } from "lucide-react";
 
-const TYPING_WORDS = ["Backend Engineering", "Go & GIN", "Microservices", "System Design", "AI & ML", "React.js", "DSA", "SQL Mastery", ".NET & C#"];
+const TYPING_WORDS = ["Backend Engineering", "Go & GIN", "Microservices", "System Design", "AI & ML", "React.js", "DSA", "SQL Mastery", ".NET & C#", "SSH Mastery"];
 
 const TypingEffect = () => {
   const [wordIndex, setWordIndex] = useState(0);

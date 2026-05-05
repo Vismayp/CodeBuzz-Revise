@@ -14,6 +14,8 @@ import { topics as corsTopics } from "./cors";
 import { topics as kafkaTopics } from "./kafka";
 import { topics as mlTopics } from "./ml";
 import { topics as llmTopics } from "./llm_engineering";
+import { topics as selfAttentionTransformerTopics } from "./self_attention_transformers";
+import { topics as multiHeadAttentionTopics } from "./multi_head_attention";
 import { topics as ragTopics } from "./rag_system";
 import { topics as designTopics } from "./ai_system_design";
 import { topics as advancedAiTopics } from "./advanced_ai";
@@ -28,6 +30,7 @@ import { sqlTopics } from "./sql/index.js";
 import { dotnetTopics } from "./dotnet/index.js";
 import { topics as cueTopics } from "./cue";
 import { topics as gitGithubTopics } from "./git_github";
+import { sshTopics } from "./ssh";
 
 import {
   Code,
@@ -56,6 +59,7 @@ import {
   TableProperties,
   Monitor,
   GitBranch,
+  Key,
 } from "lucide-react";
 
 export const subjects = [
@@ -68,6 +72,26 @@ export const subjects = [
     icon: Brain,
     color: "from-purple-600 to-pink-500",
     topics: llmTopics,
+  },
+  {
+    id: "self-attention-transformers",
+    category: "Generative AI & LLMs",
+    title: "Self-Attention Transformers",
+    description:
+      "From tokens and QKV intuition to full Transformer blocks, generation, visuals, and worked examples.",
+    icon: Network,
+    color: "from-cyan-500 to-blue-700",
+    topics: selfAttentionTransformerTopics,
+  },
+  {
+    id: "multi-head-attention",
+    category: "Generative AI & LLMs",
+    title: "Multi-Head Attention",
+    description:
+      "Complete guide to attention heads, QKV splitting, tensor shapes, masks, variants, examples, and PyTorch implementation.",
+    icon: Layers,
+    color: "from-indigo-500 to-cyan-600",
+    topics: multiHeadAttentionTopics,
   },
   {
     id: "rag-systems",
@@ -320,6 +344,16 @@ export const subjects = [
     icon: GitBranch,
     color: "from-orange-500 to-rose-600",
     topics: gitGithubTopics,
+  },
+  {
+    id: "ssh",
+    category: "DevOps & Containers",
+    title: "SSH Mastery",
+    description:
+      "Secure Shell from first login to production hardening, tunnels, bastions, and automation.",
+    icon: Key,
+    color: "from-cyan-500 to-emerald-600",
+    topics: sshTopics,
   },
 
   // --- System Design ---
