@@ -1356,5 +1356,526 @@ function majorityElementII(nums) {
     return result;
 }`,
     },
+    {
+      id: "arrays-medium-advanced-infographic-revision",
+      title: "Medium & Advanced Arrays: Infographic Revision",
+      type: "theory",
+      content: `
+## Medium & Advanced Arrays: End Revision
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin: 18px 0;">
+  <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px;">
+    <h3 style="color: #38bdf8; margin: 0 0 8px;">Memory Layout</h3>
+    <p style="margin: 0; color: #cbd5e1;">2D and 3D arrays are stored as one flat memory line. Row-major stores rows together; column-major stores columns together.</p>
+  </div>
+  <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px;">
+    <h3 style="color: #22c55e; margin: 0 0 8px;">Cache Locality</h3>
+    <p style="margin: 0; color: #cbd5e1;">Access nearby memory repeatedly. In row-major languages, row-wise traversal is usually faster than column-wise traversal.</p>
+  </div>
+  <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px;">
+    <h3 style="color: #f59e0b; margin: 0 0 8px;">Range Tricks</h3>
+    <p style="margin: 0; color: #cbd5e1;">Prefix sums answer static range sums fast. Difference arrays apply many batch range updates fast.</p>
+  </div>
+  <div style="background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px;">
+    <h3 style="color: #a78bfa; margin: 0 0 8px;">Dynamic Structures</h3>
+    <p style="margin: 0; color: #cbd5e1;">Segment Trees and Fenwick Trees balance updates and queries in logarithmic time.</p>
+  </div>
+</div>
+
+### 1. Memory Flattening Formulas
+
+| Layout | Access | Element Offset | Full Address |
+|--------|--------|----------------|--------------|
+| 2D Row-major | matrix[i][j] with R rows, C cols | i * C + j | Base + (i * C + j) * Size |
+| 2D Column-major | matrix[i][j] with R rows, C cols | j * R + i | Base + (j * R + i) * Size |
+| 3D Row-major | cube[d][i][j] with D slices, R rows, C cols | d * R * C + i * C + j | Base + (d * R * C + i * C + j) * Size |
+
+<div style="background: #111827; border-left: 4px solid #38bdf8; padding: 14px 16px; border-radius: 8px; margin: 16px 0;">
+  <strong>Interview memory line:</strong> To reach a cell, count how many complete blocks you skip first, then add the local offset inside the current block.
+</div>
+
+#### Problem Card: 2D Address Calculation
+
+**Problem:** Given \`int matrix[R][C]\` in row-major order, find the address of \`matrix[i][j]\`.
+
+**Visualization:**
+
+\`\`\`
+matrix rows:
+row 0: [0,0] [0,1] [0,2] ... [0,C-1]
+row 1: [1,0] [1,1] [1,2] ... [1,C-1]
+...
+row i: [i,0] [i,1] ... [i,j]
+
+flattened memory:
+row 0 all cells | row 1 all cells | ... | row i, first j cells | target
+\`\`\`
+
+**Intuition:** Before reaching row \`i\`, you skip \`i\` complete rows. Each skipped row has \`C\` elements. Inside row \`i\`, move \`j\` more positions.
+
+**Why this is right:** Row-major memory stores one full row after another, so the linear offset is exactly:
+
+\`\`\`
+offset = i * C + j
+address = Base + offset * Size
+\`\`\`
+
+For 1-indexed math, the row part becomes \`(i - 1) * C\`. For normal 0-indexed code, use \`i * C\`.
+
+#### Problem Card: 3D Address Calculation
+
+**Problem:** Given \`int cube[D][R][C]\` in row-major order, find the address of \`cube[d][i][j]\`.
+
+**Visualization:**
+
+\`\`\`
+slice 0: R * C cells
+slice 1: R * C cells
+...
+slice d: row 0 | row 1 | ... | row i, col j
+
+skip full slices -> skip full rows in current slice -> move to column
+\`\`\`
+
+**Intuition:** A 3D array is just layers of 2D arrays. First skip \`d\` complete 2D slices, then \`i\` complete rows inside the chosen slice, then \`j\` columns.
+
+**Why this is right:**
+
+\`\`\`
+offset = d * R * C + i * C + j
+address = Base + offset * Size
+\`\`\`
+
+### 2. Row-Major Cache Infographic
+
+| Loop Style in C/C++/Python-style row-major matrix | Memory Behavior | Result |
+|---------------------------------------------------|-----------------|--------|
+| outer row, inner column: i then j | Reads adjacent cells like matrix[i][j], matrix[i][j + 1] | Cache-friendly |
+| outer column, inner row: j then i | Jumps by full row stride each step | More cache misses |
+
+#### Problem Card: Which Loop Is Faster?
+
+**Problem:** In a row-major language, sum all elements of a large matrix. Which loop is faster?
+
+\`\`\`cpp
+// Option A
+for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+        sum += matrix[i][j];
+    }
+}
+
+// Option B
+for (int j = 0; j < cols; j++) {
+    for (int i = 0; i < rows; i++) {
+        sum += matrix[i][j];
+    }
+}
+\`\`\`
+
+**Answer:** Option A.
+
+**Visualization:**
+
+\`\`\`
+Row-major memory:
+[0,0][0,1][0,2][0,3] | [1,0][1,1][1,2][1,3] | ...
+
+Option A reads:
+[0,0] -> [0,1] -> [0,2] -> [0,3]  contiguous
+
+Option B reads:
+[0,0] -> [1,0] -> [2,0] -> [3,0]  strided jumps
+\`\`\`
+
+**Intuition:** CPUs fetch nearby memory into cache together. If your next read is beside the previous read, it is likely already in cache.
+
+**Why this is the right approach:** Both loops are O(rows * cols), but Option A has better constants because it causes more cache hits and fewer RAM fetches.
+
+### 3. Prefix Sum vs Difference Array
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 18px 0;">
+  <div style="background: #102a43; border-radius: 10px; padding: 16px;">
+    <h3 style="color: #7dd3fc; margin: 0 0 8px;">Prefix Sum</h3>
+    <p style="color: #dbeafe; margin: 0 0 10px;">Best when the array is mostly static and you need many range-sum queries.</p>
+    <p style="color: #e0f2fe; margin: 0;">Build: P[i] = A[0] + ... + A[i]</p>
+    <p style="color: #e0f2fe; margin: 6px 0 0;">Query: sum(L, R) = P[R] - P[L - 1]</p>
+  </div>
+  <div style="background: #2a1f05; border-radius: 10px; padding: 16px;">
+    <h3 style="color: #fbbf24; margin: 0 0 8px;">Difference Array</h3>
+    <p style="color: #fde68a; margin: 0 0 10px;">Best when updates are batched and final array is needed later.</p>
+    <p style="color: #fef3c7; margin: 0;">Range add X to [L, R]: D[L] += X</p>
+    <p style="color: #fef3c7; margin: 6px 0 0;">Stop the flow: D[R + 1] -= X</p>
+  </div>
+</div>
+
+#### Problem Card: Static Range Sum Query
+
+**Problem:** Given \`A = [3, 1, 4, 1, 5]\`, answer many queries asking for the sum from index \`L\` to \`R\`. Example query: sum from index \`2\` to \`4\`.
+
+**Visualization:**
+
+\`\`\`
+A:  3   1   4   1   5
+i:  0   1   2   3   4
+P:  3   4   8   9   14
+            [---want---]
+
+P[4] = 3 + 1 + 4 + 1 + 5
+P[1] = 3 + 1
+P[4] - P[1] = 4 + 1 + 5 = 10
+\`\`\`
+
+**Intuition:** Prefix sum stores "sum from start to here". To get a middle range, take the larger prefix and remove the part before \`L\`.
+
+**Why this is the right approach:** A naive loop is O(n) per query. Prefix sum does one O(n) build, then each range query is O(1).
+
+**Formula:**
+
+\`\`\`
+sum(L, R) = P[R] - P[L - 1]
+if L == 0: sum(0, R) = P[R]
+\`\`\`
+
+#### Difference Array Mini Trace
+
+Start with A = [0, 0, 0, 0, 0]. Add +3 from index 1 to 3.
+
+| Step | Difference Array D | Meaning |
+|------|--------------------|---------|
+| initial | [0, 0, 0, 0, 0] | no changes active |
+| mark start/end | [0, 3, 0, 0, -3] | +3 starts at 1, stops after 3 |
+| prefix of D | [0, 3, 3, 3, 0] | final updated array |
+
+> Put the negative marker at R + 1, not R, because index R must still receive the update.
+
+#### Problem Card: Batch Range Updates
+
+**Problem:** You manage 5 servers with workloads \`A = [0, 0, 0, 0, 0]\`. Apply update: add \`+3\` to every server from index \`1\` to \`3\`.
+
+**Visualization:**
+
+\`\`\`
+target range:
+i: 0  1  2  3  4
+A: 0 [0  0  0] 0
+
+mark in D:
+D[1] += 3     start adding
+D[4] -= 3     stop after index 3
+
+D: 0  3  0  0 -3
+prefix(D):
+   0  3  3  3  0
+\`\`\`
+
+**Intuition:** A positive marker starts a value flowing forward through prefix sum. A negative marker at \`R + 1\` cancels the flow after the range ends.
+
+**Why this is the right approach:** Each range update changes only two cells, so every update is O(1). After all updates, one prefix pass materializes the final array in O(n).
+
+**Practice from the conversation:** For \`D = [0, 0, 0, 0, 0, 0]\), add \`+5\` from \`L = 2\` to \`R = 4\`.
+
+\`\`\`
+D[2] += 5
+D[5] -= 5
+D = [0, 0, 5, 0, 0, -5]
+prefix(D) = [0, 0, 5, 5, 5, 0]
+\`\`\`
+
+#### Problem Card: When Difference Array Is Not Enough
+
+**Problem:** You need random range updates and immediate range-sum queries after each update.
+
+**Intuition:** Difference arrays are lazy. They store update markers, not the fully materialized array.
+
+**Why it is not the right approach:** Updates are O(1), but each immediate query requires rebuilding or prefixing through the array, which is O(n). For interleaved updates and queries, use Fenwick Tree or Segment Tree for O(log n) operations.
+
+### 4. When Each Technique Wins
+
+| Need | Best Tool | Update | Query | Notes |
+|------|-----------|--------|-------|-------|
+| Static range sum queries | Prefix Sum | O(n) rebuild if changed | O(1) | Great for many queries after one build |
+| Many range updates, final result later | Difference Array | O(1) per range update | O(n) to materialize | Batch-processing tool |
+| Mixed point updates and range queries | Fenwick Tree | O(log n) | O(log n) | Best for sums with compact code |
+| Mixed updates and flexible range queries | Segment Tree | O(log n) | O(log n) | Handles sum, min, max, gcd and more |
+
+### 5. Segment Tree Snapshot
+
+Segment Tree for A = [1, 3, 5, 7]:
+
+| Tree Node | Range | Value |
+|-----------|-------|-------|
+| tree[1] | [0, 3] | 16 |
+| tree[2] | [0, 1] | 4 |
+| tree[3] | [2, 3] | 12 |
+| tree[4] | [0, 0] | 1 |
+| tree[5] | [1, 1] | 3 |
+| tree[6] | [2, 2] | 5 |
+| tree[7] | [3, 3] | 7 |
+
+Parent/child index rules with 1-based tree storage:
+
+| Relationship | Formula |
+|--------------|---------|
+| left child of p | 2 * p |
+| right child of p | 2 * p + 1 |
+| root | tree[1] |
+
+Update A[1] from 3 to 4 only touches the leaf [1], its parent [0, 1], and the root [0, 3]. That is why updates are O(log n), not O(n).
+
+#### Problem Card: Segment Tree Range Query
+
+**Problem:** For \`A = [1, 3, 5, 7]\`, answer \`sum(1, 3)\`.
+
+**Visualization:**
+
+\`\`\`
+          [0-3] = 16
+         /          \\
+    [0-1] = 4    [2-3] = 12
+    /     \\       /      \\
+ [0]=1  [1]=3  [2]=5   [3]=7
+
+query [1,3] = node [1] + node [2-3]
+            = 3 + 12
+            = 15
+\`\`\`
+
+**Intuition:** The tree precomputes answers for ranges. A query is answered by combining only the few nodes that exactly cover the requested interval.
+
+**Why this is the right approach:** Instead of scanning 1 through 3, the tree uses precomputed blocks and visits O(log n) relevant nodes.
+
+#### Problem Card: Segment Tree Point Update
+
+**Problem:** Change \`A[1]\` from \`3\` to \`4\`.
+
+**Visualization:**
+
+\`\`\`
+changed leaf path:
+[1] -> [0-1] -> [0-3]
+
+old values:
+[1] = 3, [0-1] = 4, [0-3] = 16
+
+new values:
+[1] = 4, [0-1] = 5, [0-3] = 17
+\`\`\`
+
+**Intuition:** Only ranges that contain index \`1\` are affected. Every other branch is untouched.
+
+**Why this is the right approach:** Updating one root-to-leaf path costs O(log n), while rebuilding a prefix sum after every update costs O(n).
+
+#### Problem Card: Flat Segment Tree Indexing
+
+**Problem:** If \`tree[3]\` represents range \`[2, 3]\`, where are its children?
+
+**Visualization:**
+
+\`\`\`
+tree[1] = [0-3]
+tree[2] = [0-1]        tree[3] = [2-3]
+tree[4] = [0] tree[5] = [1] tree[6] = [2] tree[7] = [3]
+
+for p = 3:
+left child  = 2 * p     = 6
+right child = 2 * p + 1 = 7
+\`\`\`
+
+**Intuition:** A complete binary-tree layout can be stored in a flat array without explicit node objects.
+
+**Why this is the right approach:** Index math makes parent-child navigation O(1), compact, and pointer-free.
+
+### 6. Fenwick Tree Snapshot
+
+| Idea | Rule |
+|------|------|
+| Uses 1-based indexing | index 0 would not move with x & -x |
+| Least significant bit | lsb = x & -x |
+| Query prefix sum | add tree[i], then i -= lsb |
+| Update index | add delta to tree[i], then i += lsb |
+| Memory | O(n), usually smaller than Segment Tree |
+
+#### Fenwick Responsibility Examples
+
+| Index | Binary | lsb | Responsible Range Length |
+|-------|--------|-----|--------------------------|
+| 3 | 011 | 1 | 1 element |
+| 4 | 100 | 4 | 4 elements |
+| 6 | 110 | 2 | 2 elements |
+| 7 | 111 | 1 | 1 element |
+
+Query prefix sum up to index 7 visits 7, then 6, then 4, then stops at 0.
+
+#### Problem Card: Fenwick LSB Navigation
+
+**Problem:** In a Fenwick Tree, what range length does index \`6\` represent, and what is the next update index after \`3\`?
+
+**Visualization:**
+
+\`\`\`
+6 in binary: 110
+lsb(6) = 6 & -6 = 2
+index 6 stores a block of length 2
+
+3 in binary: 011
+lsb(3) = 1
+next update index = 3 + 1 = 4
+then 4 + lsb(4) = 8
+\`\`\`
+
+**Intuition:** The least significant set bit tells you the size of the block this index owns.
+
+**Why this is the right approach:** Fenwick Tree avoids explicit tree nodes. Bit operations jump between responsible blocks in O(log n).
+
+#### Problem Card: Dynamic Range Sum Queries
+
+**Problem:** You are given an array \`A\` of \`N\` elements and up to \`100000\` operations:
+
+| Operation | Meaning |
+|-----------|---------|
+| update(index, val) | add val to A[index] |
+| query(L, R) | return sum from L to R |
+
+Naive query loops can time out. A Fenwick Tree handles both operations in O(log n).
+
+**Trace with A = [5, 1, 6, 4] using 1-based indexing:**
+
+\`\`\`
+initial tree: [0, 0, 0, 0, 0]
+
+update(1, 5): tree[1] += 5, tree[2] += 5, tree[4] += 5
+update(2, 1): tree[2] += 1, tree[4] += 1
+update(3, 6): tree[3] += 6, tree[4] += 6
+update(4, 4): tree[4] += 4
+
+final tree: [0, 5, 6, 6, 16]
+\`\`\`
+
+**Query visualization:**
+
+\`\`\`
+range_query(2, 4) = query(4) - query(1)
+query(4) = tree[4] = 16
+query(1) = tree[1] = 5
+answer = 16 - 5 = 11
+\`\`\`
+
+**Intuition:** Fenwick stores overlapping prefix chunks. Any range sum is still "prefix right minus prefix before left".
+
+**Why this is the right approach:** Prefix sum gives O(1) query but expensive rebuilds after updates. Fenwick keeps both update and query at O(log n).
+
+### 7. Advanced Problem: Counting Inversions with Fenwick
+
+An inversion is a pair (i, j) where i < j and arr[i] > arr[j].
+
+#### Problem Card: Count Inversions
+
+For arr = [3, 4, 1, 2], scan from right to left:
+
+| Current | Query Smaller Already Seen | New Inversions | Insert |
+|---------|-----------------------------|----------------|--------|
+| 2 | query(1) | 0 | update(2, +1) |
+| 1 | query(0) | 0 | update(1, +1) |
+| 4 | query(3) sees 1 and 2 | 2 | update(4, +1) |
+| 3 | query(2) sees 1 and 2 | 2 | update(3, +1) |
+
+Total inversions = 0 + 0 + 2 + 2 = 4.
+
+**Original problem statement:** Given \`arr[]\`, count pairs \`(i, j)\` such that \`i < j\` and \`arr[i] > arr[j]\`.
+
+**Example from the conversation:** \`[8, 4, 2, 1]\` has 6 inversions:
+
+\`\`\`
+(8,4), (8,2), (8,1),
+(4,2), (4,1),
+(2,1)
+\`\`\`
+
+**Visualization for [3, 4, 1, 2]:**
+
+\`\`\`
+scan right to left:
+
+seen: {}
+2 -> smaller seen = 0, insert 2
+1 -> smaller seen = 0, insert 1
+4 -> smaller seen = {1,2} => 2 inversions, insert 4
+3 -> smaller seen = {1,2} => 2 inversions, insert 3
+
+total = 4
+\`\`\`
+
+**Intuition:** When scanning from right to left, all already-seen values are to the right of the current value. Counting how many seen values are smaller gives exactly the inversions created by the current value.
+
+**Why this is the right approach:** Brute force checks all pairs in O(n^2). Fenwick Tree acts as a frequency table and answers "how many values less than X have I seen?" in O(log n), so total time becomes O(n log n).
+
+### Final Mental Model
+
+| If the problem says... | Think... |
+|------------------------|----------|
+| "many sum queries, no updates" | Prefix Sum |
+| "many range updates, final array later" | Difference Array |
+| "updates and queries interleaved" | Fenwick Tree or Segment Tree |
+| "range sum only, compact solution" | Fenwick Tree |
+| "range min/max/gcd or custom combine" | Segment Tree |
+| "matrix performance" | Memory order + cache locality |
+      `,
+      diagram: `
+flowchart TD
+    A["Array problem"] --> B{"Range operations?"}
+    B -->|No| C["Use core patterns: two pointers, sliding window, hash map, Kadane"]
+    B -->|Yes| D{"Only queries after one build?"}
+    D -->|Yes| E["Prefix Sum: O(1) query"]
+    D -->|No| F{"Only batch updates before final answer?"}
+    F -->|Yes| G["Difference Array: O(1) range update, prefix once at end"]
+    F -->|No| H{"Need only sums and compact code?"}
+    H -->|Yes| I["Fenwick Tree: O(log n) update/query"]
+    H -->|No| J["Segment Tree: O(log n), flexible operations"]
+      `,
+      code: `class FenwickTree:
+    def __init__(self, size):
+        self.size = size
+        self.tree = [0] * (size + 1)
+
+    def update(self, i, delta):
+        while i <= self.size:
+            self.tree[i] += delta
+            i += i & -i
+
+    def query(self, i):
+        total = 0
+        while i > 0:
+            total += self.tree[i]
+            i -= i & -i
+        return total
+
+    def range_query(self, left, right):
+        return self.query(right) - self.query(left - 1)
+
+
+def count_inversions(nums):
+    # Coordinate compression handles large or negative values.
+    ranks = {value: idx + 1 for idx, value in enumerate(sorted(set(nums)))}
+    bit = FenwickTree(len(ranks))
+    inversions = 0
+
+    for value in reversed(nums):
+        rank = ranks[value]
+        inversions += bit.query(rank - 1)
+        bit.update(rank, 1)
+
+    return inversions
+
+
+# Dynamic range sum example:
+# A = [5, 1, 6, 4]
+# Build with update(1, 5), update(2, 1), update(3, 6), update(4, 4)
+# range_query(2, 4) = query(4) - query(1) = 16 - 5 = 11
+
+# Counting inversions example:
+# [3, 4, 1, 2] -> 4 inversions`,
+      language: "python",
+    },
   ],
 };
