@@ -11,6 +11,7 @@ import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { asPythonFirstCode } from "../utils/pythonifyCode";
 
 const processContent = (str) => {
   if (!str) return str;
@@ -105,8 +106,16 @@ const TopicPage = () => {
     ),
     code({ inline, className, children, ...props }) {
       const match = /language-(\w+)/.exec(className || "");
+      const rawCode = String(children).replace(/\n$/, "");
       return !inline && match ? (
-        <CodeBlock code={String(children).replace(/\n$/, "")} language={match[1]} />
+        <CodeBlock
+          code={
+            subjectId === "dsa" && match[1] === "javascript"
+              ? asPythonFirstCode(rawCode)
+              : rawCode
+          }
+          language={subjectId === "dsa" && match[1] === "javascript" ? "python" : match[1]}
+        />
       ) : (
         <code className={className} style={{
           background: "var(--bg-hover)", padding: "0.15rem 0.4rem",

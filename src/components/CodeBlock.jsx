@@ -1,16 +1,33 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Copy, Check, Terminal } from "lucide-react";
 
 const CodeBlock = ({ code, language = "javascript" }) => {
   const [copied, setCopied] = useState(false);
-  const [activeLang, setActiveLang] = useState("js");
 
-  const isDual = typeof code === "object" && code !== null && !Array.isArray(code);
-  const displayCode = isDual ? (activeLang === "js" ? code.js : code.ts) : code;
-  const displayLang = isDual
-    ? activeLang === "js" ? "javascript" : "typescript"
+  const isMultiLanguage =
+    typeof code === "object" && code !== null && !Array.isArray(code);
+
+  const languageEntries = useMemo(() => {
+    if (!isMultiLanguage) return [];
+    return Object.entries(code).filter(([, value]) => typeof value === "string");
+  }, [code, isMultiLanguage]);
+
+  const [activeLang, setActiveLang] = useState(
+    languageEntries[0]?.[0] || language
+  );
+
+  const effectiveLang =
+    isMultiLanguage && !Object.prototype.hasOwnProperty.call(code, activeLang)
+      ? languageEntries[0]?.[0]
+      : activeLang;
+
+  const displayCode = isMultiLanguage
+    ? code[effectiveLang] ?? languageEntries[0]?.[1] ?? ""
+    : code;
+  const displayLang = isMultiLanguage
+    ? effectiveLang
     : language;
 
   const handleCopy = () => {
@@ -19,9 +36,20 @@ const CodeBlock = ({ code, language = "javascript" }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const langLabel = isDual
+  const labelMap = {
+    js: "JS",
+    javascript: "JS",
+    ts: "TS",
+    typescript: "TS",
+    py: "PY",
+    python: "PYTHON",
+    go: "GO",
+    csharp: "C#",
+  };
+
+  const langLabel = isMultiLanguage
     ? null
-    : language === "go" ? "GO" : language.toUpperCase();
+    : labelMap[language] || language.toUpperCase();
 
   return (
     <div className="code-wrapper">
@@ -30,27 +58,27 @@ const CodeBlock = ({ code, language = "javascript" }) => {
       }}>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
           <Terminal size={13} style={{ color: "var(--accent-secondary)", opacity: 0.7 }} />
-          {isDual ? (
+          {isMultiLanguage ? (
             <div style={{
               display: "flex", gap: "2px",
               background: "rgba(255,255,255,0.06)", padding: "2px",
               borderRadius: "4px",
             }}>
-              {["js", "ts"].map((lang) => (
+              {languageEntries.map(([lang]) => (
                 <button
                   key={lang}
                   onClick={() => setActiveLang(lang)}
                   style={{
-                    background: activeLang === lang ? "var(--accent-glow)" : "transparent",
-                    border: activeLang === lang ? "1px solid rgba(0,212,255,0.2)" : "1px solid transparent",
-                    color: activeLang === lang ? "var(--accent)" : "var(--text-muted)",
+                    background: effectiveLang === lang ? "var(--accent-glow)" : "transparent",
+                    border: effectiveLang === lang ? "1px solid rgba(0,212,255,0.2)" : "1px solid transparent",
+                    color: effectiveLang === lang ? "var(--accent)" : "var(--text-muted)",
                     padding: "2px 10px", borderRadius: "3px",
                     cursor: "pointer", fontSize: "0.75rem",
-                    fontFamily: "var(--font-mono)", fontWeight: activeLang === lang ? 700 : 400,
+                    fontFamily: "var(--font-mono)", fontWeight: effectiveLang === lang ? 700 : 400,
                     transition: "all 0.15s",
                   }}
                 >
-                  {lang.toUpperCase()}
+                  {labelMap[lang] || lang.toUpperCase()}
                 </button>
               ))}
             </div>

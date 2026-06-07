@@ -1,6 +1,6 @@
 // DSA Topic Aggregation
 import { roadmapTopic as roadmapTopicBase } from "./roadmap.js";
-import { masterclassTopic } from "./masterclass.js";
+import { masterclassTopic as masterclassTopicBase } from "./masterclass.js";
 import { complexityTopic as complexityTopicBase } from "./complexity.js";
 import { arraysTopic as arraysTopicBase } from "./arrays.js";
 import { stringsTopic as stringsTopicBase } from "./strings.js";
@@ -14,20 +14,31 @@ import { dpTopic as dpTopicBase } from "./dp.js";
 import { greedyTopic as greedyTopicBase } from "./greedy.js";
 import { advancedTopic as advancedTopicBase } from "./advanced.js";
 import { enrichDsaTopic } from "./enrichment.js";
+import { asPythonFirstCode } from "../../utils/pythonifyCode.js";
 
-export const roadmapTopic = enrichDsaTopic(roadmapTopicBase);
-export const complexityTopic = enrichDsaTopic(complexityTopicBase);
-export const arraysTopic = enrichDsaTopic(arraysTopicBase);
-export const stringsTopic = enrichDsaTopic(stringsTopicBase);
-export const linkedListsTopic = enrichDsaTopic(linkedListsTopicBase);
-export const stacksTopic = enrichDsaTopic(stacksTopicBase);
-export const recursionTopic = enrichDsaTopic(recursionTopicBase);
-export const treesTopic = enrichDsaTopic(treesTopicBase);
-export const heapsTopic = enrichDsaTopic(heapsTopicBase);
-export const graphsTopic = enrichDsaTopic(graphsTopicBase);
-export const dpTopic = enrichDsaTopic(dpTopicBase);
-export const greedyTopic = enrichDsaTopic(greedyTopicBase);
-export const advancedTopic = enrichDsaTopic(advancedTopicBase);
+const withPythonImplementations = (topic) => ({
+  ...topic,
+  sections: topic.sections.map((section) => ({
+    ...section,
+    code: asPythonFirstCode(section.code),
+    language: section.code ? "python" : section.language,
+  })),
+});
+
+export const roadmapTopic = withPythonImplementations(enrichDsaTopic(roadmapTopicBase));
+export const masterclassTopic = withPythonImplementations(masterclassTopicBase);
+export const complexityTopic = withPythonImplementations(enrichDsaTopic(complexityTopicBase));
+export const arraysTopic = withPythonImplementations(enrichDsaTopic(arraysTopicBase));
+export const stringsTopic = withPythonImplementations(enrichDsaTopic(stringsTopicBase));
+export const linkedListsTopic = withPythonImplementations(enrichDsaTopic(linkedListsTopicBase));
+export const stacksTopic = withPythonImplementations(enrichDsaTopic(stacksTopicBase));
+export const recursionTopic = withPythonImplementations(enrichDsaTopic(recursionTopicBase));
+export const treesTopic = withPythonImplementations(enrichDsaTopic(treesTopicBase));
+export const heapsTopic = withPythonImplementations(enrichDsaTopic(heapsTopicBase));
+export const graphsTopic = withPythonImplementations(enrichDsaTopic(graphsTopicBase));
+export const dpTopic = withPythonImplementations(enrichDsaTopic(dpTopicBase));
+export const greedyTopic = withPythonImplementations(enrichDsaTopic(greedyTopicBase));
+export const advancedTopic = withPythonImplementations(enrichDsaTopic(advancedTopicBase));
 
 export const dsaTopics = [
   roadmapTopic,
@@ -54,5 +65,3 @@ export const dsaSubject = {
   icon: "Code2",
   topics: dsaTopics,
 };
-
-export { masterclassTopic };
