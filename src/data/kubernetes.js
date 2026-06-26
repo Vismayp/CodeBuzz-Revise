@@ -2,7 +2,7 @@
 // KUBERNETES — COMPLETE GUIDE (Beginner → Interview Ready)
 // ═══════════════════════════════════════════════════════════════
 
-export const topics = [
+const baseTopics = [
   {
     id: "k8s-introduction",
     title: "Introduction to Kubernetes",
@@ -1391,3 +1391,908 @@ graph LR
     ],
   },
 ];
+
+const visualStyle = `
+<style>
+  .k8s-visual {
+    margin: 1.25rem 0;
+    padding: 1rem;
+    border: 1px solid var(--border-bright);
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(57,255,20,0.04));
+    overflow-x: auto;
+  }
+  .k8s-visual svg {
+    width: 100%;
+    min-width: 620px;
+    height: auto;
+    display: block;
+  }
+  .k8s-lane { fill: #101923; stroke: #334155; stroke-width: 1.5; }
+  .k8s-box { fill: #172232; stroke: #00d4ff; stroke-width: 2; rx: 8; }
+  .k8s-box-green { fill: #13251a; stroke: #39ff14; stroke-width: 2; rx: 8; }
+  .k8s-box-warm { fill: #2a2111; stroke: #ffb300; stroke-width: 2; rx: 8; }
+  .k8s-box-pink { fill: #261427; stroke: #ff6ec7; stroke-width: 2; rx: 8; }
+  .k8s-text { fill: #e6edf3; font: 600 13px DM Sans, sans-serif; }
+  .k8s-small { fill: #8b949e; font: 11px Space Mono, monospace; }
+  .k8s-arrow { stroke: #8b949e; stroke-width: 2; marker-end: url(#arrow); fill: none; }
+  .k8s-dash { stroke: #ffb300; stroke-width: 2; stroke-dasharray: 5 5; fill: none; marker-end: url(#arrow); }
+  .k8s-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
+  }
+  .k8s-mini-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+    background: rgba(13,17,23,0.72);
+  }
+  .k8s-mini-card strong {
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+</style>`;
+
+const svgDefs = `
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e"></path>
+  </marker>
+</defs>`;
+
+const visualSnippets = {
+  "what-is-kubernetes": `
+${visualStyle}
+<div class="k8s-visual" aria-label="Kubernetes desired-state control loop">
+  <svg viewBox="0 0 880 280" role="img">
+    ${svgDefs}
+    <rect class="k8s-lane" x="20" y="30" width="840" height="220" rx="12"></rect>
+    <rect class="k8s-box" x="55" y="90" width="145" height="80"></rect>
+    <text class="k8s-text" x="80" y="123">Desired State</text>
+    <text class="k8s-small" x="82" y="148">YAML + kubectl</text>
+    <path class="k8s-arrow" d="M205 130 H315"></path>
+    <rect class="k8s-box-green" x="320" y="80" width="170" height="100"></rect>
+    <text class="k8s-text" x="363" y="118">Control Plane</text>
+    <text class="k8s-small" x="355" y="145">API, scheduler, controllers</text>
+    <path class="k8s-arrow" d="M495 130 H605"></path>
+    <rect class="k8s-box-warm" x="610" y="70" width="205" height="120"></rect>
+    <text class="k8s-text" x="674" y="108">Actual State</text>
+    <text class="k8s-small" x="655" y="135">Pods running on nodes</text>
+    <text class="k8s-small" x="653" y="158">Self-healing keeps reconciling</text>
+    <path class="k8s-dash" d="M708 205 C520 265, 305 260, 135 182"></path>
+    <text class="k8s-small" x="333" y="235">observe -> compare -> repair</text>
+  </svg>
+</div>`,
+  "containers-vs-vms": `
+<div class="k8s-visual" aria-label="Container and VM layer comparison">
+  <svg viewBox="0 0 880 320" role="img">
+    <rect class="k8s-lane" x="35" y="30" width="370" height="250" rx="12"></rect>
+    <rect class="k8s-lane" x="475" y="30" width="370" height="250" rx="12"></rect>
+    <text class="k8s-text" x="165" y="62">Virtual Machines</text>
+    <text class="k8s-text" x="610" y="62">Containers</text>
+    <rect class="k8s-box-warm" x="70" y="215" width="300" height="35"></rect><text class="k8s-small" x="185" y="238">Hardware</text>
+    <rect class="k8s-box" x="70" y="175" width="300" height="35"></rect><text class="k8s-small" x="178" y="198">Hypervisor</text>
+    <rect class="k8s-box-pink" x="80" y="120" width="130" height="45"></rect><text class="k8s-small" x="116" y="147">Guest OS</text>
+    <rect class="k8s-box-pink" x="230" y="120" width="130" height="45"></rect><text class="k8s-small" x="266" y="147">Guest OS</text>
+    <rect class="k8s-box-green" x="80" y="80" width="130" height="34"></rect><text class="k8s-small" x="122" y="101">App</text>
+    <rect class="k8s-box-green" x="230" y="80" width="130" height="34"></rect><text class="k8s-small" x="272" y="101">App</text>
+    <rect class="k8s-box-warm" x="510" y="215" width="300" height="35"></rect><text class="k8s-small" x="625" y="238">Hardware</text>
+    <rect class="k8s-box" x="510" y="175" width="300" height="35"></rect><text class="k8s-small" x="623" y="198">Host OS</text>
+    <rect class="k8s-box" x="510" y="135" width="300" height="35"></rect><text class="k8s-small" x="606" y="158">Container Runtime</text>
+    <rect class="k8s-box-green" x="520" y="85" width="85" height="40"></rect><text class="k8s-small" x="549" y="109">App</text>
+    <rect class="k8s-box-green" x="635" y="85" width="85" height="40"></rect><text class="k8s-small" x="664" y="109">App</text>
+    <rect class="k8s-box-green" x="750" y="85" width="50" height="40"></rect><text class="k8s-small" x="766" y="109">App</text>
+  </svg>
+</div>`,
+  "k8s-architecture-overview": `
+<div class="k8s-visual" aria-label="Kubernetes request lifecycle">
+  <svg viewBox="0 0 920 300" role="img">
+    ${svgDefs}
+    <rect class="k8s-box" x="35" y="105" width="130" height="70"></rect><text class="k8s-text" x="70" y="135">kubectl</text><text class="k8s-small" x="60" y="158">apply YAML</text>
+    <path class="k8s-arrow" d="M170 140 H255"></path>
+    <rect class="k8s-box-green" x="260" y="55" width="180" height="170"></rect><text class="k8s-text" x="310" y="88">API Server</text><text class="k8s-small" x="295" y="115">validates + stores</text><text class="k8s-small" x="315" y="142">etcd state</text><text class="k8s-small" x="287" y="172">controllers watch</text><text class="k8s-small" x="306" y="198">scheduler binds</text>
+    <path class="k8s-arrow" d="M445 140 H535"></path>
+    <rect class="k8s-box-warm" x="540" y="60" width="335" height="165"></rect><text class="k8s-text" x="650" y="92">Worker Node</text>
+    <rect class="k8s-box" x="575" y="120" width="90" height="50"></rect><text class="k8s-small" x="600" y="150">kubelet</text>
+    <rect class="k8s-box-pink" x="695" y="120" width="95" height="50"></rect><text class="k8s-small" x="718" y="150">runtime</text>
+    <rect class="k8s-box-green" x="625" y="185" width="120" height="35"></rect><text class="k8s-small" x="655" y="208">Pod starts</text>
+  </svg>
+</div>`,
+  pods: `
+<div class="k8s-visual" aria-label="Pod internals">
+  <svg viewBox="0 0 850 300" role="img">
+    ${svgDefs}
+    <rect class="k8s-lane" x="70" y="45" width="700" height="210" rx="14"></rect>
+    <text class="k8s-text" x="365" y="78">Pod: one IP, one lifecycle</text>
+    <rect class="k8s-box-green" x="135" y="110" width="175" height="70"></rect><text class="k8s-text" x="175" y="140">App Container</text><text class="k8s-small" x="162" y="162">localhost:8080</text>
+    <rect class="k8s-box" x="535" y="110" width="175" height="70"></rect><text class="k8s-text" x="570" y="140">Sidecar</text><text class="k8s-small" x="560" y="162">logs / proxy / sync</text>
+    <path class="k8s-arrow" d="M315 145 H530"></path>
+    <rect class="k8s-box-warm" x="295" y="205" width="250" height="35"></rect><text class="k8s-small" x="355" y="228">Shared volume + network namespace</text>
+  </svg>
+</div>`,
+  nodes: `
+<div class="k8s-visual"><div class="k8s-grid">
+  <div class="k8s-mini-card"><strong>kubelet</strong>Turns PodSpecs into running containers and reports status.</div>
+  <div class="k8s-mini-card"><strong>container runtime</strong>Pulls images, creates containers, attaches logs.</div>
+  <div class="k8s-mini-card"><strong>kube-proxy/CNI</strong>Programs service routing and Pod networking rules.</div>
+  <div class="k8s-mini-card"><strong>node conditions</strong>Ready, pressure, taints, allocatable resources.</div>
+</div></div>`,
+  namespaces: `
+<div class="k8s-visual" aria-label="Namespace isolation">
+  <svg viewBox="0 0 860 260" role="img">
+    <rect class="k8s-lane" x="45" y="50" width="230" height="150" rx="12"></rect><text class="k8s-text" x="115" y="82">dev</text><text class="k8s-small" x="85" y="122">pods, services, RBAC</text><text class="k8s-small" x="103" y="150">quota: small</text>
+    <rect class="k8s-lane" x="315" y="50" width="230" height="150" rx="12"></rect><text class="k8s-text" x="380" y="82">staging</text><text class="k8s-small" x="355" y="122">same names allowed</text><text class="k8s-small" x="373" y="150">quota: medium</text>
+    <rect class="k8s-lane" x="585" y="50" width="230" height="150" rx="12"></rect><text class="k8s-text" x="653" y="82">prod</text><text class="k8s-small" x="625" y="122">tighter RBAC</text><text class="k8s-small" x="642" y="150">quota: large</text>
+  </svg>
+</div>`,
+  "labels-selectors": `
+<div class="k8s-visual" aria-label="Service label selector">
+  <svg viewBox="0 0 870 280" role="img">
+    ${svgDefs}
+    <rect class="k8s-box" x="50" y="95" width="180" height="80"></rect><text class="k8s-text" x="105" y="128">Service</text><text class="k8s-small" x="77" y="153">selector: app=web</text>
+    <path class="k8s-arrow" d="M235 135 H350"></path>
+    <rect class="k8s-box-green" x="365" y="55" width="140" height="60"></rect><text class="k8s-small" x="395" y="82">Pod A</text><text class="k8s-small" x="385" y="100">app=web</text>
+    <rect class="k8s-box-green" x="365" y="145" width="140" height="60"></rect><text class="k8s-small" x="395" y="172">Pod B</text><text class="k8s-small" x="385" y="190">app=web</text>
+    <rect class="k8s-box-pink" x="585" y="100" width="140" height="60"></rect><text class="k8s-small" x="615" y="127">Pod C</text><text class="k8s-small" x="603" y="145">app=worker</text>
+    <text class="k8s-small" x="555" y="200">not selected</text>
+  </svg>
+</div>`,
+  deployments: `
+<div class="k8s-visual" aria-label="Rolling update timeline">
+  <svg viewBox="0 0 900 260" role="img">
+    ${svgDefs}
+    <text class="k8s-text" x="55" y="45">Rolling update: keep serving while replacing pods</text>
+    <rect class="k8s-box-pink" x="70" y="85" width="95" height="45"></rect><text class="k8s-small" x="100" y="113">v1</text>
+    <rect class="k8s-box-pink" x="190" y="85" width="95" height="45"></rect><text class="k8s-small" x="220" y="113">v1</text>
+    <rect class="k8s-box-pink" x="310" y="85" width="95" height="45"></rect><text class="k8s-small" x="340" y="113">v1</text>
+    <path class="k8s-arrow" d="M425 108 H505"></path>
+    <rect class="k8s-box-green" x="530" y="70" width="95" height="45"></rect><text class="k8s-small" x="560" y="98">v2</text>
+    <rect class="k8s-box-pink" x="650" y="105" width="95" height="45"></rect><text class="k8s-small" x="680" y="133">v1</text>
+    <rect class="k8s-box-green" x="530" y="155" width="95" height="45"></rect><text class="k8s-small" x="560" y="183">v2</text>
+    <rect class="k8s-box-green" x="650" y="155" width="95" height="45"></rect><text class="k8s-small" x="680" y="183">v2</text>
+    <text class="k8s-small" x="82" y="172">old ReplicaSet</text><text class="k8s-small" x="548" y="225">new ReplicaSet scales up, old scales down</text>
+  </svg>
+</div>`,
+  statefulsets: `
+<div class="k8s-visual" aria-label="StatefulSet identity and storage">
+  <svg viewBox="0 0 880 300" role="img">
+    ${svgDefs}
+    <rect class="k8s-box-green" x="80" y="65" width="140" height="65"></rect><text class="k8s-text" x="115" y="95">mysql-0</text><text class="k8s-small" x="91" y="116">mysql-0.mysql</text>
+    <rect class="k8s-box-green" x="365" y="65" width="140" height="65"></rect><text class="k8s-text" x="400" y="95">mysql-1</text><text class="k8s-small" x="376" y="116">mysql-1.mysql</text>
+    <rect class="k8s-box-green" x="650" y="65" width="140" height="65"></rect><text class="k8s-text" x="685" y="95">mysql-2</text><text class="k8s-small" x="661" y="116">mysql-2.mysql</text>
+    <path class="k8s-arrow" d="M222 98 H360"></path><path class="k8s-arrow" d="M507 98 H645"></path>
+    <rect class="k8s-box-warm" x="95" y="175" width="110" height="55"></rect><text class="k8s-small" x="122" y="207">PVC 0</text>
+    <rect class="k8s-box-warm" x="380" y="175" width="110" height="55"></rect><text class="k8s-small" x="407" y="207">PVC 1</text>
+    <rect class="k8s-box-warm" x="665" y="175" width="110" height="55"></rect><text class="k8s-small" x="692" y="207">PVC 2</text>
+    <text class="k8s-small" x="320" y="265">identity and storage stick to the ordinal</text>
+  </svg>
+</div>`,
+  "daemonsets-jobs": `
+<div class="k8s-visual"><div class="k8s-grid">
+  <div class="k8s-mini-card"><strong>DaemonSet</strong>One agent per node: logs, metrics, CNI, node exporter.</div>
+  <div class="k8s-mini-card"><strong>Job</strong>Runs until successful completion; ideal for migrations and batch work.</div>
+  <div class="k8s-mini-card"><strong>CronJob</strong>Creates Jobs on a schedule; protect with concurrencyPolicy and history limits.</div>
+</div></div>`,
+  services: `
+<div class="k8s-visual" aria-label="Service traffic flow">
+  <svg viewBox="0 0 880 270" role="img">
+    ${svgDefs}
+    <rect class="k8s-box" x="55" y="95" width="130" height="65"></rect><text class="k8s-text" x="92" y="125">Client</text>
+    <path class="k8s-arrow" d="M190 128 H300"></path>
+    <rect class="k8s-box-warm" x="305" y="75" width="165" height="105"></rect><text class="k8s-text" x="360" y="110">Service</text><text class="k8s-small" x="337" y="135">stable virtual IP</text><text class="k8s-small" x="333" y="156">endpoints from labels</text>
+    <path class="k8s-arrow" d="M475 128 H575"></path>
+    <rect class="k8s-box-green" x="600" y="45" width="110" height="45"></rect><text class="k8s-small" x="632" y="73">Pod 1</text>
+    <rect class="k8s-box-green" x="600" y="115" width="110" height="45"></rect><text class="k8s-small" x="632" y="143">Pod 2</text>
+    <rect class="k8s-box-green" x="600" y="185" width="110" height="45"></rect><text class="k8s-small" x="632" y="213">Pod 3</text>
+  </svg>
+</div>`,
+  ingress: `
+<div class="k8s-visual" aria-label="Ingress route table">
+  <div class="k8s-grid">
+    <div class="k8s-mini-card"><strong>Host rule</strong>api.example.com -> api-service</div>
+    <div class="k8s-mini-card"><strong>Path rule</strong>/admin -> admin-service</div>
+    <div class="k8s-mini-card"><strong>TLS</strong>Certificate terminates at the controller.</div>
+    <div class="k8s-mini-card"><strong>Controller</strong>NGINX, Traefik, HAProxy, cloud ALB.</div>
+  </div>
+</div>`,
+  "network-policies": `
+<div class="k8s-visual" aria-label="Network policy allowlist">
+  <svg viewBox="0 0 850 260" role="img">
+    ${svgDefs}
+    <rect class="k8s-box-green" x="80" y="70" width="150" height="60"></rect><text class="k8s-text" x="112" y="105">frontend</text>
+    <rect class="k8s-box-warm" x="360" y="70" width="150" height="60"></rect><text class="k8s-text" x="398" y="105">backend</text>
+    <rect class="k8s-box-pink" x="80" y="165" width="150" height="60"></rect><text class="k8s-text" x="115" y="200">random pod</text>
+    <path class="k8s-arrow" d="M235 100 H355"></path>
+    <path class="k8s-dash" d="M235 195 C295 195, 295 100, 355 100"></path>
+    <text class="k8s-small" x="262" y="88">allowed by podSelector</text>
+    <text class="k8s-small" x="260" y="215">blocked by default deny</text>
+  </svg>
+</div>`,
+  "volumes-pv-pvc": `
+<div class="k8s-visual" aria-label="PVC binding flow">
+  <svg viewBox="0 0 880 250" role="img">
+    ${svgDefs}
+    <rect class="k8s-box" x="45" y="85" width="150" height="65"></rect><text class="k8s-text" x="92" y="115">Pod</text><text class="k8s-small" x="76" y="137">mounts claim</text>
+    <path class="k8s-arrow" d="M200 118 H300"></path>
+    <rect class="k8s-box-green" x="305" y="85" width="150" height="65"></rect><text class="k8s-text" x="355" y="115">PVC</text><text class="k8s-small" x="330" y="137">requests 5Gi RWO</text>
+    <path class="k8s-arrow" d="M460 118 H560"></path>
+    <rect class="k8s-box-warm" x="565" y="85" width="150" height="65"></rect><text class="k8s-text" x="615" y="115">PV</text><text class="k8s-small" x="593" y="137">actual disk</text>
+    <text class="k8s-small" x="280" y="200">StorageClass can dynamically create the PV</text>
+  </svg>
+</div>`,
+  "configmaps-secrets": `
+<div class="k8s-visual"><div class="k8s-grid">
+  <div class="k8s-mini-card"><strong>ConfigMap</strong>Feature flags, URLs, log levels; safe to inspect.</div>
+  <div class="k8s-mini-card"><strong>Secret</strong>Passwords, tokens, TLS keys; encrypt at rest and rotate.</div>
+  <div class="k8s-mini-card"><strong>Env vars</strong>Simple injection; requires restart to update process env.</div>
+  <div class="k8s-mini-card"><strong>Mounted files</strong>Great for config files; kubelet refreshes projected content.</div>
+</div></div>`,
+  "hpa-vpa": `
+<div class="k8s-visual" aria-label="Autoscaling feedback loop">
+  <svg viewBox="0 0 900 260" role="img">
+    ${svgDefs}
+    <rect class="k8s-box-green" x="55" y="90" width="145" height="70"></rect><text class="k8s-text" x="91" y="122">Metrics</text><text class="k8s-small" x="83" y="145">CPU / custom</text>
+    <path class="k8s-arrow" d="M205 125 H305"></path>
+    <rect class="k8s-box" x="310" y="75" width="165" height="100"></rect><text class="k8s-text" x="374" y="110">HPA</text><text class="k8s-small" x="345" y="135">desired replicas</text>
+    <path class="k8s-arrow" d="M480 125 H590"></path>
+    <rect class="k8s-box-warm" x="595" y="65" width="220" height="120"></rect><text class="k8s-text" x="650" y="105">Deployment</text><text class="k8s-small" x="636" y="132">2 pods -> 8 pods</text><text class="k8s-small" x="630" y="154">within min/max bounds</text>
+  </svg>
+</div>`,
+  probes: `
+<div class="k8s-visual"><div class="k8s-grid">
+  <div class="k8s-mini-card"><strong>Startup</strong>Waits for slow apps before liveness/readiness begin.</div>
+  <div class="k8s-mini-card"><strong>Readiness</strong>Controls whether Service sends traffic to this Pod.</div>
+  <div class="k8s-mini-card"><strong>Liveness</strong>Restarts stuck containers; keep it conservative.</div>
+</div></div>`,
+  rbac: `
+<div class="k8s-visual" aria-label="RBAC binding model">
+  <svg viewBox="0 0 860 250" role="img">
+    ${svgDefs}
+    <rect class="k8s-box-green" x="60" y="80" width="150" height="65"></rect><text class="k8s-text" x="100" y="112">Subject</text><text class="k8s-small" x="85" y="135">user / group / SA</text>
+    <path class="k8s-arrow" d="M215 113 H315"></path>
+    <rect class="k8s-box" x="320" y="80" width="150" height="65"></rect><text class="k8s-text" x="350" y="112">Binding</text><text class="k8s-small" x="345" y="135">connects subject</text>
+    <path class="k8s-arrow" d="M475 113 H575"></path>
+    <rect class="k8s-box-warm" x="580" y="80" width="185" height="65"></rect><text class="k8s-text" x="632" y="112">Role</text><text class="k8s-small" x="612" y="135">verbs on resources</text>
+  </svg>
+</div>`,
+  "pod-security": `
+<div class="k8s-visual"><div class="k8s-grid">
+  <div class="k8s-mini-card"><strong>Identity</strong>Run as non-root and disable privilege escalation.</div>
+  <div class="k8s-mini-card"><strong>Filesystem</strong>Read-only root filesystem plus explicit writable volumes.</div>
+  <div class="k8s-mini-card"><strong>Kernel surface</strong>Drop Linux capabilities and avoid host namespaces.</div>
+  <div class="k8s-mini-card"><strong>Supply chain</strong>Pin images, scan CVEs, sign artifacts where possible.</div>
+</div></div>`,
+  helm: `
+<div class="k8s-visual" aria-label="Helm render flow">
+  <svg viewBox="0 0 880 245" role="img">
+    ${svgDefs}
+    <rect class="k8s-box" x="60" y="75" width="150" height="70"></rect><text class="k8s-text" x="107" y="107">Chart</text><text class="k8s-small" x="88" y="130">templates</text>
+    <rect class="k8s-box-green" x="60" y="160" width="150" height="45"></rect><text class="k8s-small" x="95" y="187">values.yaml</text>
+    <path class="k8s-arrow" d="M215 120 H330"></path>
+    <rect class="k8s-box-warm" x="335" y="85" width="165" height="75"></rect><text class="k8s-text" x="390" y="118">Helm</text><text class="k8s-small" x="372" y="142">renders manifests</text>
+    <path class="k8s-arrow" d="M505 122 H615"></path>
+    <rect class="k8s-box-green" x="620" y="75" width="180" height="90"></rect><text class="k8s-text" x="672" y="110">Release</text><text class="k8s-small" x="652" y="135">versioned install</text>
+  </svg>
+</div>`,
+  monitoring: `
+<div class="k8s-visual"><div class="k8s-grid">
+  <div class="k8s-mini-card"><strong>RED</strong>Rate, errors, duration for services.</div>
+  <div class="k8s-mini-card"><strong>USE</strong>Utilization, saturation, errors for resources.</div>
+  <div class="k8s-mini-card"><strong>Golden signals</strong>Latency, traffic, errors, saturation.</div>
+  <div class="k8s-mini-card"><strong>First alerts</strong>Pod crash loops, node pressure, API errors, disk full.</div>
+</div></div>`,
+};
+
+const additionalTopics = [
+  {
+    id: "k8s-scheduling-resources",
+    title: "Scheduling & Resource Management",
+    description:
+      "Requests, limits, QoS classes, taints, tolerations, affinity, and disruption control.",
+    icon: "Target",
+    sections: [
+      {
+        id: "requests-limits-qos",
+        title: "Requests, Limits & QoS",
+        content: `
+Kubernetes scheduling is capacity math. **Requests** reserve CPU/memory on a node. **Limits** cap what a container can use at runtime.
+
+${visualStyle}
+<div class="k8s-visual" aria-label="Node allocatable capacity">
+  <svg viewBox="0 0 900 280" role="img">
+    ${svgDefs}
+    <rect class="k8s-lane" x="55" y="50" width="790" height="170" rx="14"></rect>
+    <text class="k8s-text" x="390" y="82">Node allocatable: 4 CPU / 8Gi</text>
+    <rect class="k8s-box-green" x="95" y="115" width="155" height="65"></rect><text class="k8s-small" x="120" y="143">Pod A request</text><text class="k8s-small" x="132" y="163">1 CPU / 1Gi</text>
+    <rect class="k8s-box-green" x="280" y="115" width="155" height="65"></rect><text class="k8s-small" x="305" y="143">Pod B request</text><text class="k8s-small" x="317" y="163">2 CPU / 3Gi</text>
+    <rect class="k8s-box-warm" x="465" y="115" width="155" height="65"></rect><text class="k8s-small" x="493" y="143">free capacity</text><text class="k8s-small" x="505" y="163">1 CPU / 4Gi</text>
+    <rect class="k8s-box-pink" x="650" y="115" width="155" height="65"></rect><text class="k8s-small" x="680" y="143">Pod C rejected</text><text class="k8s-small" x="680" y="163">needs 2 CPU</text>
+  </svg>
+</div>
+
+### QoS Classes
+| QoS | When it happens | Eviction priority |
+|-----|-----------------|------------------|
+| **Guaranteed** | Every container has equal request and limit for CPU/memory | Last |
+| **Burstable** | At least one request/limit is set, but not all equal | Middle |
+| **BestEffort** | No requests or limits | First |
+
+### CLI
+\`\`\`bash
+kubectl top nodes
+kubectl top pods -A
+kubectl describe node <node-name> | less
+kubectl get pod <pod> -o jsonpath='{.status.qosClass}'
+kubectl describe pod <pod> | Select-String -Pattern "Requests|Limits|QoS"
+\`\`\`
+        `,
+        code: `apiVersion: v1
+kind: Pod
+metadata:
+  name: api
+spec:
+  containers:
+    - name: api
+      image: myorg/api:1.0.0
+      resources:
+        requests:
+          cpu: "250m"
+          memory: "256Mi"
+        limits:
+          cpu: "1"
+          memory: "512Mi"`,
+        language: "yaml",
+      },
+      {
+        id: "taints-affinity-priority",
+        title: "Taints, Tolerations, Affinity & Priority",
+        content: `
+Use scheduling controls when "any healthy node" is not specific enough.
+
+<div class="k8s-visual">
+  <div class="k8s-grid">
+    <div class="k8s-mini-card"><strong>nodeSelector</strong>Simple exact-match placement.</div>
+    <div class="k8s-mini-card"><strong>Affinity</strong>Expressive preferences and hard requirements.</div>
+    <div class="k8s-mini-card"><strong>Taint</strong>Node repels Pods unless they tolerate it.</div>
+    <div class="k8s-mini-card"><strong>PriorityClass</strong>Higher-priority Pods can preempt lower-priority Pods.</div>
+  </div>
+</div>
+
+### Common Patterns
+- Put GPU workloads on GPU nodes.
+- Keep replicas apart with pod anti-affinity.
+- Reserve system or database nodes using taints.
+- Use topology spread constraints to avoid one-zone concentration.
+
+### CLI
+\`\`\`bash
+kubectl label node node-a workload=gpu
+kubectl taint nodes node-a dedicated=gpu:NoSchedule
+kubectl describe pod <pod> | Select-String -Pattern "Events|FailedScheduling"
+kubectl get events --sort-by=.lastTimestamp -A
+\`\`\`
+        `,
+        code: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpu-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gpu-worker
+  template:
+    metadata:
+      labels:
+        app: gpu-worker
+    spec:
+      tolerations:
+        - key: dedicated
+          operator: Equal
+          value: gpu
+          effect: NoSchedule
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: workload
+                    operator: In
+                    values: ["gpu"]
+      containers:
+        - name: worker
+          image: myorg/gpu-worker:1.0.0`,
+        language: "yaml",
+      },
+      {
+        id: "pdb-disruptions",
+        title: "PodDisruptionBudgets & Safe Maintenance",
+        content: `
+A **PodDisruptionBudget** protects availability during voluntary disruptions such as node drains, upgrades, and cluster maintenance.
+
+<div class="k8s-visual" aria-label="PDB protects minimum available pods">
+  <svg viewBox="0 0 860 250" role="img">
+    ${svgDefs}
+    <rect class="k8s-box-green" x="100" y="75" width="120" height="60"></rect><text class="k8s-small" x="137" y="110">api-1</text>
+    <rect class="k8s-box-green" x="260" y="75" width="120" height="60"></rect><text class="k8s-small" x="297" y="110">api-2</text>
+    <rect class="k8s-box-green" x="420" y="75" width="120" height="60"></rect><text class="k8s-small" x="457" y="110">api-3</text>
+    <rect class="k8s-box-warm" x="600" y="75" width="150" height="60"></rect><text class="k8s-small" x="630" y="103">PDB minAvailable</text><text class="k8s-small" x="660" y="122">2 pods</text>
+    <path class="k8s-arrow" d="M545 105 H595"></path>
+    <text class="k8s-small" x="230" y="185">Only one voluntary eviction can proceed at a time.</text>
+  </svg>
+</div>
+
+### CLI
+\`\`\`bash
+kubectl get pdb -A
+kubectl drain <node> --ignore-daemonsets --delete-emptydir-data
+kubectl uncordon <node>
+\`\`\`
+        `,
+        code: `apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: api`,
+        language: "yaml",
+      },
+    ],
+  },
+  {
+    id: "k8s-api-extensions",
+    title: "API Extensions, CRDs & Operators",
+    description:
+      "How Kubernetes becomes a platform through custom resources and controllers.",
+    icon: "Hexagon",
+    sections: [
+      {
+        id: "crds-custom-resources",
+        title: "CRDs & Custom Resources",
+        content: `
+A **CustomResourceDefinition (CRD)** adds a new resource type to the Kubernetes API. A **Custom Resource (CR)** is an instance of that type.
+
+<div class="k8s-visual" aria-label="CRD extends the Kubernetes API">
+  <svg viewBox="0 0 900 260" role="img">
+    ${svgDefs}
+    <rect class="k8s-box" x="60" y="80" width="180" height="75"></rect><text class="k8s-text" x="108" y="112">CRD</text><text class="k8s-small" x="82" y="135">defines Database kind</text>
+    <path class="k8s-arrow" d="M245 118 H350"></path>
+    <rect class="k8s-box-green" x="355" y="80" width="180" height="75"></rect><text class="k8s-text" x="410" y="112">API Server</text><text class="k8s-small" x="385" y="135">accepts new object</text>
+    <path class="k8s-arrow" d="M540 118 H645"></path>
+    <rect class="k8s-box-warm" x="650" y="80" width="180" height="75"></rect><text class="k8s-text" x="702" y="112">Database CR</text><text class="k8s-small" x="692" y="135">spec.replicas: 3</text>
+  </svg>
+</div>
+
+### Use CRDs For
+- Platform abstractions such as \`Database\`, \`KafkaTopic\`, \`Certificate\`, or \`BackupPolicy\`.
+- Declarative APIs where users set desired state and controllers reconcile actual state.
+- Extending Kubernetes without modifying Kubernetes itself.
+
+### CLI
+\`\`\`bash
+kubectl get crd
+kubectl explain <kind>.spec
+kubectl get <custom-resource-kind> -A
+kubectl describe <custom-resource-kind> <name>
+\`\`\`
+        `,
+        code: `apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: databases.platform.example.com
+spec:
+  group: platform.example.com
+  scope: Namespaced
+  names:
+    plural: databases
+    singular: database
+    kind: Database
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                engine:
+                  type: string
+                replicas:
+                  type: integer`,
+        language: "yaml",
+      },
+      {
+        id: "operators-controllers",
+        title: "Operators & Controllers",
+        content: `
+A **controller** watches resources and reconciles reality toward the requested spec. An **Operator** is a controller that encodes operational knowledge for an application.
+
+<div class="k8s-visual" aria-label="Operator reconciliation loop">
+  <svg viewBox="0 0 900 300" role="img">
+    ${svgDefs}
+    <rect class="k8s-box-green" x="70" y="95" width="160" height="70"></rect><text class="k8s-text" x="106" y="126">Custom Resource</text><text class="k8s-small" x="105" y="148">Database desired</text>
+    <path class="k8s-arrow" d="M235 130 H340"></path>
+    <rect class="k8s-box" x="345" y="80" width="170" height="100"></rect><text class="k8s-text" x="386" y="118">Operator</text><text class="k8s-small" x="374" y="143">watches + reconciles</text>
+    <path class="k8s-arrow" d="M520 130 H625"></path>
+    <rect class="k8s-box-warm" x="630" y="65" width="190" height="130"></rect><text class="k8s-text" x="682" y="102">Managed App</text><text class="k8s-small" x="665" y="128">StatefulSet, Service</text><text class="k8s-small" x="685" y="150">PVC, backups</text>
+    <path class="k8s-dash" d="M720 210 C560 270, 330 260, 150 178"></path>
+    <text class="k8s-small" x="360" y="255">status updates show current reality</text>
+  </svg>
+</div>
+
+### Good Operators Handle
+- Install and upgrade workflows.
+- Backups and restores.
+- Failover and leader election.
+- Status conditions and useful events.
+- Safe cleanup through finalizers.
+        `,
+      },
+      {
+        id: "admission-webhooks",
+        title: "Admission Controllers & Webhooks",
+        content: `
+Admission happens after authentication/authorization and before an object is persisted. It is where clusters enforce policy and mutate defaults.
+
+<div class="k8s-visual"><div class="k8s-grid">
+  <div class="k8s-mini-card"><strong>Mutating admission</strong>Adds defaults such as sidecars, labels, or resource requests.</div>
+  <div class="k8s-mini-card"><strong>Validating admission</strong>Rejects unsafe or non-compliant objects.</div>
+  <div class="k8s-mini-card"><strong>Policy engines</strong>Kyverno, OPA Gatekeeper, ValidatingAdmissionPolicy.</div>
+  <div class="k8s-mini-card"><strong>Failure policy</strong>Decide fail-open or fail-closed when webhook is unavailable.</div>
+</div></div>
+
+### CLI
+\`\`\`bash
+kubectl get validatingwebhookconfigurations
+kubectl get mutatingwebhookconfigurations
+kubectl auth can-i create pods --as system:serviceaccount:dev:builder
+kubectl apply --dry-run=server -f manifest.yaml
+\`\`\`
+        `,
+      },
+    ],
+  },
+  {
+    id: "k8s-operations-troubleshooting",
+    title: "Operations & Troubleshooting",
+    description:
+      "Debugging Pods, Services, rollouts, events, logs, exec, ephemeral containers, and common failure modes.",
+    icon: "Activity",
+    sections: [
+      {
+        id: "kubectl-debugging-flow",
+        title: "Kubectl Debugging Flow",
+        content: `
+Most Kubernetes debugging is a loop: **see symptoms -> inspect object -> read events -> check logs -> test network -> change one thing**.
+
+${visualStyle}
+<div class="k8s-visual" aria-label="Debugging decision flow">
+  <svg viewBox="0 0 930 310" role="img">
+    ${svgDefs}
+    <rect class="k8s-box" x="45" y="110" width="140" height="65"></rect><text class="k8s-text" x="83" y="140">Symptom</text><text class="k8s-small" x="72" y="160">not ready / 5xx</text>
+    <path class="k8s-arrow" d="M190 143 H270"></path>
+    <rect class="k8s-box-green" x="275" y="70" width="150" height="55"></rect><text class="k8s-small" x="305" y="103">kubectl get</text>
+    <rect class="k8s-box-green" x="275" y="155" width="150" height="55"></rect><text class="k8s-small" x="297" y="188">kubectl describe</text>
+    <path class="k8s-arrow" d="M430 143 H510"></path>
+    <rect class="k8s-box-warm" x="515" y="70" width="150" height="55"></rect><text class="k8s-small" x="545" y="103">events</text>
+    <rect class="k8s-box-warm" x="515" y="155" width="150" height="55"></rect><text class="k8s-small" x="550" y="188">logs</text>
+    <path class="k8s-arrow" d="M670 143 H750"></path>
+    <rect class="k8s-box-pink" x="755" y="110" width="140" height="65"></rect><text class="k8s-small" x="783" y="138">fix manifest</text><text class="k8s-small" x="794" y="158">or app</text>
+  </svg>
+</div>
+
+### High-Value Commands
+\`\`\`bash
+kubectl get pods -A -o wide
+kubectl describe pod <pod> -n <ns>
+kubectl logs <pod> -n <ns> --previous
+kubectl logs deploy/<deployment> -n <ns> --all-containers=true --tail=100
+kubectl exec -it <pod> -n <ns> -- /bin/sh
+kubectl debug -it <pod> -n <ns> --image=busybox --target=<container>
+kubectl get events -n <ns> --sort-by=.lastTimestamp
+kubectl wait --for=condition=ready pod -l app=api -n <ns> --timeout=90s
+\`\`\`
+        `,
+      },
+      {
+        id: "common-failure-modes",
+        title: "Common Failure Modes",
+        content: `
+| Symptom | Likely cause | First checks |
+|---------|--------------|--------------|
+| \`ImagePullBackOff\` | Bad image name, tag, registry auth | \`describe pod\`, imagePullSecrets |
+| \`CrashLoopBackOff\` | App exits repeatedly, bad command, missing config | \`logs --previous\`, env, probes |
+| \`Pending\` | No node capacity, PVC unbound, taints | \`describe pod\`, scheduler events |
+| \`OOMKilled\` | Memory limit too low or leak | \`describe pod\`, metrics, app heap |
+| Service no traffic | Selector mismatch or readiness failing | \`get endpointslice\`, labels |
+| Ingress 404/502 | Rule mismatch or backend service issue | controller logs, service endpoints |
+
+<div class="k8s-visual"><div class="k8s-grid">
+  <div class="k8s-mini-card"><strong>Start with events</strong>They often explain scheduling, image, probe, and volume failures.</div>
+  <div class="k8s-mini-card"><strong>Compare selectors</strong>Deployment labels, Service selectors, and Pod labels must line up.</div>
+  <div class="k8s-mini-card"><strong>Use --previous</strong>Crash loops erase the current container context quickly.</div>
+  <div class="k8s-mini-card"><strong>Check readiness</strong>A running Pod may still be removed from Service endpoints.</div>
+</div></div>
+        `,
+      },
+      {
+        id: "rollouts-and-releases",
+        title: "Rollouts, Rollbacks & Release Safety",
+        content: `
+Deployments keep revision history so you can inspect rollout state and roll back quickly.
+
+### CLI
+\`\`\`bash
+kubectl rollout status deploy/api -n prod
+kubectl rollout history deploy/api -n prod
+kubectl rollout history deploy/api -n prod --revision=3
+kubectl set image deploy/api api=myorg/api:2.0.0 -n prod
+kubectl rollout undo deploy/api -n prod
+kubectl rollout restart deploy/api -n prod
+\`\`\`
+
+### Release Safety Checklist
+- Use readiness probes so traffic waits for healthy Pods.
+- Set \`maxUnavailable: 0\` for zero-downtime updates where capacity allows.
+- Keep \`revisionHistoryLimit\` for rollback.
+- Use canary or blue/green patterns when risk is high.
+        `,
+        code: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0`,
+        language: "yaml",
+      },
+    ],
+  },
+  {
+    id: "k8s-delivery-cluster-lifecycle",
+    title: "Delivery & Cluster Lifecycle",
+    description:
+      "GitOps, Kustomize, environments, upgrades, backup, disaster recovery, and multi-cluster operations.",
+    icon: "GitBranch",
+    sections: [
+      {
+        id: "kustomize-gitops",
+        title: "Kustomize & GitOps",
+        content: `
+**Kustomize** overlays environment-specific changes without templating. **GitOps** makes Git the desired-state source and uses a controller such as Argo CD or Flux to reconcile clusters.
+
+${visualStyle}
+<div class="k8s-visual" aria-label="GitOps reconciliation">
+  <svg viewBox="0 0 920 280" role="img">
+    ${svgDefs}
+    <rect class="k8s-box" x="55" y="90" width="150" height="70"></rect><text class="k8s-text" x="105" y="122">Git</text><text class="k8s-small" x="83" y="145">manifests/overlays</text>
+    <path class="k8s-arrow" d="M210 125 H320"></path>
+    <rect class="k8s-box-green" x="325" y="75" width="190" height="100"></rect><text class="k8s-text" x="382" y="112">GitOps Controller</text><text class="k8s-small" x="373" y="138">detects drift</text><text class="k8s-small" x="360" y="158">applies desired state</text>
+    <path class="k8s-arrow" d="M520 125 H630"></path>
+    <rect class="k8s-box-warm" x="635" y="90" width="180" height="70"></rect><text class="k8s-text" x="675" y="122">Cluster</text><text class="k8s-small" x="670" y="145">actual resources</text>
+  </svg>
+</div>
+
+### CLI
+\`\`\`bash
+kubectl kustomize overlays/prod
+kubectl apply -k overlays/prod
+kubectl diff -k overlays/prod
+argocd app sync payments
+flux reconcile kustomization apps
+\`\`\`
+        `,
+        code: `# overlays/prod/kustomization.yaml
+resources:
+  - ../../base
+patches:
+  - path: deployment-patch.yaml
+images:
+  - name: myorg/api
+    newTag: "2.3.1"`,
+        language: "yaml",
+      },
+      {
+        id: "cluster-upgrades-backup-dr",
+        title: "Upgrades, Backup & Disaster Recovery",
+        content: `
+Production Kubernetes is not only deploying apps; it is protecting cluster state and planning safe upgrades.
+
+<div class="k8s-visual"><div class="k8s-grid">
+  <div class="k8s-mini-card"><strong>etcd backup</strong>The source of cluster state for self-managed clusters.</div>
+  <div class="k8s-mini-card"><strong>Velero</strong>Backs up cluster resources and persistent volumes.</div>
+  <div class="k8s-mini-card"><strong>Upgrade order</strong>Control plane, nodes, add-ons, then workloads.</div>
+  <div class="k8s-mini-card"><strong>Version skew</strong>Respect supported kubelet/API server skew.</div>
+</div></div>
+
+### CLI
+\`\`\`bash
+kubectl version --short
+kubectl get componentstatuses
+kubectl get nodes
+kubectl drain <node> --ignore-daemonsets --delete-emptydir-data
+kubectl uncordon <node>
+velero backup create prod-$(Get-Date -Format yyyyMMdd)
+velero restore get
+\`\`\`
+
+### DR Questions To Answer
+- What is the recovery time objective (RTO)?
+- What is the recovery point objective (RPO)?
+- Are persistent volumes included in backups?
+- Can you rebuild the cluster from Git plus secrets backup?
+        `,
+      },
+      {
+        id: "multi-cluster-service-mesh",
+        title: "Multi-Cluster & Service Mesh",
+        content: `
+Use multi-cluster when you need regional isolation, compliance boundaries, disaster recovery, or organizational separation. Use a service mesh when traffic policy, mTLS, retries, telemetry, and identity need to be consistent across services.
+
+<div class="k8s-visual"><div class="k8s-grid">
+  <div class="k8s-mini-card"><strong>Multi-cluster</strong>More isolation and resilience, more operational complexity.</div>
+  <div class="k8s-mini-card"><strong>Service mesh</strong>Sidecars or ambient data plane manage service-to-service traffic.</div>
+  <div class="k8s-mini-card"><strong>mTLS</strong>Encrypts and authenticates east-west traffic.</div>
+  <div class="k8s-mini-card"><strong>Traffic policy</strong>Retries, timeouts, circuit breaking, canary splits.</div>
+</div></div>
+
+### Common Tools
+| Need | Tools |
+|------|-------|
+| GitOps across clusters | Argo CD, Flux |
+| Mesh | Istio, Linkerd, Consul |
+| Multi-cluster networking | Cilium Cluster Mesh, Submariner |
+| Fleet policy | Kyverno, Gatekeeper, Rancher, ACM |
+        `,
+      },
+    ],
+  },
+  {
+    id: "k8s-cli-cheatsheet",
+    title: "Kubectl & YAML Cheat Sheet",
+    description:
+      "Everyday Kubernetes commands, YAML patterns, jsonpath, dry runs, and explain.",
+    icon: "Code",
+    sections: [
+      {
+        id: "kubectl-everyday",
+        title: "Everyday Kubectl Commands",
+        content: `
+The fastest way to get good at Kubernetes is to become fluent with \`kubectl get\`, \`describe\`, \`logs\`, \`exec\`, \`apply\`, \`diff\`, and \`explain\`.
+
+${visualStyle}
+<div class="k8s-visual"><div class="k8s-grid">
+  <div class="k8s-mini-card"><strong>Read</strong>get, describe, logs, top, events</div>
+  <div class="k8s-mini-card"><strong>Change</strong>apply, edit, patch, scale, rollout</div>
+  <div class="k8s-mini-card"><strong>Verify</strong>wait, diff, auth can-i, explain</div>
+  <div class="k8s-mini-card"><strong>Debug</strong>exec, port-forward, debug, cp</div>
+</div></div>
+        `,
+        code: `# Contexts and namespaces
+kubectl config get-contexts
+kubectl config use-context <context>
+kubectl config set-context --current --namespace=prod
+
+# Read cluster state
+kubectl get all -n prod
+kubectl get pods -n prod -o wide
+kubectl describe deploy api -n prod
+kubectl get events -n prod --sort-by=.lastTimestamp
+
+# Apply safely
+kubectl diff -f app.yaml
+kubectl apply --dry-run=server -f app.yaml
+kubectl apply -f app.yaml
+
+# Debug traffic
+kubectl port-forward svc/api 8080:80 -n prod
+kubectl exec -it deploy/api -n prod -- /bin/sh
+kubectl logs deploy/api -n prod --tail=100 -f`,
+        language: "bash",
+      },
+      {
+        id: "jsonpath-explain-patch",
+        title: "JsonPath, Explain, Patch & Server-Side Apply",
+        content: `
+\`kubectl explain\` teaches the API shape. JsonPath extracts exact fields. Patch is useful for tiny targeted changes, while server-side apply helps multiple tools own different fields.
+
+### Practical Examples
+\`\`\`bash
+kubectl explain deployment.spec.strategy
+kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\\t"}{.metadata.name}{"\\t"}{.status.phase}{"\\n"}{end}'
+kubectl patch deploy api -p '{"spec":{"replicas":5}}'
+kubectl apply --server-side -f app.yaml --field-manager=platform-team
+\`\`\`
+
+### When To Use What
+| Command | Use it for |
+|---------|------------|
+| \`apply\` | Declarative desired state |
+| \`create\` | Quick imperative creation or generated YAML |
+| \`patch\` | Small targeted edits |
+| \`replace\` | Full object replacement |
+| \`edit\` | Emergency manual edits, not long-term workflow |
+        `,
+      },
+      {
+        id: "minimal-manifest-patterns",
+        title: "Minimal Manifest Patterns",
+        content: `
+Good manifests are boring, explicit, and operationally friendly. Include labels, resource requests, health checks, and security context early.
+        `,
+        code: `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app.kubernetes.io/name: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: api
+          image: myorg/api:1.0.0
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi`,
+        language: "yaml",
+      },
+    ],
+  },
+];
+
+const appendVisuals = (section) => {
+  const visual = visualSnippets[section.id];
+  if (!visual) return section;
+  return {
+    ...section,
+    content: `${section.content}
+
+### Visual Mental Model
+${visual}
+`,
+  };
+};
+
+const enhanceKubernetesTopics = (topics) =>
+  topics.map((topic) => ({
+    ...topic,
+    sections: topic.sections.map(appendVisuals),
+  }));
+
+export const topics = [...enhanceKubernetesTopics(baseTopics), ...additionalTopics];
