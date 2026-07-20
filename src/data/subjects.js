@@ -123,8 +123,9 @@ export const subjects = [
   {
     id: "langchain",
     category: "Generative AI & LLMs",
-    title: "LangChain",
-    description: "Building applications with LLMs through composability.",
+    title: "LangChain, LangGraph & Langfuse",
+    description:
+      "A complete beginner-to-advanced path for LLM apps, durable agents, observability, prompts, and evaluation.",
     icon: Network,
     color: "from-green-500 to-lime-600",
     topics: langchainTopics,
@@ -403,3 +404,4 @@ export const subjects = [
     topics: dsaTopics,
   },
 ];
+
