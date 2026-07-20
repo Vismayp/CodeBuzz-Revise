@@ -9,10 +9,14 @@ import { arraysTopic as arraysTopicBase } from "./arrays.js";
 import { stringsTopic as stringsTopicBase } from "./strings.js";
 import { linkedListsTopic as linkedListsTopicBase } from "./linkedlists.js";
 import { stacksTopic as stacksTopicBase } from "./stacks.js";
+import { expandedStackQueueSections } from "./stacks_queues_expanded.js";
 import { recursionTopic as recursionTopicBase } from "./recursion.js";
 import { treesTopic as treesTopicBase } from "./trees.js";
+import { expandedTreeSections } from "./trees_expanded.js";
 import { heapsTopic as heapsTopicBase } from "./heaps.js";
+import { expandedHeapSections } from "./heaps_expanded.js";
 import { graphsTopic as graphsTopicBase } from "./graphs.js";
+import { expandedGraphSections } from "./graphs_expanded.js";
 import { dpTopic as dpTopicBase } from "./dp.js";
 import { expandedDpSections } from "./dp_expanded.js";
 import { greedyTopic as greedyTopicBase } from "./greedy.js";
@@ -37,11 +41,27 @@ export const complexityTopic = withPythonImplementations(enrichDsaTopic(complexi
 export const arraysTopic = withPythonImplementations(enrichDsaTopic(arraysTopicBase));
 export const stringsTopic = withPythonImplementations(enrichDsaTopic(stringsTopicBase));
 export const linkedListsTopic = withPythonImplementations(enrichDsaTopic(linkedListsTopicBase));
-export const stacksTopic = withPythonImplementations(enrichDsaTopic(stacksTopicBase));
+export const stacksTopic = withPythonImplementations(enrichDsaTopic({
+  ...stacksTopicBase,
+  description: "Stacks, queues, and deques from LIFO/FIFO fundamentals through parsing, monotonic structures, circular buffers, design invariants, amortized analysis, and testing",
+  sections: [...stacksTopicBase.sections, ...expandedStackQueueSections],
+}));
 export const recursionTopic = withPythonImplementations(enrichDsaTopic(recursionTopicBase));
-export const treesTopic = withPythonImplementations(enrichDsaTopic(treesTopicBase));
-export const heapsTopic = withPythonImplementations(enrichDsaTopic(heapsTopicBase));
-export const graphsTopic = withPythonImplementations(enrichDsaTopic(graphsTopicBase));
+export const treesTopic = withPythonImplementations(enrichDsaTopic({
+  ...treesTopicBase,
+  description: "Trees from recursive first principles through traversals, BST invariants, path patterns, LCA, serialization, tree DP, Euler tours, binary lifting, and correctness",
+  sections: [...treesTopicBase.sections, ...expandedTreeSections],
+}));
+export const heapsTopic = withPythonImplementations(enrichDsaTopic({
+  ...heapsTopicBase,
+  description: "Heaps and priority queues from array invariants and linear-time heapify through top-k, k-way merge, running medians, lazy deletion, scheduling, graph frontiers, and testing",
+  sections: [...heapsTopicBase.sections, ...expandedHeapSections],
+}));
+export const graphsTopic = withPythonImplementations(enrichDsaTopic({
+  ...graphsTopicBase,
+  description: "Graph modeling and traversal through shortest paths, DAGs, connectivity, MSTs, decomposition, flows, implicit state graphs, proofs, and testing",
+  sections: [...graphsTopicBase.sections, ...expandedGraphSections],
+}));
 export const dpTopic = withPythonImplementations(enrichDsaTopic({
   ...dpTopicBase,
   description: "Dynamic programming from first principles through state design, reconstruction, sequence/grid/interval/tree/digit DP, and advanced optimization",

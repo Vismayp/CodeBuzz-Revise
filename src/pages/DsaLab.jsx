@@ -153,6 +153,123 @@ const labs = {
       { values: [39], active: 0, parents: [], found: true, note: "Merge 14 + 25 = 39. One root remains, completing the optimal prefix tree." },
     ],
   },
+  tree_traversal: {
+    label: "Tree · Postorder",
+    title: "Compute subtree heights bottom-up",
+    meta: "left → right → node",
+    takeaway: "Postorder is the natural order whenever a parent must wait for summaries from both children.",
+    invariant: "Every completed node has a correct height computed from already completed children.",
+    steps: [
+      { network: "tree", nodes: [{id:"A",x:300,y:40},{id:"B",x:170,y:120},{id:"C",x:430,y:120},{id:"D",x:100,y:210},{id:"E",x:240,y:210},{id:"F",x:430,y:210}], edges: [["A","B"],["A","C"],["B","D"],["B","E"],["C","F"]], active:"D", visited:[], values:{}, note:"Descend left until leaf D. A leaf's children are empty, so its height is 1." },
+      { network: "tree", nodes: [{id:"A",x:300,y:40},{id:"B",x:170,y:120},{id:"C",x:430,y:120},{id:"D",x:100,y:210},{id:"E",x:240,y:210},{id:"F",x:430,y:210}], edges: [["A","B"],["A","C"],["B","D"],["B","E"],["C","F"]], active:"B", visited:["D","E"], values:{D:1,E:1}, note:"After D and E return height 1, node B combines them: 1 + max(1,1) = 2." },
+      { network: "tree", nodes: [{id:"A",x:300,y:40},{id:"B",x:170,y:120},{id:"C",x:430,y:120},{id:"D",x:100,y:210},{id:"E",x:240,y:210},{id:"F",x:430,y:210}], edges: [["A","B"],["A","C"],["B","D"],["B","E"],["C","F"]], active:"C", visited:["D","E","B","F"], values:{D:1,E:1,B:2,F:1}, note:"The right subtree completes next. F returns 1, so C returns height 2." },
+      { network: "tree", nodes: [{id:"A",x:300,y:40},{id:"B",x:170,y:120},{id:"C",x:430,y:120},{id:"D",x:100,y:210},{id:"E",x:240,y:210},{id:"F",x:430,y:210}], edges: [["A","B"],["A","C"],["B","D"],["B","E"],["C","F"]], active:"A", visited:["D","E","B","F","C","A"], values:{D:1,E:1,B:2,F:1,C:2,A:3}, found:true, note:"Both child heights are ready. Root A returns 1 + max(2,2) = 3." },
+    ],
+  },
+  tree_diameter: {
+    label: "Tree · Diameter",
+    title: "Separate the upward return from the global path",
+    meta: "global uses two branches · parent gets one",
+    takeaway: "A completed path may join both children, but the value returned upward must remain a single non-forking branch.",
+    invariant: "Each visited node has returned its longest downward branch; best stores the longest complete path seen.",
+    steps: [
+      { network:"tree",nodes:[{id:"A",x:300,y:40},{id:"B",x:170,y:120},{id:"C",x:430,y:120},{id:"D",x:80,y:210},{id:"E",x:240,y:210},{id:"F",x:500,y:210}],edges:[["A","B"],["A","C"],["B","D"],["B","E"],["C","F"]],active:"B",visited:["D","E"],values:{D:1,E:1},highlightEdges:[["B","D"],["B","E"]],note:"At B, the complete candidate joins D-B-E with 2 edges. B can return only one branch of length 1 upward." },
+      { network:"tree",nodes:[{id:"A",x:300,y:40},{id:"B",x:170,y:120},{id:"C",x:430,y:120},{id:"D",x:80,y:210},{id:"E",x:240,y:210},{id:"F",x:500,y:210}],edges:[["A","B"],["A","C"],["B","D"],["B","E"],["C","F"]],active:"C",visited:["D","E","B","F"],values:{B:2,F:1},highlightEdges:[["C","F"]],note:"At C, the best downward branch contains C-F. The global diameter remains 2 edges so far." },
+      { network:"tree",nodes:[{id:"A",x:300,y:40},{id:"B",x:170,y:120},{id:"C",x:430,y:120},{id:"D",x:80,y:210},{id:"E",x:240,y:210},{id:"F",x:500,y:210}],edges:[["A","B"],["A","C"],["B","D"],["B","E"],["C","F"]],active:"A",visited:["D","E","B","F","C"],values:{B:2,C:2},highlightEdges:[["A","B"],["A","C"],["B","D"],["C","F"]],note:"At A, one downward branch from each side joins into D-B-A-C-F, a 4-edge candidate." },
+      { network:"tree",nodes:[{id:"A",x:300,y:40},{id:"B",x:170,y:120},{id:"C",x:430,y:120},{id:"D",x:80,y:210},{id:"E",x:240,y:210},{id:"F",x:500,y:210}],edges:[["A","B"],["A","C"],["B","D"],["B","E"],["C","F"]],active:"A",visited:["A","B","C","D","E","F"],values:{A:3},highlightEdges:[["A","B"],["A","C"],["B","D"],["C","F"]],found:true,note:"The global diameter is 4 edges. A returns only a 3-node downward height to any imaginary parent." },
+    ],
+  },
+  graph_topo: {
+    label: "Graph · Topological",
+    title: "Remove zero-indegree dependencies",
+    meta: "Kahn's algorithm",
+    takeaway: "A topological order exists only when every dependency can eventually be removed; leftover indegrees expose a cycle.",
+    invariant: "Every queued node has no remaining prerequisite, and every output edge points forward in the order.",
+    steps: [
+      { network:"graph",nodes:[{id:"A",x:80,y:130},{id:"B",x:240,y:60},{id:"C",x:240,y:200},{id:"D",x:420,y:130},{id:"E",x:550,y:130}],edges:[["A","B"],["A","C"],["B","D"],["C","D"],["D","E"]],directed:true,active:"A",visited:[],values:{A:0,B:1,C:1,D:2,E:1},queue:["A"],note:"Only A has indegree 0, so it is the first safe task." },
+      { network:"graph",nodes:[{id:"A",x:80,y:130},{id:"B",x:240,y:60},{id:"C",x:240,y:200},{id:"D",x:420,y:130},{id:"E",x:550,y:130}],edges:[["A","B"],["A","C"],["B","D"],["C","D"],["D","E"]],directed:true,active:"B",visited:["A"],values:{B:0,C:0,D:2,E:1},queue:["B","C"],note:"Removing A drops B and C to indegree 0. Either may appear next, so topological orders need not be unique." },
+      { network:"graph",nodes:[{id:"A",x:80,y:130},{id:"B",x:240,y:60},{id:"C",x:240,y:200},{id:"D",x:420,y:130},{id:"E",x:550,y:130}],edges:[["A","B"],["A","C"],["B","D"],["C","D"],["D","E"]],directed:true,active:"D",visited:["A","B","C"],values:{D:0,E:1},queue:["D"],note:"D reaches indegree 0 only after both B and C are removed, preserving both prerequisites." },
+      { network:"graph",nodes:[{id:"A",x:80,y:130},{id:"B",x:240,y:60},{id:"C",x:240,y:200},{id:"D",x:420,y:130},{id:"E",x:550,y:130}],edges:[["A","B"],["A","C"],["B","D"],["C","D"],["D","E"]],directed:true,active:"E",visited:["A","B","C","D","E"],values:{E:0},queue:[],found:true,note:"All five nodes were processed. One valid order is A, B, C, D, E." },
+    ],
+  },
+  graph_dijkstra: {
+    label: "Graph · Dijkstra",
+    title: "Finalize the nearest unsettled node",
+    meta: "nonnegative weighted edges",
+    takeaway: "With nonnegative weights, no path through a farther unsettled node can improve the nearest tentative distance.",
+    invariant: "Every settled node has its final shortest distance; tentative values are best discovered paths so far.",
+    steps: [
+      { network:"graph",nodes:[{id:"A",x:80,y:130},{id:"B",x:240,y:60},{id:"C",x:240,y:200},{id:"D",x:430,y:80},{id:"E",x:540,y:180}],edges:[["A","B",4],["A","C",1],["C","B",2],["B","D",1],["C","E",5],["D","E",3]],directed:true,active:"A",visited:[],values:{A:0,B:"∞",C:"∞",D:"∞",E:"∞"},note:"Start at A with distance 0. All other nodes are tentatively unreachable." },
+      { network:"graph",nodes:[{id:"A",x:80,y:130},{id:"B",x:240,y:60},{id:"C",x:240,y:200},{id:"D",x:430,y:80},{id:"E",x:540,y:180}],edges:[["A","B",4],["A","C",1],["C","B",2],["B","D",1],["C","E",5],["D","E",3]],directed:true,active:"C",visited:["A"],values:{A:0,B:4,C:1,D:"∞",E:"∞"},highlightEdges:[["A","C"]],note:"Relax A's edges, then finalize C at distance 1 because it is the smallest unsettled value." },
+      { network:"graph",nodes:[{id:"A",x:80,y:130},{id:"B",x:240,y:60},{id:"C",x:240,y:200},{id:"D",x:430,y:80},{id:"E",x:540,y:180}],edges:[["A","B",4],["A","C",1],["C","B",2],["B","D",1],["C","E",5],["D","E",3]],directed:true,active:"B",visited:["A","C"],values:{A:0,B:3,C:1,D:"∞",E:6},highlightEdges:[["A","C"],["C","B"]],note:"C improves B to 1+2=3 and E to 6. Finalize B next at distance 3." },
+      { network:"graph",nodes:[{id:"A",x:80,y:130},{id:"B",x:240,y:60},{id:"C",x:240,y:200},{id:"D",x:430,y:80},{id:"E",x:540,y:180}],edges:[["A","B",4],["A","C",1],["C","B",2],["B","D",1],["C","E",5],["D","E",3]],directed:true,active:"E",visited:["A","C","B","D","E"],values:{A:0,B:3,C:1,D:4,E:6},highlightEdges:[["A","C"],["C","E"]],found:true,note:"D finalizes at 4. Its route to E costs 7, so E keeps distance 6 through C. All shortest distances are final." },
+    ],
+  },
+  stack_brackets: {
+    label: "Stack · Brackets",
+    title: "Match nested obligations with a stack",
+    meta: "input = ([{}])",
+    takeaway: "A stack fits nested obligations because the most recently opened scope must close first.",
+    invariant: "The stack contains exactly the closing brackets still expected after the processed prefix.",
+    steps: [
+      { structure:"stack", input:["(","[","{","}","]",")"], cursor:0, items:[")"], action:"push expected )", note:"Read (. It creates an obligation to see ) later, so push the expected closer." },
+      { structure:"stack", input:["(","[","{","}","]",")"], cursor:2, items:[")","]","}"], action:"push expected }", note:"After ([{, the newest obligation is }. It must be satisfied before ] or )." },
+      { structure:"stack", input:["(","[","{","}","]",")"], cursor:3, items:[")","]"], removed:"}", action:"match and pop }", note:"The current } equals the stack top, so the newest obligation is complete." },
+      { structure:"stack", input:["(","[","{","}","]",")"], cursor:5, items:[], removed:")", action:"match and pop )", found:true, note:"The final ) matches and empties the stack. Every opening was closed in the required order." },
+    ],
+  },
+  monotonic_stack: {
+    label: "Stack · Monotonic",
+    title: "Resolve warmer days when a larger value arrives",
+    meta: "temperatures = 73, 74, 75, 71, 72",
+    takeaway: "A monotonic stack keeps only unresolved candidates; every index is pushed and popped at most once.",
+    invariant: "Stored indices increase while their temperatures are nonincreasing, and none has found a warmer day.",
+    steps: [
+      { structure:"stack", input:[73,74,75,71,72], cursor:0, items:["0:73"], answers:[0,0,0,0,0], action:"push day 0", note:"Day 0 has no warmer day yet, so store its index." },
+      { structure:"stack", input:[73,74,75,71,72], cursor:1, items:["1:74"], answers:[1,0,0,0,0], removed:"0:73", action:"resolve day 0", note:"74 is warmer than 73. Pop day 0 and record distance 1, then push day 1." },
+      { structure:"stack", input:[73,74,75,71,72], cursor:3, items:["2:75","3:71"], answers:[1,1,0,0,0], action:"71 waits below 75", note:"75 already resolved day 1. Day 3 is cooler, so it remains unresolved above day 2." },
+      { structure:"stack", input:[73,74,75,71,72], cursor:4, items:["2:75","4:72"], answers:[1,1,0,1,0], removed:"3:71", action:"resolve day 3", found:true, note:"72 resolves day 3 after one day, but cannot resolve 75. The stack remains nonincreasing." },
+    ],
+  },
+  monotonic_deque: {
+    label: "Queue · Deque",
+    title: "Maintain a sliding-window maximum",
+    meta: "window size = 3",
+    takeaway: "The deque removes expired candidates at the front and permanently dominated candidates at the back.",
+    invariant: "Deque indices are live and increasing; their values strictly decrease from front to back.",
+    steps: [
+      { structure:"deque", input:[1,3,-1,-3,5], cursor:0, items:["0:1"], window:[0,0], action:"append index 0", note:"The first value is the only candidate and therefore the current maximum." },
+      { structure:"deque", input:[1,3,-1,-3,5], cursor:1, items:["1:3"], window:[0,1], removed:"0:1", action:"remove dominated back", note:"Value 3 is newer and larger than 1. The older 1 can never be a future window maximum." },
+      { structure:"deque", input:[1,3,-1,-3,5], cursor:3, items:["1:3","2:-1","3:-3"], window:[1,3], outputs:[3,3], action:"front remains maximum", note:"Window [3,-1,-3] is full. The front index 1 supplies maximum 3." },
+      { structure:"deque", input:[1,3,-1,-3,5], cursor:4, items:["4:5"], window:[2,4], removed:"1:3, 3:-3, 2:-1", outputs:[3,3,5], action:"expire front, dominate backs", found:true, note:"Index 1 expires. New value 5 dominates every remaining candidate, so it becomes the sole maximum." },
+    ],
+  },
+  heap_sift: {
+    label: "Heap · Sift",
+    title: "Repair a min-heap after removing its root",
+    meta: "pop minimum from [1, 4, 3, 9, 7, 8, 5]",
+    takeaway: "Root removal can break order only down one path, so repeated swaps with the smaller child restore the heap in O(log n).",
+    invariant: "Every edge outside the highlighted repair path already satisfies parent ≤ child.",
+    steps: [
+      { structure:"heap", items:[1,4,3,9,7,8,5], active:0, action:"minimum is root", note:"The complete-tree shape maps directly to the array. Root 1 is globally minimum." },
+      { structure:"heap", items:[5,4,3,9,7,8], active:0, removed:"1", comparisons:[1,2], action:"move last value to root", note:"Remove 1 and move last value 5 to index 0. Shape is valid, but 5 violates order with child 3." },
+      { structure:"heap", items:[3,4,5,9,7,8], active:2, moving:[0,2], action:"swap with smaller child 3", note:"Choose the smaller child, not merely the left child. Swap 5 with 3 and continue from index 2." },
+      { structure:"heap", items:[3,4,5,9,7,8], active:2, found:true, action:"repair stops", note:"At index 2, child 8 is not smaller than 5. The order invariant is restored everywhere." },
+    ],
+  },
+  heap_median: {
+    label: "Heap · Median",
+    title: "Balance two heaps around the running median",
+    meta: "stream = 5, 2, 10, 4",
+    takeaway: "Two heaps avoid sorting the stream: only the maximum lower value and minimum upper value determine the median.",
+    invariant: "All lower values are ≤ all upper values, and lower has either equal size or one extra item.",
+    steps: [
+      { structure:"two-heaps", lower:[5], upper:[], input:[5,2,10,4], cursor:0, median:5, action:"5 enters lower", note:"With one value, the max-heap lower owns the extra item and its root is the median." },
+      { structure:"two-heaps", lower:[2], upper:[5], input:[5,2,10,4], cursor:1, median:3.5, action:"rebalance 5 to upper", note:"2 enters lower, making it too large. Move its maximum 5 to upper; average both roots." },
+      { structure:"two-heaps", lower:[5,2], upper:[10], input:[5,2,10,4], cursor:2, median:5, action:"rebalance upper root", note:"10 enters upper. Move upper's minimum 5 back so lower has the permitted extra item." },
+      { structure:"two-heaps", lower:[4,2], upper:[5,10], input:[5,2,10,4], cursor:3, median:4.5, action:"balanced halves", found:true, note:"4 enters lower, then 5 moves to upper. Equal sizes make the median (4 + 5) / 2 = 4.5." },
+    ],
+  },
   union: {
     label: "Union-find",
     title: "Merge connected components",
@@ -212,6 +329,23 @@ function IntervalVisual({ current }) {
   );
 }
 
+function NetworkStateVisual({ current }) {
+  const byId = Object.fromEntries(current.nodes.map((node) => [node.id, node]));
+  const highlighted = new Set((current.highlightEdges || []).map(([from, to]) => `${from}-${to}`));
+  return <>
+    <svg className="network-state" viewBox="0 0 620 270" role="img" aria-label="Current tree or graph algorithm state">
+      <defs><marker id="network-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" /></marker></defs>
+      {current.edges.map(([from, to, weight = null], index) => {
+        const source = byId[from], target = byId[to];
+        const active = highlighted.has(`${from}-${to}`) || highlighted.has(`${to}-${from}`);
+        return <g key={`${from}-${to}-${index}`} className={`network-edge ${active ? "highlight" : ""}`}><line x1={source.x} y1={source.y} x2={target.x} y2={target.y} markerEnd={current.directed ? "url(#network-arrow)" : undefined} />{weight !== null && <text x={(source.x + target.x) / 2} y={(source.y + target.y) / 2 - 7}>{weight}</text>}</g>;
+      })}
+      {current.nodes.map((node) => <g key={node.id} className={`network-node ${current.visited.includes(node.id) ? "visited" : ""} ${current.active === node.id ? "active" : ""}`}><circle cx={node.x} cy={node.y} r="25" /><text className="network-label" x={node.x} y={node.y + 4}>{node.id}</text>{current.values?.[node.id] !== undefined && <text className="network-value" x={node.x} y={node.y + 41}>{current.values[node.id]}</text>}</g>)}
+    </svg>
+    {current.queue && <div className="queue-track"><span>ready queue</span>{current.queue.map((node) => <b key={node}>{node}</b>)}{!current.queue.length && <em>empty</em>}</div>}
+  </>;
+}
+
 function GraphVisual({ current }) {
   return <>
     <div className="graph-track" aria-label="Graph traversal state">
@@ -259,6 +393,26 @@ function UnionVisual({ current }) {
   );
 }
 
+function LinearStructureVisual({ current }) {
+  if (current.structure === "heap") {
+    const positions = [[300,35],[170,115],[430,115],[105,205],[235,205],[365,205],[495,205]];
+    const nodes = current.items.map((value, index) => ({ id:String(index), label:String(value), x:positions[index][0], y:positions[index][1] }));
+    const edges = nodes.slice(1).map((node, index) => [String(Math.floor((index + 1 - 1) / 2)), node.id]);
+    return <div className="structure-visual"><NetworkStateVisual current={{ network:"tree", nodes, edges, active:String(current.active), visited:[], values:Object.fromEntries(nodes.map(node => [node.id, node.label])), highlightEdges:(current.moving || []).length === 2 ? [[String(current.moving[0]), String(current.moving[1])]] : [] }} /><div className="heap-array-row"><span>array</span>{current.items.map((value,index)=><b className={index===current.active ? "active" : ""} key={index}>{value}</b>)}</div></div>;
+  }
+
+  if (current.structure === "two-heaps") {
+    return <div className="two-heaps-visual" role="img" aria-label={`Lower heap ${current.lower.join(", ")}; upper heap ${current.upper.join(", ")}; median ${current.median}`}><div><span>lower · max-heap</span><div>{current.lower.map((item,index)=><b key={`${item}-${index}`}>{item}</b>)}</div></div><strong>median<br />{current.median}</strong><div><span>upper · min-heap</span><div>{current.upper.map((item,index)=><b key={`${item}-${index}`}>{item}</b>)}</div></div></div>;
+  }
+
+  const isStack = current.structure === "stack";
+  return <div className="linear-structure-wrap">
+    {current.input && <div className="input-sequence" aria-label={`Input sequence ${current.input.join(", ")}`}>{current.input.map((item,index)=><b className={index===current.cursor ? "active" : current.window && index>=current.window[0] && index<=current.window[1] ? "window" : ""} key={`${item}-${index}`}>{item}</b>)}</div>}
+    <div className={`linear-structure ${isStack ? "stack" : "deque"}`} role="img" aria-label={`${isStack ? "Stack bottom to top" : "Deque front to back"}: ${current.items.join(", ") || "empty"}`}><span>{isStack ? "bottom" : "front"}</span>{current.items.map((item,index)=><b key={`${item}-${index}`}>{item}</b>)}{!current.items.length && <em>empty</em>}<span>{isStack ? "top" : "back"}</span></div>
+    <div className="structure-action"><strong>{current.action}</strong>{current.removed && <span>removed: {current.removed}</span>}{current.answers && <span>answers: [{current.answers.join(", ")}]</span>}{current.outputs && <span>outputs: [{current.outputs.join(", ")}]</span>}</div>
+  </div>;
+}
+
 const DsaLab = () => {
   const [mode, setMode] = useState("pointers");
   const [step, setStep] = useState(0);
@@ -294,7 +448,7 @@ const DsaLab = () => {
         <div className="lab-meta"><span>{lab.title}</span><strong>{lab.meta}</strong></div>
         <div className="lab-progress" aria-hidden="true"><span style={{ width: `${progress}%` }} /></div>
 
-        {current.matrix ? <MatrixVisual lab={lab} current={current} /> : current.intervals ? <IntervalVisual current={current} /> : mode === "bfs" ? <GraphVisual current={current} /> : mode === "union" ? <UnionVisual current={current} /> : <ArrayVisual mode={mode} current={current} />}
+        {current.matrix ? <MatrixVisual lab={lab} current={current} /> : current.intervals ? <IntervalVisual current={current} /> : current.network ? <NetworkStateVisual current={current} /> : current.structure ? <LinearStructureVisual current={current} /> : mode === "bfs" ? <GraphVisual current={current} /> : mode === "union" ? <UnionVisual current={current} /> : <ArrayVisual mode={mode} current={current} />}
         {equation && <div className="equation">{equation} {current.found && <CheckCircle2 size={18} />}</div>}
 
         <div className="invariant-line"><span>Invariant</span><p>{lab.invariant}</p></div>
