@@ -9,4 +9,3 @@ export const topics = [
   ...langgraphTopics,
   ...langfuseTopics,
 ];
-
