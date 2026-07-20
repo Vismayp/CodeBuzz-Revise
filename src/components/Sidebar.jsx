@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink, Link, useParams } from "react-router-dom";
 import { subjects } from "../data/subjects";
 import {
-  BookOpen, Box, Code, Cpu, Zap, HelpCircle, Server, X, FileJson,
+  BookOpen, Box, Code, Cpu, Zap, HelpCircle, Server, X, FileJson, LayoutDashboard,
   Brain, Network, Database, Globe, Layout, Terminal, Lock, Key,
   Shield, ShieldCheck, List, ChevronDown, ChevronRight, Atom,
   Activity, Anchor, Layers, Share2, Users, Target, Variable,
@@ -73,6 +73,11 @@ const Sidebar = ({ isOpen = false, onClose }) => {
       </div>
 
       <nav style={{ flex: 1, overflowY: "auto", padding: "0.75rem 0" }}>
+        <div style={{ padding: "0 0.7rem 0.75rem" }}>
+          <NavLink to="/dashboard" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <LayoutDashboard size={16} /> Learning dashboard
+          </NavLink>
+        </div>
         {sorted.map(([category, categorySubjects]) => (
           <div key={category} style={{ marginBottom: "1.25rem" }}>
             <div className="category-label">{category}</div>
@@ -135,6 +140,11 @@ const Sidebar = ({ isOpen = false, onClose }) => {
                           </div>
                         );
                       })}
+                      {subj.id === "dsa" && (
+                        <NavLink to="/dsa-lab" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`} style={{ padding: "0.55rem 0.5rem 0.55rem 1.75rem", fontSize: "0.85rem", borderLeft: "none", color: "var(--accent-secondary)" }}>
+                          <Target size={14} /> Interactive beginner lab
+                        </NavLink>
+                      )}
                     </div>
                   )}
                 </div>

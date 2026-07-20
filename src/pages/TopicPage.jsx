@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useReducer } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { subjects } from "../data/subjects";
 import CodeBlock from "../components/CodeBlock";
@@ -12,6 +12,7 @@ import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { asPythonFirstCode } from "../utils/pythonifyCode";
+import { lessonKey, nextReviewDate, readLearnerState, updateLessonState } from "../utils/learnerState";
 
 const processContent = (str) => {
   if (!str) return str;
@@ -55,6 +56,15 @@ const TopicPage = () => {
   );
   const prevSection = currentIdx > 0 ? allSections[currentIdx - 1] : null;
   const nextSection = currentIdx < allSections.length - 1 ? allSections[currentIdx + 1] : null;
+  const key = lessonKey(subjectId, topicId, sectionId);
+  const [, refreshLearner] = useReducer((value) => value + 1, 0);
+  const learner = readLearnerState()[key] || {};
+  const setLesson = (patch) => {
+    const confidence = patch.confidence ?? learner.confidence ?? 3;
+    const isReviewed = patch.status === "understood" || patch.status === "learning" || patch.confidence;
+    updateLessonState(key, isReviewed ? { ...patch, nextReviewAt: nextReviewDate(confidence) } : patch);
+    refreshLearner();
+  };
 
   if (!subject || !topic || !section)
     return (
@@ -156,6 +166,11 @@ const TopicPage = () => {
           )}
         </div>
         <h1 style={{ marginBottom: "0.25rem" }}>{section.title}</h1>
+        <div className="lesson-controls" aria-label="Learning progress controls">
+          <button type="button" className={learner.status === "learning" ? "selected" : ""} onClick={() => setLesson({ status: "learning" })}>Learning</button>
+          <button type="button" className={learner.status === "understood" ? "selected success" : ""} onClick={() => setLesson({ status: "understood", reviewedAt: new Date().toISOString() })}>I understand this</button>
+          <div className="confidence" aria-label="Confidence rating">Confidence {[1, 2, 3, 4, 5].map(n => <button type="button" key={n} className={learner.confidence >= n ? "active" : ""} onClick={() => setLesson({ confidence: n })}>{n}</button>)}</div>
+        </div>
       </div>
 
       <div>

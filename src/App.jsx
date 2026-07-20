@@ -6,6 +6,8 @@ import Home from "./pages/Home";
 import SubjectPage from "./pages/SubjectPage";
 import TopicPage from "./pages/TopicPage";
 import InterviewPage from "./pages/InterviewPage";
+import Dashboard from "./pages/Dashboard";
+import DsaLab from "./pages/DsaLab";
 
 function App() {
   return (
@@ -13,6 +15,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="dsa-lab" element={<DsaLab />} />
           <Route path="interview" element={<InterviewPage />} />
           <Route path=":subjectId" element={<SubjectPage />} />
           <Route

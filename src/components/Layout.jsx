@@ -45,7 +45,7 @@ const Layout = () => {
             </button>
             <div className="mobile-header-title">
               <Terminal size={14} style={{ display: "inline", marginRight: "0.4rem", verticalAlign: "middle" }} />
-              CodeBuzz
+              Revision Hub
             </div>
             <div className="mobile-header-spacer" aria-hidden="true" />
           </div>

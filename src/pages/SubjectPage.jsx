@@ -79,6 +79,11 @@ const SubjectPage = () => {
           >
             Start Reading <ArrowRight size={18} />
           </button>
+          {subjectId === "dsa" && (
+            <button className="btn subject-lab-button" onClick={() => navigate("/dsa-lab")}>
+              Try the visual lab <ArrowRight size={18} />
+            </button>
+          )}
         </div>
       </motion.div>
 
