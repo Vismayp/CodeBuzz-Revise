@@ -16,6 +16,7 @@ import { graphsTopic as graphsTopicBase } from "./graphs.js";
 import { dpTopic as dpTopicBase } from "./dp.js";
 import { expandedDpSections } from "./dp_expanded.js";
 import { greedyTopic as greedyTopicBase } from "./greedy.js";
+import { expandedGreedySections } from "./greedy_expanded.js";
 import { advancedTopic as advancedTopicBase } from "./advanced.js";
 import { enrichDsaTopic } from "./enrichment.js";
 import { asPythonFirstCode } from "../../utils/pythonifyCode.js";
@@ -46,7 +47,11 @@ export const dpTopic = withPythonImplementations(enrichDsaTopic({
   description: "Dynamic programming from first principles through state design, reconstruction, sequence/grid/interval/tree/digit DP, and advanced optimization",
   sections: [...dpTopicBase.sections, ...expandedDpSections],
 }));
-export const greedyTopic = withPythonImplementations(enrichDsaTopic(greedyTopicBase));
+export const greedyTopic = withPythonImplementations(enrichDsaTopic({
+  ...greedyTopicBase,
+  description: "Greedy algorithms from local-choice intuition through exchange proofs, interval scheduling, Huffman coding, MSTs, Dijkstra, heaps, matroids, approximations, and counterexample testing",
+  sections: [...greedyTopicBase.sections, ...expandedGreedySections],
+}));
 export const sortingSearchingTopic = withPythonImplementations(sortingSearchingTopicBase);
 export const advancedAlgorithmsTopic = withPythonImplementations(advancedAlgorithmsTopicBase);
 export const advancedTopic = withPythonImplementations(enrichDsaTopic(advancedTopicBase));

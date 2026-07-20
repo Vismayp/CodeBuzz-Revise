@@ -114,6 +114,45 @@ const labs = {
       { values: [0, 0, 3, 4, 4, 7, 7], active: 3, parents: [0], found: true, note: "Capacity 3 becomes 4. Stop at the item weight. Forward order would incorrectly reuse this item." },
     ],
   },
+  greedy_interval: {
+    label: "Greedy · Intervals",
+    title: "Keep the earliest finishing activity",
+    meta: "maximize non-overlapping count",
+    takeaway: "Earliest finish is safe because it leaves at least as much room for every possible future activity.",
+    invariant: "The selected prefix can be extended to an optimal schedule, and lastEnd is as early as possible.",
+    steps: [
+      { intervals: [[1, 3], [2, 5], [4, 6], [6, 8], [5, 9]], active: 0, chosen: [], rejected: [], note: "Sort by end time. Activity [1,3] finishes first, so inspect it before every later-finishing candidate." },
+      { intervals: [[1, 3], [2, 5], [4, 6], [6, 8], [5, 9]], active: 1, chosen: [0], rejected: [], note: "Choose [1,3]. The next activity [2,5] overlaps because 2 < lastEnd 3, so it cannot follow the chosen prefix." },
+      { intervals: [[1, 3], [2, 5], [4, 6], [6, 8], [5, 9]], active: 2, chosen: [0], rejected: [1], note: "Activity [4,6] starts after lastEnd 3. Choose it and move the frontier to 6." },
+      { intervals: [[1, 3], [2, 5], [4, 6], [6, 8], [5, 9]], active: 4, chosen: [0, 2, 3], rejected: [1, 4], found: true, note: "The final schedule is [1,3], [4,6], [6,8]. Three activities is optimal; rejected [5,9] overlaps the last choice." },
+    ],
+  },
+  greedy_jump: {
+    label: "Greedy · Reach",
+    title: "Jump Game: maintain the farthest frontier",
+    meta: "values = maximum jump lengths",
+    takeaway: "The exact path is unnecessary. Every index up to farthest is reachable, so only the best frontier must be retained.",
+    invariant: "Every index through farthest can be reached from the processed prefix.",
+    steps: [
+      { values: [2, 3, 1, 1, 4], active: 0, reach: 2, note: "From index 0, jump length 2 makes every index through 2 reachable." },
+      { values: [2, 3, 1, 1, 4], active: 1, reach: 4, note: "Index 1 is reachable. Its frontier is 1 + 3 = 4, so update farthest from 2 to 4." },
+      { values: [2, 3, 1, 1, 4], active: 2, reach: 4, note: "Index 2 adds no farther reach: 2 + 1 = 3. Keep the existing frontier 4." },
+      { values: [2, 3, 1, 1, 4], active: 4, reach: 4, found: true, note: "The last index lies inside the reachable frontier. Return true without constructing a particular jump path." },
+    ],
+  },
+  greedy_huffman: {
+    label: "Greedy · Huffman",
+    title: "Merge the two smallest frequencies",
+    meta: "optimal prefix-code merge cost",
+    takeaway: "Low-frequency symbols can safely be deepest siblings; merging the two smallest reduces the problem to a smaller instance.",
+    invariant: "The heap represents roots of optimal partial prefix-code trees.",
+    steps: [
+      { values: [5, 9, 12, 13], active: 0, parents: [1], note: "The two smallest frequencies are 5 and 9. Any optimal tree can place them as deepest siblings." },
+      { values: [12, 13, 14], active: 2, parents: [0, 1], note: "Merge 5 + 9 into a subtree of weight 14, then return it to the min-heap." },
+      { values: [14, 25], active: 1, parents: [0], note: "Merge 12 + 13 = 25. The remaining roots have weights 14 and 25." },
+      { values: [39], active: 0, parents: [], found: true, note: "Merge 14 + 25 = 39. One root remains, completing the optimal prefix tree." },
+    ],
+  },
   union: {
     label: "Union-find",
     title: "Merge connected components",
@@ -145,6 +184,7 @@ function ArrayVisual({ mode, current }) {
           index === current.mid || index === current.active ? "active-cell" : "",
           current.parents?.includes(index) ? "dependency" : "",
           current.moving?.includes(index) ? "moving" : "",
+          current.reach !== undefined && index <= current.reach ? "reachable" : "",
           outside ? "eliminated" : "",
           isBar && index <= current.sortedEnd ? "sorted" : "",
         ].filter(Boolean).join(" ");
@@ -156,6 +196,18 @@ function ArrayVisual({ mode, current }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+function IntervalVisual({ current }) {
+  return (
+    <div className="interval-track" role="img" aria-label="Greedy interval scheduling timeline from time 1 to 9">
+      {current.intervals.map(([start, end], index) => {
+        const state = current.chosen.includes(index) ? "chosen" : current.rejected.includes(index) ? "rejected" : index === current.active ? "active" : "pending";
+        return <div className="interval-row" key={`${start}-${end}-${index}`}><small>{state}</small><div className="interval-axis"><span className={`interval-mark ${state}`} style={{ left: `${((start - 1) / 8) * 100}%`, width: `${((end - start) / 8) * 100}%` }}>[{start},{end}]</span></div></div>;
+      })}
+      <div className="interval-ticks">{[1, 2, 3, 4, 5, 6, 7, 8, 9].map(value => <span key={value}>{value}</span>)}</div>
     </div>
   );
 }
@@ -242,7 +294,7 @@ const DsaLab = () => {
         <div className="lab-meta"><span>{lab.title}</span><strong>{lab.meta}</strong></div>
         <div className="lab-progress" aria-hidden="true"><span style={{ width: `${progress}%` }} /></div>
 
-        {current.matrix ? <MatrixVisual lab={lab} current={current} /> : mode === "bfs" ? <GraphVisual current={current} /> : mode === "union" ? <UnionVisual current={current} /> : <ArrayVisual mode={mode} current={current} />}
+        {current.matrix ? <MatrixVisual lab={lab} current={current} /> : current.intervals ? <IntervalVisual current={current} /> : mode === "bfs" ? <GraphVisual current={current} /> : mode === "union" ? <UnionVisual current={current} /> : <ArrayVisual mode={mode} current={current} />}
         {equation && <div className="equation">{equation} {current.found && <CheckCircle2 size={18} />}</div>}
 
         <div className="invariant-line"><span>Invariant</span><p>{lab.invariant}</p></div>

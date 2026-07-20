@@ -87,6 +87,7 @@ body::before {
 .array-cell.moving { transform: translateY(-5px); border-color: var(--accent-warm); }
 .array-cell.eliminated { opacity: .28; filter: grayscale(1); }
 .array-cell.sorted::after { content: ""; position: absolute; inset: auto 0 0; height: 4px; background: var(--accent-secondary); }
+.array-cell.reachable { background: var(--accent-glow); }
 .bar-track { align-items: end; min-height: 190px; grid-template-columns: repeat(5, minmax(48px, 1fr)); }
 .bar-track .array-cell { transition: min-height .25s ease, transform .25s ease, border-color .25s ease; }
 .invariant-line { display: grid; grid-template-columns: 92px 1fr; gap: .75rem; align-items: baseline; margin-top: 1.25rem; padding: .75rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
@@ -116,6 +117,15 @@ body::before {
 .matrix-column-labels { display: grid; gap: .45rem; margin-left: 34px; margin-bottom: .4rem; text-align: center; }
 .matrix-column-labels span,.matrix-row-labels span { color: var(--accent); font: 700 .7rem var(--font-mono); }
 .matrix-row-labels { width: 26px; display: grid; grid-template-rows: repeat(4, 66px); gap: .45rem; place-items: center; }
+.interval-track { margin: 2rem 0 1rem; }
+.interval-row { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: .6rem; min-height: 38px; }
+.interval-row > small { color: var(--text-muted); font: .62rem var(--font-mono); text-transform: uppercase; }
+.interval-axis { position: relative; height: 28px; border-bottom: 1px solid var(--border); }
+.interval-mark { position: absolute; bottom: 3px; min-width: 42px; height: 22px; display: grid; place-items: center; border-radius: var(--radius-sm); border: 1px solid var(--border-bright); background: var(--bg-hover); color: var(--text-secondary); font: .68rem var(--font-mono); transition: all .2s ease; }
+.interval-mark.active { transform: translateY(-3px); border-color: var(--accent-warm); color: var(--accent-warm); }
+.interval-mark.chosen { border-color: var(--accent-secondary); background: var(--green-glow); color: var(--accent-secondary); }
+.interval-mark.rejected { opacity: .3; text-decoration: line-through; }
+.interval-ticks { display: grid; grid-template-columns: repeat(9, 1fr); margin: .35rem 0 0 64px; color: var(--text-muted); font: .58rem var(--font-mono); text-align: center; }
 
 @media (max-width: 720px) {
   .lab-tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: .35rem; }
