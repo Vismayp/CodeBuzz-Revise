@@ -203,6 +203,159 @@ function longestConsecutive(nums) {
   return best;
 }`,
   },
+  {
+    id: "arrays-mental-models-and-invariants",
+    title: "Arrays: Mental Models, Invariants, and Dry Runs",
+    type: "theory",
+    content: `
+## Arrays: See the State Before You Code
+
+Most array solutions are about choosing a small piece of state that stays true after every iteration.
+
+### Indexes Are Addresses
+
+The expression a[i] jumps to the start address and moves i element-widths, which makes access O(1). Searching an unsorted array is different: there is no shortcut to the target address, so a scan may inspect every element.
+
+### The Invariant Is the Contract
+
+| Pattern | State to track | Invariant after each step |
+|---|---|---|
+| Two pointers | left, right | Everything outside the pointers is already resolved |
+| Sliding window | left, right, window state | The current window satisfies the rule |
+| Prefix sum | cumulative totals | prefix[i] represents the sum before index i |
+| Hash map | value → index/count | Every item processed so far is represented |
+| Kadane | current best ending here | current is the best subarray that must end here |
+
+### Dry Run: Prefix Sum Range Query
+
+For nums = [3, 1, 4, 2], build a prefix array with a leading zero:
+
+| index | 0 | 1 | 2 | 3 | 4 |
+|---|---:|---:|---:|---:|---:|
+| prefix | 0 | 3 | 4 | 8 | 10 |
+
+The sum from index 1 through 3 is prefix[4] - prefix[1] = 10 - 3 = 7. One preprocessing pass makes each later range query O(1).
+
+### Array Checklist
+
+1. Is the answer about a contiguous range or arbitrary elements?
+2. Is the input sorted, or can sorting be allowed?
+3. Can the answer be built in-place with a write pointer?
+4. What must be true before and after moving each pointer?
+5. What happens for an empty array, duplicates, and negative values?
+    `,
+    diagram: `
+flowchart LR
+    A["Array input"] --> B{"What is ordered?"}
+    B -- "positions / range" --> C["Sliding window or prefix sum"]
+    B -- "values" --> D["Sort + two pointers"]
+    B -- "nothing" --> E["Hash map / set"]
+    C --> F["Write invariant"]
+    D --> F
+    E --> F
+    F --> G["Move one index"]
+    G --> H{"Invariant still true?"}
+    H -- "yes" --> G
+    H -- "no" --> I["Repair state, then update answer"]
+    I --> G
+    `,
+    code: `def build_prefix(nums):
+    prefix = [0]
+    for value in nums:
+        prefix.append(prefix[-1] + value)
+    return prefix
+
+def range_sum(prefix, left, right):
+    return prefix[right + 1] - prefix[left]`,
+  },
+  {
+    id: "arrays-worked-examples-playbook",
+    title: "Arrays: Worked Examples Playbook",
+    type: "theory",
+    content: `
+## Arrays: Worked Examples Playbook
+
+Use the examples below to practice identifying the remembered state before writing a loop.
+
+### Example 1: Two Sum with a Hash Map
+
+Input: nums = [2, 7, 11, 15], target = 9.
+
+| step | value | needed | map before | action |
+|---:|---:|---:|---|---|
+| 0 | 2 | 7 | {} | store 2 → 0 |
+| 1 | 7 | 2 | {2: 0} | found complement; return [0, 1] |
+
+The map stores only values already seen. This makes the solution O(n) time and O(n) space instead of checking every pair in O(n²).
+
+### Example 2: Move Zeroes In-Place
+
+Input: [0, 1, 0, 3, 12]. The read pointer visits every cell; the write pointer marks the next non-zero position.
+
+| read | value | write | array after action |
+|---:|---:|---:|---|
+| 0 | 0 | 0 | [0, 1, 0, 3, 12] |
+| 1 | 1 | 0 → 1 | [1, 0, 0, 3, 12] |
+| 2 | 0 | 1 | [1, 0, 0, 3, 12] |
+| 3 | 3 | 1 → 2 | [1, 3, 0, 0, 12] |
+| 4 | 12 | 2 → 3 | [1, 3, 12, 0, 0] |
+
+Invariant: positions before write contain exactly the non-zero values encountered so far, in their original order.
+
+### Example 3: Product Except Self
+
+Input: [1, 2, 3, 4]. Build the answer from two directions:
+
+| index | 0 | 1 | 2 | 3 |
+|---|---:|---:|---:|---:|
+| left product before index | 1 | 1 | 2 | 6 |
+| right product after index | 24 | 12 | 4 | 1 |
+| answer | 24 | 12 | 8 | 6 |
+
+The answer at index i is the product of everything to its left multiplied by everything to its right. This avoids division and works when the input contains zero.
+
+### Pattern Recognition Prompts
+
+- “Find a pair quickly” → hash map or sort plus two pointers.
+- “Keep relative order while filtering” → read/write pointers.
+- “Each answer depends on left and right context” → prefix/suffix products.
+- “Best contiguous sum” → Kadane’s algorithm.
+- “Many contiguous range queries” → prefix sums.
+    `,
+    diagram: `
+flowchart LR
+    A["Read the prompt"] --> B{"Pair / complement?"}
+    B -- "yes" --> C["Hash map"]
+    B -- "no" --> D{"Preserve order in-place?"}
+    D -- "yes" --> E["Read + write pointers"]
+    D -- "no" --> F{"Left and right context?"}
+    F -- "yes" --> G["Prefix + suffix"]
+    F -- "no" --> H{"Contiguous sum?"}
+    H -- "many queries" --> I["Prefix sum"]
+    H -- "maximum" --> J["Kadane"]
+    `,
+    code: `def two_sum(nums, target):
+    seen = {}
+    for index, value in enumerate(nums):
+        needed = target - value
+        if needed in seen:
+            return [seen[needed], index]
+        seen[value] = index
+    return []
+
+def product_except_self(nums):
+    answer = [1] * len(nums)
+    prefix = 1
+    for i, value in enumerate(nums):
+        answer[i] = prefix
+        prefix *= value
+
+    suffix = 1
+    for i in range(len(nums) - 1, -1, -1):
+        answer[i] *= suffix
+        suffix *= nums[i]
+    return answer`,
+  },
 ];
 
 const stringsEnhancements = [
@@ -277,6 +430,164 @@ flowchart TD
 
   return best;
 }`,
+  },
+  {
+    id: "strings-mental-models-and-invariants",
+    title: "Strings: Visualize Characters, Windows, and Prefixes",
+    type: "theory",
+    content: `
+## Strings: Three Questions That Choose the Algorithm
+
+When a string problem feels vague, ask: does order matter, is the region contiguous, and is the same prefix compared repeatedly?
+
+### Character Frequencies Are a Balance Sheet
+
+For s = "aabbc", the frequency map is {a: 2, b: 2, c: 1}. For an anagram, every increment from the first string must be cancelled by a decrement from the second. The map—not the order—is the important state.
+
+### Sliding Window: Validity Before Optimization
+
+For “longest substring with at most one replacement,” expand right and count characters. The window is invalid when:
+
+(window length - most frequent character count > allowed replacements)
+
+When invalid, move left until the invariant is restored. Repair the window before recording a new answer.
+
+### String Representation Matters
+
+| Representation | Best for | Typical cost |
+|---|---|---|
+| Immutable string | Reading, slicing, comparing | A character replacement creates a new value |
+| Character list | Many edits or building output | O(1) indexed updates |
+| Frequency map | Counts, anagrams, uniqueness | O(1) average lookup |
+| Trie | Prefix search and autocomplete | O(length of prefix) |
+
+### Edge Cases to Say Out Loud
+
+- Empty input and a pattern longer than the text.
+- Spaces, punctuation, case sensitivity, and Unicode characters.
+- Repeated characters that make a window shrink multiple times.
+- A palindrome with one character, and an even-length palindrome.
+    `,
+    diagram: `
+flowchart TD
+    A["String problem"] --> B{"Order matters?"}
+    B -- "no" --> C["Frequency balance"]
+    B -- "yes" --> D{"Contiguous region?"}
+    D -- "yes" --> E["Sliding window"]
+    D -- "no" --> F{"Prefix repeated?"}
+    F -- "yes" --> G["Trie / prefix table"]
+    F -- "no" --> H["Two pointers or DP"]
+    E --> I["Expand right"]
+    I --> J{"Window valid?"}
+    J -- "no" --> K["Shrink left"]
+    K --> J
+    J -- "yes" --> L["Record best"]
+    `,
+    code: `def is_anagram(s, t):
+    if len(s) != len(t):
+        return False
+
+    balance = {}
+    for left, right in zip(s, t):
+        balance[left] = balance.get(left, 0) + 1
+        balance[right] = balance.get(right, 0) - 1
+
+    return all(count == 0 for count in balance.values())`,
+  },
+  {
+    id: "strings-worked-examples-playbook",
+    title: "Strings: Worked Examples Playbook",
+    type: "theory",
+    content: `
+## Strings: Worked Examples Playbook
+
+### Example 1: Longest Substring Without Repeating Characters
+
+Input: s = "abcabcbb". Keep a window whose characters are unique.
+
+| right char | window before | duplicate? | move left to | best |
+|---|---|---|---:|---:|
+| a | — | no | 0 | 1 |
+| b | a | no | 0 | 2 |
+| c | ab | no | 0 | 3 |
+| a | abc | yes | 1 | 3 |
+| b | bca | yes | 2 | 3 |
+| c | cab | yes | 3 | 3 |
+| b | abc | yes | 5 | 3 |
+| b | b | yes | 6 | 3 |
+
+The left pointer never moves backward. Each character enters and leaves the window at most once, giving O(n) time.
+
+### Example 2: Group Anagrams
+
+Input: ["eat", "tea", "tan", "ate", "nat", "bat"]. Convert each word into a stable signature:
+
+| word | sorted signature | group |
+|---|---|---|
+| eat | aet | [eat] |
+| tea | aet | [eat, tea] |
+| tan | ant | [tan] |
+| ate | aet | [eat, tea, ate] |
+| nat | ant | [tan, nat] |
+| bat | abt | [bat] |
+
+Sorting the characters is simple and costs O(k log k) per word. A 26-letter frequency signature is O(k) when the alphabet is fixed.
+
+### Example 3: Longest Common Prefix
+
+Input: ["flower", "flow", "flight"]. Start with prefix = "flower" and shorten it until every word starts with it:
+
+1. Compare with "flow" → shorten to "flow".
+2. Compare with "flight" → shorten to "fl".
+3. Every word starts with "fl", so return "fl".
+
+### Substring vs Subsequence
+
+The substring "ace" does not occur in "abcde" because its characters are not adjacent. It is a subsequence because the characters appear in order with gaps. This distinction often determines whether to use a sliding window or dynamic programming.
+
+### String Pattern Prompts
+
+- Same letters, different order → frequency signature.
+- Longest or shortest valid contiguous region → sliding window.
+- Mirror from both ends → two pointers.
+- Prefix shared by many words → trie or progressive shortening.
+- Transform one string into another → edit-distance DP.
+    `,
+    diagram: `
+flowchart TD
+    A["String input"] --> B{"What must stay true?"}
+    B -- "no duplicate characters" --> C["Unique-character window"]
+    B -- "same character counts" --> D["Anagram signature"]
+    B -- "all words share prefix" --> E["Prefix shortening / trie"]
+    B -- "characters can be skipped" --> F["Subsequence DP"]
+    C --> G["Expand right, shrink left"]
+    D --> H["Hash signature → group"]
+    E --> I["Compare prefix"]
+    F --> J["Keep / skip decision"]
+    `,
+    code: `def length_of_longest_unique(s):
+    last_seen = {}
+    left = 0
+    best = 0
+
+    for right, char in enumerate(s):
+        if char in last_seen:
+            left = max(left, last_seen[char] + 1)
+        last_seen[char] = right
+        best = max(best, right - left + 1)
+
+    return best
+
+def common_prefix(words):
+    if not words:
+        return ""
+    prefix = words[0]
+    for word in words[1:]:
+        while not word.startswith(prefix):
+            prefix = prefix[:-1]
+        if not prefix:
+            break
+    return prefix`,
   },
 ];
 
