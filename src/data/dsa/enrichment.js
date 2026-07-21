@@ -652,6 +652,85 @@ flowchart LR
   return dummy.next;
 }`,
   },
+  {
+    id: "linked-list-worked-examples-playbook",
+    title: "Linked Lists: Worked Examples and Pointer Traces",
+    type: "theory",
+    content: `
+## Linked Lists: Worked Examples and Pointer Traces
+
+### Example 1: Reverse a List
+
+Input: 1 → 2 → 3 → null. At every step, save the unreversed suffix before changing the current node's next pointer.
+
+| step | prev | curr | next saved | result so far |
+|---:|---|---|---|---|
+| start | null | 1 | 2 | null ← 1 |
+| 1 | 1 | 2 | 3 | null ← 1 ← 2 |
+| 2 | 2 | 3 | null | null ← 1 ← 2 ← 3 |
+| done | 3 | null | — | head = 3 |
+
+The critical invariant is: prev is the fully reversed prefix, and curr is the first node not yet reversed.
+
+### Example 2: Find the Middle
+
+For 1 → 2 → 3 → 4 → 5, slow moves one node and fast moves two. When fast reaches the end, slow is at 3.
+
+| round | slow | fast |
+|---:|---:|---:|
+| start | 1 | 1 |
+| 1 | 2 | 3 |
+| 2 | 3 | 5 |
+| stop | 3 | null |
+
+For an even-length list, decide whether you want the first or second middle and choose the loop condition accordingly.
+
+### Example 3: Remove the Nth Node from the End
+
+Use a dummy node before the head. Move fast n + 1 steps ahead, then move fast and slow together. When fast is null, slow is immediately before the node to remove.
+
+For 1 → 2 → 3 → 4 → 5 and n = 2, slow ends at 3, so bypass 4 by setting 3.next to 5.
+
+### Linked List Debugging Rules
+
+1. Save next before rewiring links.
+2. Draw node identities, not just values, when duplicates exist.
+3. Use a dummy node when the head might be deleted.
+4. State whether a pointer is on a node or on the gap before a node.
+5. Test empty, one-node, two-node, and cyclic inputs.
+    `,
+    diagram: `
+flowchart LR
+    A["slow = head\nfast = head"] --> B["fast moves 2\nslow moves 1"]
+    B --> C{"fast at end?"}
+    C -- "no" --> B
+    C -- "yes" --> D["slow is middle"]
+    E["dummy -> head"] --> F["fast is n+1 ahead"]
+    F --> G["move both together"]
+    G --> H["slow.next = slow.next.next"]
+    `,
+    code: `class ListNode:
+    def __init__(self, value, next_node=None):
+        self.value = value
+        self.next = next_node
+
+def reverse_list(head):
+    previous = None
+    current = head
+    while current:
+        following = current.next
+        current.next = previous
+        previous = current
+        current = following
+    return previous
+
+def middle_node(head):
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+    return slow`,
+  },
 ];
 
 const stacksEnhancements = [
@@ -781,6 +860,98 @@ flowchart TD
   backtrack(0, target, []);
   return result;
 }`,
+  },
+  {
+    id: "recursion-backtracking-worked-examples",
+    title: "Recursion and Backtracking: Worked Examples",
+    type: "theory",
+    content: `
+## Recursion and Backtracking: Worked Examples
+
+### Example 1: Factorial Call Stack
+
+For factorial(4), calls go down until the base case, then values resolve while the stack unwinds:
+
+factorial(4) → 4 × factorial(3) → 4 × 3 × factorial(2) → 4 × 3 × 2 × factorial(1)
+
+The base case returns 1. The pending multiplications then resolve as 1 → 2 → 6 → 24.
+
+### Example 2: Generate Subsets
+
+For [a, b], every item creates two branches: exclude it or include it.
+
+| decision level | exclude branch | include branch |
+|---:|---|---|
+| start | [] | [] |
+| choose a | [] | [a] |
+| choose b from [] | [] | [b] |
+| choose b from [a] | [a] | [a, b] |
+
+The result is [], [b], [a], [a, b]. The order may differ, but every subset appears exactly once.
+
+### Example 3: Combination Sum with Pruning
+
+For candidates [2, 3, 6, 7] and target 7:
+
+- Choose 2 → remaining 5 → choose 2 → remaining 3 → choose 3 → solution [2, 2, 3].
+- Choose 6 → remaining 1 → no candidate can complete the branch.
+- Choose 7 → remaining 0 → solution [7].
+
+When candidates are sorted, stop exploring once a candidate is greater than the remaining target. That is a proof-based prune, not a guess.
+
+### The Backtracking State Machine
+
+At each recursive call, define the state precisely:
+
+| State | Meaning |
+|---|---|
+| index / start | choices still available |
+| path | decisions made on the current branch |
+| remaining | distance from the goal |
+| used / visited | choices forbidden in this branch |
+
+The safe order is choose → recurse → undo. If undo is skipped, the next branch inherits stale state.
+
+### Complexity Intuition
+
+- Binary include/exclude choices produce up to 2^n subsets.
+- Permutations produce n! leaves.
+- Pruning reduces visited nodes but does not always change the worst-case bound.
+- Memoization helps when different paths reach the same state.
+    `,
+    diagram: `
+flowchart TD
+    A["state: index, path, remaining"] --> B{"base case?"}
+    B -- "yes" --> C["record or reject"]
+    B -- "no" --> D["choose candidate"]
+    D --> E{"prune?"}
+    E -- "yes" --> F["skip branch"]
+    E -- "no" --> G["add to path"]
+    G --> H["recurse"]
+    H --> I["remove from path"]
+    I --> J{"more candidates?"}
+    J -- "yes" --> D
+    J -- "no" --> K["return to parent"]
+    `,
+    code: `def subsets(values):
+    result = []
+    path = []
+
+    def backtrack(index):
+        if index == len(values):
+            result.append(path.copy())
+            return
+
+        # Exclude values[index].
+        backtrack(index + 1)
+
+        # Include values[index], then undo the choice.
+        path.append(values[index])
+        backtrack(index + 1)
+        path.pop()
+
+    backtrack(0)
+    return result`,
   },
 ];
 
